@@ -4,3 +4,6 @@ output.txt
 extras.js
 nft
 garbageCollector
+
+__pycache__/
+*.pyc
