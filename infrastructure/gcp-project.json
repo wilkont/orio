@@ -1,0 +1,16 @@
+{
+  "projectId": "orio-spc-3-prod",
+  "projectNumber": "501960627141",
+  "displayName": "ORIO SPC 3 Production",
+  "organizationId": "465218971713",
+  "account": "wilfried.k@colomboai.com",
+  "billingEnabled": false,
+  "billingLinkAttempt": {
+    "billingAccount": "013DC6-1EB2DF-81B97A",
+    "result": "FAILED_PRECONDITION",
+    "reason": "DEGRADATION_STAGE_FRICTION: billing account has an overdue balance"
+  },
+  "spendingAuthorization": "User authorized infrastructure spending without a set cap on November 3, 2026",
+  "financialActivation": "disabled",
+  "servicesDeployed": []
+}

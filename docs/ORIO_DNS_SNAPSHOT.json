@@ -1,0 +1,23 @@
+{
+  "observedLocalDate": "2026-11-03",
+  "source": "Authenticated AWS Route 53 console",
+  "account": "710096437887",
+  "zoneId": "Z10370061YQMEZGKU5P4Y",
+  "zoneType": "Public",
+  "recordCount": 10,
+  "records": [
+    {"name":"orio.io","type":"A","ttl":300,"values":["52.14.199.108"]},
+    {"name":"orio.io","type":"MX","ttl":300,"values":["10 inbound-smtp.us-east-1.amazonaws.com."]},
+    {"name":"orio.io","type":"NS","ttl":172800,"values":["ns-506.awsdns-63.com.","ns-1958.awsdns-52.co.uk.","ns-1203.awsdns-22.org.","ns-802.awsdns-36.net."]},
+    {"name":"orio.io","type":"SOA","ttl":900,"values":["ns-506.awsdns-63.com. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400"]},
+    {"name":"_699217855fd34eb95b25798f07fa3e60.orio.io","type":"CNAME","ttl":300,"values":["_5260ee68b40a6ea87e470c6f5893871a.dsrmygwdhx.acm-validations.aws."]},
+    {"name":"_amazonses.orio.io","type":"TXT","ttl":300,"values":["\"uaNE59WPatZH8jTMUtKXBT4GA6ACRo+Lp3U2YGeLtbU=\""]},
+    {"name":"h3h6ec5ud5kjeo4fcagh7g4a5rlb5kl3._domainkey.orio.io","type":"CNAME","ttl":300,"values":["h3h6ec5ud5kjeo4fcagh7g4a5rlb5kl3.dkim.amazonses.com."]},
+    {"name":"autodiscover.orio.io","type":"CNAME","ttl":300,"values":["autodiscover.mail.us-east-1.awsapps.com."]},
+    {"name":"www.orio.io","type":"A","ttl":300,"values":["52.14.199.108"]},
+    {"name":"_1fb59aa419554e294387b94187b3a7eb.www.orio.io","type":"CNAME","ttl":300,"values":["_42b4fdb328dd0eb91b3fa029b03038d4.crxktfrmng.acm-validations.aws."]}
+  ],
+  "routingPolicy": "Simple for all observed records",
+  "alias": false,
+  "note": "Read-only discovery snapshot; not a migration instruction. Re-read before cutover."
+}
