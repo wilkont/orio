@@ -43,3 +43,44 @@ Account dashboard displayed two-factor authentication OFF. Security enrollment r
 ## Next steps
 
 Complete Route 53 zone and cross-region resource inventory. Preserve all mail and verification records. Resolve GCP billing before deploying billable infrastructure. Continue engineering and local verification independently of that deployment blocker.
+
+## Additional authenticated discovery
+
+### ORIO application server
+
+Read-only details for `OrioApp` (`i-0fcfe4df90cc95d29`) confirm:
+
+- Ubuntu Jammy 22.04 AMI name dated December 6, 2022; the running guest patch level is not verified by its launch image.
+- VPC `vpc-380b8e53`, subnet `subnet-85fa56ee`, no displayed IAM instance role or Auto Scaling group.
+- IMDSv2 optional; detailed monitoring, termination protection, and stop protection disabled.
+- Root volume `vol-0ea68e0edb175d630`, `/dev/sda1`, 8 GiB, unencrypted, delete-on-termination enabled.
+- Security group `sg-0a04f4f3d3750ffe9` (`launch-wizard-12`) permits TCP 22, 80, 443, and 5000 from `0.0.0.0/0`; outbound permits all traffic to `0.0.0.0/0`. These are configured network rules, not evidence that every port has a listening service.
+
+The EC2 snapshot inventory scoped to **Owned by me** in us-east-2 displayed no snapshots. The RDS database inventory in us-east-2 displayed zero databases. These observations do not rule out self-managed databases, other regions/accounts, shared snapshots, external database providers, or other backup systems. Do not assume a migration rollback exists.
+
+### S3 inventory
+
+The account-wide general-purpose bucket list contained ten buckets:
+
+| Bucket | Region |
+|---|---|
+| backup.3494230185 | us-east-2 |
+| backup.db.25.236.31.117 | us-east-2 |
+| backup.node.352362926 | us-east-2 |
+| codepipeline-us-east-2-476319253477 | us-east-2 |
+| db3523631117 | us-east-2 |
+| elasticbeanstalk-us-east-2-710096437887 | us-east-2 |
+| nftsorio | us-east-2 |
+| node352362926 | us-east-2 |
+| realfiles | ap-south-1 |
+| wilknot3494230185 | us-east-2 |
+
+Inspected bucket `backup.db.25.236.31.117`: its root listing showed 26 entries, including server configuration directories, SSH/AWS-related directories, application directories, and archives. Listed root-file timestamps were January 21, 2021; nested content freshness was not assessed. No sensitive directory contents or object bodies were opened. Bucket settings showed Block all public access **On**, versioning **Disabled**, MFA delete **Disabled**, Object Lock **Disabled**, server access logging **Disabled**, default encryption **SSE-S3**, and Object Ownership **Object writer** with ACLs enabled. Default encryption for new objects does not prove encryption of every historical object. No successful restore or database consistency evidence exists yet.
+
+### DNSSEC
+
+The Route 53 DNSSEC tab explicitly displayed **Not signing** and no key-signing keys, corroborating the unchecked Namecheap DNSSEC control. No DNS/security settings were changed.
+
+### Access boundary
+
+GitHub repository reads/fetches and AWS console reads are working. No SSH/SSM session to an instance has been established; access to deployed source, service configuration, application logs, guest patch state, and live database contents remains unverified. No cloud data or resources were modified during this follow-up discovery.
