@@ -1,6 +1,18 @@
 # ORIO-SPC 3.0 execution status
 
-Date: November 3, 2026. Status: discovery and reference implementation in progress. Platform is not engineering-complete, audited, deployed, or authorized for live money.
+## Latest milestone — November 3, 2026
+
+The PostgreSQL control-ledger and signed release-policy foundation are implemented locally in `services/control-foundation`, with a separate package lock and strict TypeScript configuration. Final verification passed 30 module tests (19 real PostgreSQL integration tests and 11 release-signature tests), strict type checking, and the existing five monetary-reference tests. The installed production dependency audit reported zero known vulnerabilities at the time of this check; that is not a security audit.
+
+The new ledger enforces exact integer-string amounts, per-asset debit/credit balance, immutable journals and account definitions, atomic journal/outbox writes, duplicate-settlement rejection, concurrent protected-balance checks, cryptographic chain verification, external checkpoint comparison, fenced delivery leases, retry delay, and dead-letter status. Release evaluation supports testnet, production-read-only, controlled-live, and public-live, requiring five distinct declared authorized principals and keys for live modes. Trust/approval files are empty by default.
+
+Parallel code reviews found two security/correctness issues: reuse of a privileged pre-existing PostgreSQL runtime role, and acknowledgement expiry evaluated before a database lock wait. Both were corrected and regression-tested. An optional pure-verifier extraction remains deferred; complete-history verification is documented as memory-bound and requires operating-scale qualification before deployment.
+
+These are tested internal components, not a complete platform or independent qualification. No financial operations were activated. Blockchain execution, reserve verification, external checkpoint publication, identity/authentication, broker/inbox integration, compliance providers, applications, production deployment, and independent security/legal/financial acceptance remain outstanding.
+
+GCP project `orio-spc-3-prod` exists; its attempted billing association was rejected for an overdue billing-account balance. Bank verification is pending according to the latest user update. No payment was initiated. Authenticated GitHub, AWS, and Namecheap discovery is documented in INFRASTRUCTURE_DISCOVERY.md. The older sections below preserve the initial discovery snapshot and are superseded by these milestones where stated.
+
+Date: November 3, 2026. Initial discovery snapshot follows. Platform is not engineering-complete, audited, deployed, or authorized for live money.
 
 ## Verified resources
 

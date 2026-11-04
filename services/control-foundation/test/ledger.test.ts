@@ -1,6 +1,7 @@
 import { test,before,beforeEach,after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { setTimeout } from 'node:timers/promises';
 import { Pool } from 'pg';
 import { ControlLedger } from '../src/ledger.ts';
 import type { JournalRequest,Receipt } from '../src/ledger.ts';
@@ -110,6 +111,37 @@ test('runtime database role cannot rewrite or truncate accounting or forge deliv
   await assert.rejects(admin.query('UPDATE orio_ledger.journals SET external_ref=\'tampered\''),/append-only/);
   await assert.rejects(ledger.createAccount({id:'customer',asset:'OTHER',normalSide:'credit',allowNegative:false}),/definition conflict/);
 });
+test('migration rejects elevated cluster-global role attributes without silently changing them',async()=>{
+  await admin.query('DROP SCHEMA orio_ledger CASCADE');
+  for (const [enable,disable,field] of [
+    ['SUPERUSER','NOSUPERUSER','rolsuper'],['CREATEROLE','NOCREATEROLE','rolcreaterole'],
+    ['CREATEDB','NOCREATEDB','rolcreatedb'],['BYPASSRLS','NOBYPASSRLS','rolbypassrls'],
+    ['REPLICATION','NOREPLICATION','rolreplication'],['LOGIN','NOLOGIN','rolcanlogin']]) {
+    await admin.query(`ALTER ROLE orio_ledger_runtime ${enable}`);
+    const client=await admin.connect();
+    try {
+      await assert.rejects(client.query(migration),/unexpected privileges/);
+      await client.query('ROLLBACK');
+      // The role remains as found: the migration refuses, rather than rewrites, cluster policy.
+      assert.equal((await admin.query(`SELECT ${field} AS elevated FROM pg_roles WHERE rolname='orio_ledger_runtime'`)).rows[0].elevated,true);
+    } finally {
+      await client.query('ROLLBACK');client.release();
+      await admin.query(`ALTER ROLE orio_ledger_runtime ${disable}`);
+    }
+  }
+});
+test('migration rejects inherited role membership',async()=>{
+  await admin.query('DROP SCHEMA orio_ledger CASCADE');
+  await admin.query('CREATE ROLE orio_test_parent_role NOLOGIN');
+  await admin.query('GRANT orio_test_parent_role TO orio_ledger_runtime');
+  const client=await admin.connect();
+  try { await assert.rejects(client.query(migration),/unexpected privileges/); }
+  finally {
+    await client.query('ROLLBACK');client.release();
+    await admin.query('REVOKE orio_test_parent_role FROM orio_ledger_runtime');
+    await admin.query('DROP ROLE orio_test_parent_role');
+  }
+});
 test('compensating journals preserve history and external checkpoints',async()=>{
   const original=await ledger.post(deposit()); await ledger.post(payout('reversal','100000000'));
   const result=await ledger.verify(original);
@@ -135,6 +167,29 @@ test('expired leases are redelivered with new tokens and stale worker completion
   assert.notEqual(next.token,first.token);assert.equal(next.attempts,2);
   assert.equal(await ledger.finish(first.sequence,first.token,true),false);
   assert.equal(await ledger.finish(next.sequence,next.token,true),true);
+});
+test('acknowledgement waiting on a row lock rechecks expiry after acquiring it',async()=>{
+  await ledger.post(deposit()); const event=(await ledger.claim(1,1))[0]!;
+  const blocker=await admin.connect();
+  await blocker.query('BEGIN');
+  await blocker.query('SELECT * FROM orio_ledger.outbox FOR UPDATE');
+  const pending=ledger.finish(event.sequence,event.token,true);
+  try {
+    let blocked=false;
+    for (let i=0;i<100;i++) {
+      const result=await admin.query(`SELECT EXISTS(SELECT FROM pg_stat_activity WHERE pid<>pg_backend_pid()
+        AND wait_event_type='Lock' AND query LIKE '%SELECT orio_ledger.finish_outbox%') AS blocked`);
+      if (result.rows[0].blocked) { blocked=true;break; }
+      await setTimeout(10);
+    }
+    assert.equal(blocked,true,'Acknowledgement must actually wait on the lock');
+    await blocker.query('SELECT pg_sleep(1.1)');
+    await blocker.query('COMMIT');
+    assert.equal(await pending,false);
+    assert.equal((await admin.query('SELECT delivered_at IS NULL AS undelivered FROM orio_ledger.outbox')).rows[0].undelivered,true);
+  } finally {
+    await blocker.query('ROLLBACK');blocker.release();await pending;
+  }
 });
 test('retry delay and bounded attempts produce a dead-letter record',async()=>{
   await ledger.post(deposit());const first=(await ledger.claim(1,10))[0]!;

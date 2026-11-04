@@ -1,10 +1,21 @@
 -- Run once using a migration identity in a dedicated ORIO database.
 BEGIN;
+SET LOCAL search_path=pg_catalog;
 CREATE SCHEMA orio_ledger;
 CREATE EXTENSION pgcrypto WITH SCHEMA orio_ledger;
-DO $$ BEGIN
+DO $$ DECLARE runtime_role pg_roles; BEGIN
+  IF current_user='orio_ledger_runtime' THEN
+    RAISE EXCEPTION 'Migration owner must be distinct from runtime role';
+  END IF;
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'orio_ledger_runtime') THEN
     CREATE ROLE orio_ledger_runtime NOLOGIN;
+  END IF;
+  SELECT * INTO STRICT runtime_role FROM pg_roles WHERE rolname='orio_ledger_runtime';
+  IF runtime_role.rolsuper OR runtime_role.rolcreaterole OR runtime_role.rolcreatedb
+      OR runtime_role.rolreplication OR runtime_role.rolbypassrls OR runtime_role.rolcanlogin
+      OR EXISTS (SELECT FROM pg_auth_members WHERE member=runtime_role.oid)
+      OR EXISTS (SELECT FROM pg_database WHERE datname=current_database() AND datdba=runtime_role.oid) THEN
+    RAISE EXCEPTION 'Existing runtime role has unexpected privileges, memberships, or ownership';
   END IF;
 END $$;
 REVOKE ALL ON SCHEMA orio_ledger FROM PUBLIC;
@@ -176,20 +187,26 @@ END $$;
 
 CREATE FUNCTION orio_ledger.finish_outbox(p_sequence bigint,p_token uuid,p_success boolean,p_retry_seconds integer DEFAULT 0)
 RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog,orio_ledger AS $$
-DECLARE changed integer;
+DECLARE event orio_ledger.outbox;
 BEGIN
   IF p_success IS NULL OR p_retry_seconds IS NULL OR p_retry_seconds NOT BETWEEN 0 AND 86400 THEN
     RAISE EXCEPTION 'Invalid outbox completion';
+  END IF;
+  -- Check the clock only after acquiring the row lock. A WHERE predicate can be
+  -- evaluated before waiting for an unchanged locked tuple, then become stale.
+  SELECT * INTO event FROM orio_ledger.outbox WHERE journal_sequence=p_sequence FOR UPDATE;
+  IF NOT FOUND OR event.token IS NULL OR p_token IS NULL OR event.token<>p_token
+      OR event.leased_until IS NULL OR event.leased_until<=clock_timestamp()
+      OR event.delivered_at IS NOT NULL OR event.dead_letter_at IS NOT NULL THEN
+    RETURN false;
   END IF;
   UPDATE orio_ledger.outbox SET
     delivered_at=CASE WHEN p_success THEN clock_timestamp() END,
     dead_letter_at=CASE WHEN NOT p_success AND attempts=10 THEN clock_timestamp() END,
     next_attempt_at=clock_timestamp()+make_interval(secs=>p_retry_seconds),
     token=NULL,leased_until=NULL
-  WHERE journal_sequence=p_sequence AND token=p_token AND leased_until>clock_timestamp()
-    AND delivered_at IS NULL AND dead_letter_at IS NULL;
-  GET DIAGNOSTICS changed=ROW_COUNT;
-  RETURN changed=1;
+  WHERE journal_sequence=p_sequence;
+  RETURN true;
 END $$;
 
 CREATE VIEW orio_ledger.balances AS SELECT a.id,a.asset,a.normal_side,a.allow_negative,
