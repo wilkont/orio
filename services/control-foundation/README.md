@@ -68,3 +68,9 @@ The CLI exits 1 for denied financial release or unreadable evidence. Signers obt
 `validateMasterEntry` compares an authenticated quote and independently verified, finalized receipt with the current election and expected reserve vault. It rejects stale elections, paused or migrating elections, secondary assets, wrong vaults, missing settlement references, invalid quantities and receipts below the quoted minimum. It uses exact integer strings for master-asset quantities.
 
 The function is a precondition for future settlement. The caller must authenticate and bind the quote, verify finality and reserve credit against the chain, recheck the election in the same transaction as accounting, and consume each settlement reference once. The master registry, elections, routing, valuation, migration, payout, minting and chain reconciliation remain separate implementation work.
+
+## Master election registry
+
+Migration `002_master_registry.sql` creates a separate PostgreSQL schema for asset metadata, election evidence, and the current master designation. It starts paused with zero elected assets. Initial activation and replacement lock the same singleton row, reject stale predecessor IDs, and update the designation and election history in one transaction. Replacement requires migration state. This schema grants no access to the ledger runtime role or PUBLIC.
+
+Local tests exercise simultaneous elections, failed activation rollback, preservation of the predecessor and refusal of unprivileged writes. The owner-only migration functions consume preverified evidence digests. They do not establish signer independence, decide regulatory eligibility or validate that a reserve transfer settled. Before deployment, add a separately authorized governance executor and an auditable transition mechanism for migration and emergency states. Live settlement also needs a finalized-chain adapter and an atomic election recheck with posting.
