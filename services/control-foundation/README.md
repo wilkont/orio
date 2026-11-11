@@ -82,3 +82,7 @@ ORIO selected Circle-issued native USDC as its initial Master Elected Stablecoin
 `initialMasterAsset` supplies bootstrap metadata for governance review. It does not seed or activate a master. The persisted current election governs settlement and can move to another independently approved asset. Six token decimals define atomic units. USD reserve valuation still requires approved pricing, liquidity, redemption and impairment policies. Deployments start paused until the verified eligibility and election evidence is recorded through the approved process.
 
 Sources: [Circle native USDC on Base](https://www.circle.com/blog/usdc-now-available-natively-on-base), [Circle contract and decimal reference](https://github.com/circlefin/skills/blob/master/plugins/circle/skills/use-usdc/SKILL.md), [Base chain identifiers](https://docs.base.org/base-chain/api-reference/ethereum-json-rpc-api/eth_chainId).
+
+## Master reserve reconciliation
+
+`reconcileMaster` compares Ledger A and chain-adapter snapshots at the same finalized block, requiring identical chain, election, asset, reserve vault, ORIO supply and master reserve quantities. It reports every differing field and performs no mutations. Quantities remain canonical integer strings. The adapter must authenticate snapshots, establish finality independently and trigger containment on divergence. USD solvency, pricing, account-by-account ownership, event completeness and independent checkpoint anchoring require additional checks.

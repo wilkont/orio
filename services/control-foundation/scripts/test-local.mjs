@@ -17,7 +17,7 @@ try {
   if (!ready) throw new Error('PostgreSQL test container did not become ready');
   const port=execFileSync('docker',['port',name,'5432'],{encoding:'utf8'}).trim().split(':').at(-1);
   if (!port || !/^\d+$/.test(port)) throw new Error('Invalid isolated database port');
-  const result=spawnSync(process.execPath,['--test','test/release.test.ts','test/ledger.test.ts','test/master-entry.test.ts','test/master-registry.test.ts'],{
+  const result=spawnSync(process.execPath,['--test','test/release.test.ts','test/ledger.test.ts','test/master-entry.test.ts','test/master-registry.test.ts','test/reconciliation.test.ts'],{
     stdio:'inherit',env:{...process.env,ORIO_TEST_DATABASE_URL:`postgresql://postgres:orio-local-test-only@127.0.0.1:${port}/orio_test`}});
   process.exitCode=result.status??1;
 } finally {
