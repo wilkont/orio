@@ -5,12 +5,14 @@ export interface MasterElection {
 }
 
 export interface EntryQuote {
+  intentId: string;
   electionId: string;
   masterAssetId: string;
   minimumMasterUnits: string;
 }
 
 export interface FinalizedMasterReceipt {
+  intentId: string;
   assetId: string;
   vaultId: string;
   units: string;
@@ -36,6 +38,8 @@ export function validateMasterEntry(
     throw new Error('Quote is for a different master election');
   if (receipt.assetId !== election.assetId || !expectedVaultId || receipt.vaultId !== expectedVaultId)
     throw new Error('Receipt does not credit the canonical master reserve');
+  if (!quote.intentId || quote.intentId !== receipt.intentId)
+    throw new Error('Receipt does not match the quoted settlement intent');
   if (!receipt.settlementRef.trim()) throw new Error('Missing settlement reference');
   if (typeof receipt.units !== 'string' || typeof quote.minimumMasterUnits !== 'string' ||
       !positiveUnits.test(receipt.units) || !positiveUnits.test(quote.minimumMasterUnits))

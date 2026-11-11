@@ -1,5 +1,17 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Private PostgreSQL foundation for ORIO SPC 3 Ledger A
+Parameters:
+  ZoneA:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: us-east-1a
+  ZoneB:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: us-east-1b
+Rules:
+  SeparateZones:
+    Assertions:
+      - Assert: !Not [!Equals [!Ref ZoneA, !Ref ZoneB]]
+        AssertDescription: Choose two distinct Availability Zones.
 Resources:
   Network:
     Type: AWS::EC2::VPC
@@ -12,13 +24,13 @@ Resources:
     Properties:
       VpcId: !Ref Network
       CidrBlock: 10.87.0.0/26
-      AvailabilityZone: !Select [0, !GetAZs '']
+      AvailabilityZone: !Ref ZoneA
   DatabaseSubnetB:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref Network
       CidrBlock: 10.87.0.64/26
-      AvailabilityZone: !Select [1, !GetAZs '']
+      AvailabilityZone: !Ref ZoneB
   DatabaseSubnets:
     Type: AWS::RDS::DBSubnetGroup
     Properties:

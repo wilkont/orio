@@ -3,15 +3,15 @@ import { test } from 'node:test';
 import { validateMasterEntry } from '../src/master-entry.ts';
 
 const election = { assetId: 'base:master', electionId: 'election-1', state: 'ACTIVE_MASTER' } as const;
-const quote = { masterAssetId: election.assetId, electionId: election.electionId, minimumMasterUnits: '9007199254740993' };
-const receipt = { assetId: election.assetId, vaultId: 'reserve', units: '9007199254740993', settlementRef: 'base:tx:0' };
+const quote = { intentId: 'entry-1', masterAssetId: election.assetId, electionId: election.electionId, minimumMasterUnits: '9007199254740993' };
+const receipt = { intentId: 'entry-1', assetId: election.assetId, vaultId: 'reserve', units: '9007199254740993', settlementRef: 'base:tx:0' };
 
 test('accepts exact finalized master proceeds at the quoted minimum', () => {
   assert.deepEqual(validateMasterEntry(election, quote, receipt, 'reserve'), receipt);
 });
 
 test('rejects secondary assets, the wrong vault, and untraceable receipts', () => {
-  for (const invalid of [{ assetId: 'base:secondary' }, { vaultId: 'other' }, { settlementRef: ' ' }]) {
+  for (const invalid of [{ assetId: 'base:secondary' }, { vaultId: 'other' }, { settlementRef: ' ' }, { intentId: 'another-entry' }]) {
     assert.throws(() => validateMasterEntry(election, quote, { ...receipt, ...invalid }, 'reserve'));
   }
 });
