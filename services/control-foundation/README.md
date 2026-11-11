@@ -62,3 +62,9 @@ The CLI exits 1 for denied financial release or unreadable evidence. Signers obt
 - PostgreSQL locking: https://www.postgresql.org/docs/17/explicit-locking.html
 - Transaction/client isolation: https://node-postgres.com/features/transactions
 - Signature verification: https://nodejs.org/docs/latest-v24.x/api/crypto.html
+
+## Master stablecoin entry check
+
+`validateMasterEntry` compares an authenticated quote and independently verified, finalized receipt with the current election and expected reserve vault. It rejects stale elections, paused or migrating elections, secondary assets, wrong vaults, missing settlement references, invalid quantities and receipts below the quoted minimum. It uses exact integer strings for master-asset quantities.
+
+The function is a precondition for future settlement. The caller must authenticate and bind the quote, verify finality and reserve credit against the chain, recheck the election in the same transaction as accounting, and consume each settlement reference once. The master registry, elections, routing, valuation, migration, payout, minting and chain reconciliation remain separate implementation work.
