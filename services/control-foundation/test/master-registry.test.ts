@@ -2,12 +2,14 @@ import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { Pool } from 'pg';
+import { initialMasterAsset } from '../src/initial-master.ts';
 
 const url = new URL(process.env.ORIO_TEST_DATABASE_URL ?? 'about:blank');
 if (!['127.0.0.1', 'localhost'].includes(url.hostname) || url.pathname !== '/orio_test')
   throw new Error('Use the isolated local PostgreSQL test database');
 
 const admin = new Pool({ connectionString: url.href });
+const initialAsset = initialMasterAsset(84532);
 const evidence = 'a'.repeat(64);
 const activate = (expected: string | null, election: string, asset: string) =>
   admin.query('SELECT orio_master.activate($1, $2, $3, $4, $5)', [expected, election, asset, evidence, evidence]);
@@ -19,10 +21,12 @@ before(async () => {
   const migration = await readFile(new URL('../migrations/002_master_registry.sql', import.meta.url), 'utf8');
   await admin.query(migration);
   await admin.query('CREATE ROLE orio_master_test_unprivileged NOLOGIN');
-  for (const suffix of ['1', '2', '3']) {
+  for (const asset of [initialAsset, ...['2', '3'].map(suffix => ({
+    assetId: `asset-${suffix}`, issuer: 'Test issuer', tokenAddress: `0x${suffix.repeat(40)}`,
+  }))]) {
     await admin.query(
       'INSERT INTO orio_master.assets VALUES ($1, $2, 84532, $3, 6, $4, $5, $6, $7, $8)',
-      [`asset-${suffix}`, 'Test issuer', `0x${suffix.repeat(40)}`, 'Oracle policy', 'Liquidity policy',
+      [asset.assetId, asset.issuer, asset.tokenAddress, 'Oracle policy', 'Liquidity policy',
         'Redemption policy', 'Synthetic', evidence],
     );
   }
@@ -32,7 +36,7 @@ after(async () => { await admin.end(); });
 
 test('serializes competing elections and preserves the predecessor on replacement', async () => {
   assert.deepEqual(await current(), [{ election_id: null, state: 'DEPOSIT_PAUSED' }]);
-  const initial = await Promise.allSettled([activate(null, 'initial-a', 'asset-1'), activate(null, 'initial-b', 'asset-1')]);
+  const initial = await Promise.allSettled([activate(null, 'initial-a', initialAsset.assetId), activate(null, 'initial-b', initialAsset.assetId)]);
   assert.equal(initial.filter(result => result.status === 'fulfilled').length, 1);
   const [first] = await current();
   await assert.rejects(activate(first.election_id, 'premature', 'asset-2'), /requires migration/);
@@ -59,9 +63,19 @@ test('unprivileged roles cannot change the elected master', async () => {
     await client.query('SET ROLE orio_master_test_unprivileged');
     await assert.rejects(client.query("UPDATE orio_master.current_election SET state = 'ACTIVE_MASTER'"), /permission denied/);
     await assert.rejects(client.query('SELECT orio_master.activate(NULL, $1, $2, $3, $4)',
-      ['unauthorized', 'asset-1', evidence, evidence]), /permission denied/);
+      ['unauthorized', initialAsset.assetId, evidence, evidence]), /permission denied/);
   } finally {
     await client.query('RESET ROLE');
     client.release();
   }
+});
+
+test('selects the native Circle contract for each supported chain', () => {
+  const mainnet = initialMasterAsset(8453);
+  assert.equal(mainnet.tokenAddress, '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913');
+  assert.equal(initialAsset.tokenAddress, '0x036cbd53842c5426634e7929541ec2318f3dcf7e');
+  assert.equal(mainnet.decimals, 6);
+  assert.equal(initialAsset.decimals, 6);
+  assert.notEqual(mainnet.assetId, initialAsset.assetId);
+  assert.throws(() => initialMasterAsset(1), /Unsupported initial master chain/);
 });
