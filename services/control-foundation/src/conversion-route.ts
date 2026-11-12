@@ -92,4 +92,3 @@ export function validateConversionRoute(
     minimumMasterUnits: quote.minimumMasterUnits, issuedAtMs: quote.issuedAtMs, expiresAtMs: quote.expiresAtMs,
   };
 }
-

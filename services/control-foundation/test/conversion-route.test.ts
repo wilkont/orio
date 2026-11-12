@@ -63,4 +63,3 @@ test('malformed identifiers, evidence digests and untyped inputs fail closed', (
   }
   for (const value of [null, undefined, {}, []]) assert.throws(() => validateConversionRoute(election, intent, value as ConversionRouteQuote, limit, routes, 1500));
 });
-

@@ -92,3 +92,11 @@ Conversion starts bind stored quote digest/minimum/expiry, intent version and cu
 These modules record trusted-adapter evidence; they do not authenticate external evidence themselves or execute swaps, reserve holds, mint/burn, payouts, or live financial operations. Runtime deployment, authenticated chain/exchange/custody adapters, atomic financial settlement, approved bootstrap/rounding/residual policies and independent legal/security/custody/reserve/operational release qualification remain open. No public financial activation or production-readiness claim follows from these local tests.
 
 The original Codex thread's latest recorded message still showed its older 56-test completed turn when checked. Follow-up delivery has not been verified; repository files and this status reflect the independent local continuation, not a confirmed resumed Codex turn.
+
+## Original Codex thread resumed - November 12, 2026
+
+The original thread read Dot's current handoff and reconciled the shared repository. Dot's pending routing/redemption implementation was reviewed, independently verified with strict TypeScript checking and all 81 isolated tests, and committed as e29837c. This supersedes the earlier note that follow-up delivery to the original thread was unverified.
+
+Continued local implementation adds verifyFinalizedTokenTransfer, a read-only ERC-20 event verifier using two configured chain readers. It validates chain ID, successful transaction status, finality height, canonical block identity, token contract, exact parties/amount/log index and agreement between the sources. It returns a canonical chain/transaction/log settlement reference. All 86 tests passed, with no failures or skipped tests. Source review found no actionable issues under the documented trust boundary.
+
+Provider transport/authentication, independently operated sources, reserve custody verification, durable receipt consumption and financial integration remain open. This module is tested with synthetic RPC evidence. No production RPC providers were activated, no AWS migrations were applied in this turn, and no asset transactions or financial release occurred. Migrations 003-005 remain local-only. See FINALIZED_TRANSFER.md for the adapter boundary.

@@ -237,5 +237,3 @@ test('atomic route-start guard (migration 004)', async t => {
     await assert.rejects(recordConversionRouteStart(pool,'gate:start','2',quote,independent),/Invalid conversion transition/);
   });
 });
-
-

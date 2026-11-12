@@ -107,4 +107,3 @@ LANGUAGE sql SET search_path = pg_catalog AS $$
 $$;
 REVOKE ALL ON FUNCTION orio_conversion.record_route_start(text,bigint,jsonb,jsonb) FROM PUBLIC;
 COMMIT;
-

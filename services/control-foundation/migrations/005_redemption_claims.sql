@@ -129,4 +129,3 @@ END;
 $$;
 REVOKE ALL ON FUNCTION orio_redemption.record_event(text,text,bigint,text,jsonb) FROM PUBLIC;
 COMMIT;
-
