@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { Pool } from 'pg';
 import { initialMasterAsset } from '../src/initial-master.ts';
+import { ProtocolReader } from '../src/protocol-api.ts';
 
 const url = new URL(process.env.ORIO_TEST_DATABASE_URL ?? 'about:blank');
 if (!['127.0.0.1', 'localhost'].includes(url.hostname) || url.pathname !== '/orio_test')
@@ -36,6 +37,9 @@ after(async () => { await admin.end(); });
 
 test('serializes competing elections and preserves the predecessor on replacement', async () => {
   assert.deepEqual(await current(), [{ election_id: null, state: 'DEPOSIT_PAUSED' }]);
+  assert.deepEqual(await new ProtocolReader(admin).master(), {
+    electionId: null, state: 'DEPOSIT_PAUSED', asset: null,
+  });
   const initial = await Promise.allSettled([activate(null, 'initial-a', initialAsset.assetId), activate(null, 'initial-b', initialAsset.assetId)]);
   assert.equal(initial.filter(result => result.status === 'fulfilled').length, 1);
   const [first] = await current();
@@ -52,6 +56,10 @@ test('serializes competing elections and preserves the predecessor on replacemen
   assert.equal(replacements.filter(result => result.status === 'fulfilled').length, 1);
   const [active] = await current();
   assert.equal(active.state, 'ACTIVE_MASTER');
+  const publicMaster = await new ProtocolReader(admin).master();
+  assert.equal(publicMaster.electionId, active.election_id);
+  assert.equal(publicMaster.state, 'ACTIVE_MASTER');
+  assert.equal(publicMaster.asset?.chainId, '84532');
   const history = await admin.query('SELECT predecessor FROM orio_master.elections WHERE election_id = $1', [active.election_id]);
   assert.deepEqual(history.rows, [{ predecessor: first.election_id }]);
   assert.equal((await admin.query('SELECT election_id FROM orio_master.elections')).rowCount, 2);

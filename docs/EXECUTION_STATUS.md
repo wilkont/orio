@@ -57,3 +57,13 @@ Five test methods passed, including 600 purchase/redemption conservation cases a
 Complete legacy behavior tracing and credential-exposure assessment without executing legacy services. Finish the six discovery reports. Resolve monetary policy gaps with explicit decisions. Implement fixed-point contract logic and independent differential verification, reserve and settlement modules, append-only ledger and reconciliation, recovery governance, identity and wallet infrastructure, applications, APIs, compliance integrations, GCP infrastructure, and release controls. Run adversarial, integration, recovery, and independent qualification checks before release.
 
 No cloud resources were provisioned, funds moved, DNS edited, external messages sent, or public monetary features activated.
+
+## Operator verification and conversion service continuation
+
+Verified sign-in as orio-operator in account 720232346199. Direct CloudFormation stack details in us-east-1 are readable and show CREATE_COMPLETE. The console's separate ListStacks call is denied. The RDS console reports the selected database cannot be found in the restricted session. Database deletion is not established by that message, and operator RDS API inspection remains unverified. No permission expansion was performed.
+
+Commit 665d5d2 adds durable conversion intents, versioned evidence, canonical master receipt checks and preserved refund claims. Migration 003 is local only. A protocol metadata HTTP service now exposes process health, registry readiness and the actual persisted master election through a dedicated reader boundary. Production requires a scoped database reader, trusted certificate, workload identity, network path and hosting.
+
+Docker's Linux engine recovered after restarting the previously failed desktop processes. Strict TypeScript checks and the complete isolated PostgreSQL/HTTP/startup suite passed 56 tests. Review found no actionable issues within the documented trusted-adapter boundary. Local tests do not qualify conversion execution, custody evidence or public financial release.
+
+Remaining acceptance includes authenticated finalized-chain adapters, independent quotes and eligible routes, actual exchange execution, atomic accounting/mint/burn, redemption and payout integration, governance activation and recovery, persistent hosted reconciliation, consumer wallet/application integration, and independent release evidence. Bootstrap and integer quantization policies remain unresolved in CONTEXT.md.
