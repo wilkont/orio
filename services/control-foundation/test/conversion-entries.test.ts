@@ -150,3 +150,92 @@ test('expired quotes and changed elections prevent routing while preserving the 
   await assert.rejects(event('changed', '1', 'CONVERSION_STARTED', {}), /election/);
   assert.equal((await pool.query("SELECT state FROM orio_conversion.entries WHERE intent_id='changed'")).rows[0].state, 'FUNDED');
 });
+
+// Additive migration 004 is applied only after the legacy 003 behavior tests above.
+test('atomic route-start guard (migration 004)', async t => {
+  const { recordConversionRouteStart } = await import('../src/conversion-route-start.ts');
+  await t.test('recorder fails closed before migration 004 is installed', async () => {
+    const q = {} as Parameters<typeof recordConversionRouteStart>[3];
+    const lim = {} as Parameters<typeof recordConversionRouteStart>[4];
+    await assert.rejects(recordConversionRouteStart(pool,'missing-migration','0',q,lim), /record_route_start.*does not exist/);
+  });
+  const sql = (await readFile(new URL('../migrations/004_conversion_route_start.sql', import.meta.url), 'utf8'))
+    .replaceAll('orio_master.', 'conversion_test_master.');
+  await pool.query(sql);
+  await pool.query("UPDATE conversion_test_master.current_election SET election_id='election-1',state='ACTIVE_MASTER'");
+  await pool.query("INSERT INTO orio_conversion.eligible_routes VALUES ('provider','route','secondary','master',true)");
+  async function prepared(id: string, lifetime = 60000) {
+    await open(id); const now = Date.now(); const expiry = now + lifetime;
+    await pool.query('UPDATE orio_conversion.entries SET quote_expires_at=$2::timestamptz WHERE intent_id=$1', [id, new Date(expiry).toISOString()]);
+    await deposit(id);
+    const binding = { intentId: id, sourceAssetId: 'secondary', sourceUnits: '100000000', masterAssetId: 'master', electionId: 'election-1', reserveVaultId: 'vault' };
+    const quote = { ...binding, providerId: 'provider', routeId: 'route', quoteDigest: digest, minimumMasterUnits: '99000000', issuedAtMs: now - 1000, expiresAtMs: expiry };
+    const independent = { ...binding, evidenceDigest: 'b'.repeat(64), minimumMasterUnits: '99000000', issuedAtMs: now - 1000, expiresAtMs: expiry };
+    return { quote, independent };
+  }
+  async function unchanged(id: string) {
+    assert.deepEqual((await pool.query('SELECT state,version::text FROM orio_conversion.entries WHERE intent_id=$1',[id])).rows[0], { state: 'FUNDED', version: '1' });
+    assert.equal((await pool.query("SELECT count(*)::int AS n FROM orio_conversion.events WHERE intent_id=$1 AND kind='CONVERSION_STARTED'",[id])).rows[0].n, 0);
+  }
+  await t.test('typed recorder commits once, identical retries replay and conflicting event IDs fail', async () => {
+    const { quote, independent } = await prepared('atomic');
+    const a = await recordConversionRouteStart(pool,'atomic:start','1',quote,independent);
+    assert.deepEqual(a,{state:'CONVERTING',version:'2'});
+    assert.deepEqual(await recordConversionRouteStart(pool,'atomic:start','1',quote,independent),a);
+    await assert.rejects(recordConversionRouteStart(pool,'atomic:start','1',{...quote,routeId:'other'},independent), /idempotency conflict/);
+    await assert.rejects(recordConversionRouteStart(pool,'atomic:second','1',quote,independent), /version changed/);
+  });
+  await t.test('generic event path cannot bypass full route evidence and rolls back state', async () => {
+    await prepared('generic');
+    await assert.rejects(event('generic','1','CONVERSION_STARTED',{}), /Missing authenticated/);
+    await unchanged('generic');
+  });
+  await t.test('stored quote, independent bindings, floor and route policy are authoritative', async () => {
+    const {quote,independent}=await prepared('mismatch');
+    for (const patch of [{quoteDigest:'c'.repeat(64)},{minimumMasterUnits:'99000001'},{expiresAtMs:quote.expiresAtMs+1},{reserveVaultId:'other'},{providerId:'other'},{sourceUnits:100000000}]) {
+      await assert.rejects(recordConversionRouteStart(pool,'mismatch:start','1',{...quote,...patch} as typeof quote,independent));
+      await unchanged('mismatch');
+    }
+    for (const patch of [{minimumMasterUnits:'99000001'},{minimumMasterUnits:99000000},{expiresAtMs:Date.now()-1},{issuedAtMs:Date.now()+60000},{evidenceDigest:'bad'},{intentId:'other'}]) {
+      await assert.rejects(recordConversionRouteStart(pool,'mismatch:start','1',quote,{...independent,...patch} as typeof independent));
+      await unchanged('mismatch');
+    }
+    await pool.query('UPDATE orio_conversion.eligible_routes SET enabled=false');
+    await assert.rejects(recordConversionRouteStart(pool,'mismatch:start','1',quote,independent), /not eligible/);
+    await unchanged('mismatch');
+    await pool.query('UPDATE orio_conversion.eligible_routes SET enabled=true');
+  });
+  await t.test('concurrent independent start IDs produce one durable transition', async () => {
+    const {quote,independent}=await prepared('race');
+    const results=await Promise.allSettled(['a','b'].map(key=>recordConversionRouteStart(pool,'race:'+key,'1',quote,independent)));
+    assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
+    assert.equal((await pool.query("SELECT count(*)::int AS n FROM orio_conversion.events WHERE intent_id='race' AND kind='CONVERSION_STARTED'")).rows[0].n,1);
+  });
+  for (const lock of ['election','route'] as const) await t.test(`expiration after waiting on ${lock} lock rolls back transition`, async () => {
+    const id='wait-'+lock;
+    const {quote,independent}=await prepared(id,200);
+    const blocker=await pool.connect();
+    try {
+      await blocker.query('BEGIN');
+      await blocker.query(lock==='election'?'SELECT * FROM conversion_test_master.current_election FOR UPDATE':'SELECT * FROM orio_conversion.eligible_routes FOR UPDATE');
+      const attempt=recordConversionRouteStart(pool,id+':start','1',quote,independent);
+      // Attach rejection handling immediately so rejection after release is observed.
+      const rejection=assert.rejects(attempt,/expired/i);
+      await new Promise(resolve=>setTimeout(resolve,350));
+      await blocker.query('COMMIT');
+      await rejection;
+      await unchanged(id);
+    } finally { await blocker.query('ROLLBACK'); blocker.release(); }
+  });
+  await t.test('changed election and preserved refund claim cannot start', async () => {
+    const {quote,independent}=await prepared('gate');
+    await pool.query("UPDATE conversion_test_master.current_election SET state='DEPOSIT_PAUSED'");
+    await assert.rejects(recordConversionRouteStart(pool,'gate:start','1',quote,independent), /unavailable/);
+    await unchanged('gate');
+    await pool.query("UPDATE conversion_test_master.current_election SET state='ACTIVE_MASTER'");
+    await event('gate','1','CONVERSION_FAILED',{refundableAssetId:'secondary',refundableUnits:'100000000'});
+    await assert.rejects(recordConversionRouteStart(pool,'gate:start','2',quote,independent),/Invalid conversion transition/);
+  });
+});
+
+

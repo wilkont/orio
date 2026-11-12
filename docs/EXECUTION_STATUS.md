@@ -1,3 +1,15 @@
+# Current local readiness update - November 12, 2026
+
+This section supersedes older test counts and database-installation status below, while preserving their historical context. ORIO is not fully live or independently qualified.
+
+- Initial AWS migrations 001 (ledger) and 002 (master registry) were applied under a separately approved maintenance plan. Empty/paused, privilege, TLS and rollback-only synthetic checks passed; temporary access resources were removed by 04:06:53 UTC. See infrastructure/aws/MIGRATION_RECEIPT_2026-11-12.md for exact evidence and limits. No funds or master activation occurred. This does not establish later operator RDS visibility or a hosted application.
+- Local conversion-route preflight added eight regression tests, bringing the isolated suite from the historical 56 to 64 passing tests. It validates exact bindings, active election, explicit route eligibility, evidence timing and an independently supplied minimum without executing swaps.
+- Local-only migration 004 closes the generic conversion-start evidence bypass, matches persisted quote digest/minimum/expiry, and rechecks time after entry/election/policy locks. Its migration-specific recorder fails closed when absent. Idempotency/concurrency/lock-wait tests brought the isolated suite to 73 passing tests.
+- Local-only migration 005 and RedemptionClaims record immutable exact redemption requests and versioned claim/preparation/uncertain/final-evidence states. They do not reserve, burn, pay or post accounting. Historical finality can reconcile an already executed payout after election pause/change. Eight additional regression tests bring the current full isolated PostgreSQL suite to 81/81 passing tests; strict TypeScript also passed (2026-11-12, exit 0).
+
+Migrations 003, 004 and 005 remain LOCAL ONLY. No new AWS migration, deployment, security change or financial execution was performed for these local increments. See services/control-foundation/CONVERSION_ROUTE.md and REDEMPTION_CLAIMS.md for trust boundaries and remaining acceptance. Authenticated adapters, shared settlement-reference deduplication, atomic accounting/burn/payout integration, dispatch-time release enforcement, website/wallet integration and independent legal/custody/reserve/security qualification remain open. Bootstrap, rounding and residual policy remain unresolved. Local tests do not establish live-money readiness.
+
+---
 # ORIO-SPC 3.0 execution status
 
 ## Latest milestone — November 3, 2026
@@ -67,3 +79,16 @@ Commit 665d5d2 adds durable conversion intents, versioned evidence, canonical ma
 Docker's Linux engine recovered after restarting the previously failed desktop processes. Strict TypeScript checks and the complete isolated PostgreSQL/HTTP/startup suite passed 56 tests. Review found no actionable issues within the documented trusted-adapter boundary. Local tests do not qualify conversion execution, custody evidence or public financial release.
 
 Remaining acceptance includes authenticated finalized-chain adapters, independent quotes and eligible routes, actual exchange execution, atomic accounting/mint/burn, redemption and payout integration, governance activation and recovery, persistent hosted reconciliation, consumer wallet/application integration, and independent release evidence. Bootstrap and integer quantization policies remain unresolved in CONTEXT.md.
+
+
+## Verified local continuation - November 12, 2026
+
+This section supersedes earlier test counts and deployment snapshots where stated. The initial AWS ledger/master migrations 001 and 002 were applied under the owner's specific revised approval, verified empty and DEPOSIT_PAUSED, and temporary access fully cleaned up at 04:06:53 UTC. See infrastructure/aws/MIGRATION_RECEIPT_2026-11-12.md. Do not rerun these migrations based on an older thread message.
+
+Local continuation added conversion-route preflight (64-test milestone), atomic persisted conversion-start validation via migration 004 (73-test milestone), and durable redemption claims/evidence via migration 005. Migrations 003, 004 and 005 remain local-only, not applied to AWS. Strict TypeScript checking and the complete isolated PostgreSQL suite were independently rerun after the redemption increment: 81 tests passed, zero failures/skips, exit 0.
+
+Conversion starts bind stored quote digest/minimum/expiry, intent version and current election under locks; generic event calls cannot bypass route evidence, and expiry is rechecked after blocking locks. Redemption records preserve immutable requested economics, versioned claims, unique finalized burn/payout references and uncertain-execution review state. Tests cover concurrency, replay/conflict, partial evidence rollback, duplicate references and expiry after lock waits. Historical settlement evidence may reconcile after a later pause; this does not authorize new payout execution.
+
+These modules record trusted-adapter evidence; they do not authenticate external evidence themselves or execute swaps, reserve holds, mint/burn, payouts, or live financial operations. Runtime deployment, authenticated chain/exchange/custody adapters, atomic financial settlement, approved bootstrap/rounding/residual policies and independent legal/security/custody/reserve/operational release qualification remain open. No public financial activation or production-readiness claim follows from these local tests.
+
+The original Codex thread's latest recorded message still showed its older 56-test completed turn when checked. Follow-up delivery has not been verified; repository files and this status reflect the independent local continuation, not a confirmed resumed Codex turn.
