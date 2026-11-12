@@ -86,3 +86,9 @@ Sources: [Circle native USDC on Base](https://www.circle.com/blog/usdc-now-avail
 ## Master reserve reconciliation
 
 `reconcileMaster` compares Ledger A and chain-adapter snapshots at the same finalized block, requiring identical chain, election, asset, reserve vault, ORIO supply and master reserve quantities. It reports every differing field and performs no mutations. Quantities remain canonical integer strings. The adapter must authenticate snapshots, establish finality independently and trigger containment on divergence. USD solvency, pricing, account-by-account ownership, event completeness and independent checkpoint anchoring require additional checks.
+
+## Reserve migration accounting check
+
+`assessReserveMigration` compares authenticated pre/post migration checkpoints and independently verified valuations. It rejects changed ORIO supply, changed ownership commitments, new company fees, and new holder allocations. It exposes realized reserve loss and the deficiency against outstanding USD liabilities using exact integer values.
+
+The caller must verify checkpoint provenance, reserve ownership, finality, valuation timing and units, governance authorization, legal eligibility and execution evidence. The result alone cannot authorize activation or prove that a migration fully settled. Pending redemptions and other obligations must be included in the supplied liabilities under an approved accounting policy.
