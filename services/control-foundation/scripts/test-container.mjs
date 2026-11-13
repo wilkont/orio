@@ -84,6 +84,14 @@ try {
     master: { electionId: null, state: 'DEPOSIT_PAUSED', asset: null },
     financialExecutionEnabled: false,
   });
+  const policyResponse = await fetch('http://127.0.0.1:' + port + '/v1/protocol/policy');
+  assert.equal(policyResponse.status, 200);
+  const policy = await policyResponse.json();
+  assert.equal(policy.gas.paidBy, 'USER');
+  assert.equal(policy.transfer.protocolFeeBasisPoints, '0');
+  assert.equal(policy.transfer.networkFeePaidBy, 'USER');
+  assert.equal(policy.financialExecutionEnabled, false);
+  assert.equal(policy.proposals.roundingAndDust, 'AWAITING_APPROVAL');
   const tls = docker(['exec', database, 'psql', '-U', 'postgres', '-d', 'orio_test', '-Atc',
     "SELECT s.ssl FROM pg_stat_ssl s JOIN pg_stat_activity a USING(pid) WHERE a.usename='orio_metadata_test'"]);
   assert.equal(tls.trim(), 't');

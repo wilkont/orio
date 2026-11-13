@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import type { Server } from 'node:http';
 import type { Pool } from 'pg';
+import { publicMonetaryPolicy } from './monetary-policy.ts';
 
 export interface MasterStatus {
   electionId: string | null;
@@ -51,6 +52,10 @@ export function createProtocolServer(reader: Pick<ProtocolReader, 'master'>): Se
     const path = (request.url ?? '/').split('?', 1)[0];
     if (path === '/health') {
       send(200, { status: 'ok' });
+      return;
+    }
+    if (path === '/v1/protocol/policy') {
+      send(200, publicMonetaryPolicy());
       return;
     }
     if (path !== '/v1/protocol/master' && path !== '/ready') {

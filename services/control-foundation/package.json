@@ -7,6 +7,7 @@
     "node": ">=24"
   },
   "scripts": {
+    "simulate:monetary": "node scripts/simulate-monetary.mjs",
     "start": "node src/server.ts",
     "test:container": "node scripts/test-container.mjs",
     "typecheck": "tsc --noEmit",

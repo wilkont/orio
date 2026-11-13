@@ -20,6 +20,14 @@ test('reports the recorded empty/paused master without electing the configured U
     assert.equal((await fetch(base + '/ready')).status, 200);
     assert.equal((await fetch(base + '/v1/protocol/master', { method: 'POST' })).status, 405);
     assert.equal((await fetch(base + '/v1/wallets')).status, 404);
+    const policyResponse = await fetch(base + '/v1/protocol/policy');
+    assert.equal(policyResponse.status, 200);
+    const policy = await policyResponse.json();
+    assert.equal(policy.transfer.protocolFeeBasisPoints, '0');
+    assert.equal(policy.transfer.networkFeePaidBy, 'USER');
+    assert.equal(policy.gas.generatesAppreciation, false);
+    assert.equal(policy.gas.liveCollectionEnabled, false);
+    assert.equal(policy.proposals.genesisEscrow, 'AWAITING_APPROVAL');
   } finally { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); }
 });
 

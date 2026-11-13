@@ -1,0 +1,205 @@
+{
+  "policyStatus": "PROPOSED_NOT_APPROVED",
+  "simulationOnly": true,
+  "genesis": {
+    "simulationOnly": true,
+    "approved": false,
+    "initialPriceUsd": {
+      "numerator": "1",
+      "denominator": "1"
+    },
+    "grossUsd": {
+      "numerator": "1000",
+      "denominator": "1"
+    },
+    "conversionFeeUsd": {
+      "numerator": "10",
+      "denominator": "1"
+    },
+    "companyUsd": {
+      "numerator": "2",
+      "denominator": "1"
+    },
+    "restrictedEscrowUsd": {
+      "numerator": "8",
+      "denominator": "1"
+    },
+    "backingUsd": {
+      "numerator": "990",
+      "denominator": "1"
+    },
+    "mintedTokenUnits": "990000000000000000000",
+    "mintResidualUsd": {
+      "numerator": "0",
+      "denominator": "1"
+    }
+  },
+  "ordinaryEpoch": {
+    "simulationOnly": true,
+    "approved": false,
+    "snapshotPriceUsdPerOrio": {
+      "numerator": "1",
+      "denominator": "1"
+    },
+    "requests": [
+      {
+        "id": "a",
+        "grossUsd": {
+          "numerator": "300",
+          "denominator": "1"
+        },
+        "feeUsd": {
+          "numerator": "3",
+          "denominator": "1"
+        },
+        "netBeforeGasUsd": {
+          "numerator": "297",
+          "denominator": "1"
+        }
+      },
+      {
+        "id": "b",
+        "grossUsd": {
+          "numerator": "200",
+          "denominator": "1"
+        },
+        "feeUsd": {
+          "numerator": "2",
+          "denominator": "1"
+        },
+        "netBeforeGasUsd": {
+          "numerator": "198",
+          "denominator": "1"
+        }
+      }
+    ],
+    "remainingTokenUnits": "500000000000000000000",
+    "feeUsd": {
+      "numerator": "5",
+      "denominator": "1"
+    },
+    "companyUsd": {
+      "numerator": "1",
+      "denominator": "1"
+    },
+    "holderAppreciationUsd": {
+      "numerator": "4",
+      "denominator": "1"
+    },
+    "remainingBackingUsd": {
+      "numerator": "504",
+      "denominator": "1"
+    },
+    "postEpochPriceUsdPerOrio": {
+      "numerator": "126",
+      "denominator": "125"
+    },
+    "concentrationReview": false,
+    "withheldAppreciationUsd": {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    "reopening": "NOT_APPLICABLE"
+  },
+  "fullRedemption": {
+    "simulationOnly": true,
+    "approved": false,
+    "snapshotPriceUsdPerOrio": {
+      "numerator": "1",
+      "denominator": "1"
+    },
+    "requests": [
+      {
+        "id": "all",
+        "grossUsd": {
+          "numerator": "1000",
+          "denominator": "1"
+        },
+        "feeUsd": {
+          "numerator": "10",
+          "denominator": "1"
+        },
+        "netBeforeGasUsd": {
+          "numerator": "990",
+          "denominator": "1"
+        }
+      }
+    ],
+    "remainingTokenUnits": "0",
+    "feeUsd": {
+      "numerator": "10",
+      "denominator": "1"
+    },
+    "companyUsd": {
+      "numerator": "10",
+      "denominator": "1"
+    },
+    "holderAppreciationUsd": {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    "remainingBackingUsd": {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    "postEpochPriceUsdPerOrio": null,
+    "concentrationReview": false,
+    "withheldAppreciationUsd": {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    "reopening": "REQUIRES_APPROVED_NEW_CYCLE_POLICY"
+  },
+  "concentration": {
+    "simulationOnly": true,
+    "approved": false,
+    "snapshotPriceUsdPerOrio": {
+      "numerator": "1",
+      "denominator": "1"
+    },
+    "requests": [
+      {
+        "id": "almost-all",
+        "grossUsd": {
+          "numerator": "999999",
+          "denominator": "1"
+        },
+        "feeUsd": {
+          "numerator": "999999",
+          "denominator": "100"
+        },
+        "netBeforeGasUsd": {
+          "numerator": "98999901",
+          "denominator": "100"
+        }
+      }
+    ],
+    "remainingTokenUnits": "1000000000000000000",
+    "feeUsd": {
+      "numerator": "999999",
+      "denominator": "100"
+    },
+    "companyUsd": {
+      "numerator": "999999",
+      "denominator": "500"
+    },
+    "holderAppreciationUsd": {
+      "numerator": "999999",
+      "denominator": "125"
+    },
+    "remainingBackingUsd": {
+      "numerator": "1000124",
+      "denominator": "125"
+    },
+    "postEpochPriceUsdPerOrio": {
+      "numerator": "1000124",
+      "denominator": "125"
+    },
+    "concentrationReview": true,
+    "withheldAppreciationUsd": {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    "reopening": "NOT_APPLICABLE"
+  }
+}
