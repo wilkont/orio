@@ -28,6 +28,7 @@ test('reports the recorded empty/paused master without electing the configured U
     assert.equal(policy.gas.generatesAppreciation, false);
     assert.equal(policy.gas.liveCollectionEnabled, false);
     assert.equal(policy.proposals.genesisEscrow, 'AWAITING_APPROVAL');
+    assert.equal(policy.releaseReview.externalReviewRequired, false);
   } finally { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); }
 });
 

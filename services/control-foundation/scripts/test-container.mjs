@@ -91,6 +91,7 @@ try {
   assert.equal(policy.transfer.protocolFeeBasisPoints, '0');
   assert.equal(policy.transfer.networkFeePaidBy, 'USER');
   assert.equal(policy.financialExecutionEnabled, false);
+  assert.equal(policy.releaseReview.externalReviewRequired, false);
   assert.equal(policy.proposals.roundingAndDust, 'AWAITING_APPROVAL');
   const tls = docker(['exec', database, 'psql', '-U', 'postgres', '-d', 'orio_test', '-Atc',
     "SELECT s.ssl FROM pg_stat_ssl s JOIN pg_stat_activity a USING(pid) WHERE a.usename='orio_metadata_test'"]);

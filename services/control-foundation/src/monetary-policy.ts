@@ -2,6 +2,7 @@
 export function publicMonetaryPolicy() {
   return {
     version: '2026-11-13', financialExecutionEnabled: false,
+    releaseReview: { policy: 'owner-accountable-v2', externalReviewRequired: false },
     conversion: { feeBasisPoints: '100', ordinaryCompanyShareBasisPoints: '2000',
       ordinaryHolderShareBasisPoints: '8000', fullRedemptionCompanyShareBasisPoints: '10000',
       purchaseAppreciationBeforeMint: true, redeemedTokensExcluded: true,

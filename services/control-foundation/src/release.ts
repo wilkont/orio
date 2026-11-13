@@ -1,6 +1,10 @@
 import { createPublicKey, verify } from 'node:crypto';
 
 export const gates=['legal','security','custody','financial','operations'] as const;
+export const releasePolicy = {
+  version: 'owner-accountable-v2', externalReviewRequired: false,
+  distinctApproverPrincipalsRequired: false, distinctApproverKeysRequired: false,
+} as const;
 export type Gate=typeof gates[number];
 export type Mode='testnet' | 'production-read-only' | 'controlled-live' | 'public-live';
 export interface Deployment {
@@ -51,9 +55,10 @@ function signerValid(value: unknown): value is TrustedSigner {
     && typeof value.revoked==='boolean';
 }
 
-/** Domain-separated, deterministic signing bytes. Sign in the independent reviewer's system. */
+/** Domain-separated signing bytes. Authorized accountable owners may cover multiple roles.
+ * v2 prevents signatures issued under the previous independent-review policy being reused. */
 export function approvalBytes(approval: Omit<Approval,'signature'>): Buffer {
-  return Buffer.from(JSON.stringify(['ORIO-SPC-RELEASE-APPROVAL/v1',approval.mode,approval.releaseDigest,
+  return Buffer.from(JSON.stringify(['ORIO-SPC-RELEASE-APPROVAL/v2',approval.mode,approval.releaseDigest,
     approval.projectId,approval.chainId,approval.contractSetDigest,approval.gate,approval.evidenceDigest,
     approval.signerId,approval.issuedAt,approval.expiresAt]),'utf8');
 }
@@ -69,19 +74,15 @@ export function evaluateRelease(deployment: unknown, approvals: unknown, trust: 
   if (!Array.isArray(approvals) || !Array.isArray(trust) || trust.length===0 || approvals.length>100 || trust.length>100)
     return denied(['Financial release requires a configured trust registry and signed approvals']);
   const signers=new Map<string,TrustedSigner>();
-  const keyDer=new Map<string,string>();
   for (const signer of trust) {
     if (!signerValid(signer) || signers.has(signer.id)) return denied(['Invalid or duplicate trust-registry entry']);
     try {
       const key=createPublicKey(signer.publicKeyPem);
       if (key.asymmetricKeyType!=='ed25519') return denied(['Trust registry must use Ed25519 keys']);
-      keyDer.set(signer.id,key.export({type:'spki',format:'der'}).toString('base64'));
       signers.set(signer.id,signer);
     } catch { return denied(['Invalid trust-registry public key']); }
   }
   const approved=new Set<Gate>();
-  const principals=new Set<string>();
-  const usedKeys=new Set<string>();
   const errors:string[]=[];
   for (const approval of approvals) {
     if (!approvalValid(approval)) { errors.push('Malformed approval'); continue; }
@@ -98,11 +99,10 @@ export function evaluateRelease(deployment: unknown, approvals: unknown, trust: 
         errors.push('Invalid approval signature'); continue;
       }
     } catch { errors.push('Invalid approval signature'); continue; }
-    const key=keyDer.get(signer.id)!;
-    if (approved.has(approval.gate) || principals.has(signer.principalId) || usedKeys.has(key)) {
-      errors.push('Gate approvals must use distinct roles, principals, and keys'); continue;
+    if (approved.has(approval.gate)) {
+      errors.push('Duplicate gate approval'); continue;
     }
-    approved.add(approval.gate); principals.add(signer.principalId); usedKeys.add(key);
+    approved.add(approval.gate);
   }
   const missing=gates.filter(g=>!approved.has(g));
   if (errors.length>0 || missing.length>0) return denied(errors,missing);

@@ -1,6 +1,6 @@
 # ORIO governance and gas qualification contracts
 
-These contracts implement the Ledger B master designation component in the existing ORIO repository. They compile with pinned Solidity 0.8.38 and OpenZeppelin Contracts 5.6.1, targeting Cancun bytecode. This is a local implementation awaiting Base qualification, independent audit and release evidence.
+These contracts implement the Ledger B master designation component in the existing ORIO repository. They compile with pinned Solidity 0.8.38 and OpenZeppelin Contracts 5.6.1, targeting Cancun bytecode. This is a local implementation awaiting Base qualification and accountable release evidence; external audit is advisory.
 
 Run npm ci, npm run build and npm test in this directory with Node 24 or later. Build writes ABI, creation bytecode, runtime bytecode and compiler metadata to ignored artifacts files. Tests execute signed synthetic transactions in an in-memory EthereumJS VM with qualification chain IDs 31337/84532, plus rejection checks for 8453. No RPC connection or real asset transaction occurs.
 
@@ -8,7 +8,7 @@ Run npm ci, npm run build and npm test in this directory with Node 24 or later. 
 
 ORIOGovernanceTimelock uses the OpenZeppelin timelock with self-administration, a nonzero immutable delay floor and no external bootstrap administrator. Proposer and executor arrays are deployment inputs. Production qualification must verify the actual authority bytecode, expected delay and role assignments, independently controlled multisig/DAO proposers and their thresholds. Contract addresses and nonzero delays alone do not prove independent governance. Tests use synthetic fixture accounts and five seconds solely to exercise the delay mechanism.
 
-MasterAssetRegistry accepts only its configured governance contract for mutation. Constructor checks are interface sanity checks, not proof of authentic governance code. The deployment manifest and independent release process must bind the authority artifact and approved configuration. No company withdrawal, reserve transfer, token mint, token burn or arbitrary-call function exists in this registry.
+MasterAssetRegistry accepts only its configured governance contract for mutation. Constructor checks are interface sanity checks, not proof of authentic governance code. The deployment manifest and accountable release process must bind the authority artifact and approved configuration. No company withdrawal, reserve transfer, token mint, token burn or arbitrary-call function exists in this registry.
 
 ## Asset identity and transitions
 
@@ -22,7 +22,7 @@ The policy/evidence digests identify independently reviewed issuer, eligibility,
 
 Local tests cover unauthorized callers, token metadata mismatch, one initial election, competing/stale migration actions, issuance freeze, atomic designation replacement, abort/pause recovery, timelock waiting and minimum-delay enforcement. A regression queues a completion, aborts its attempt and starts another migration to the same asset, then proves that the old completion is rejected.
 
-These are component tests, with synthetic metadata contracts and no monetary token or reserve vault. Supply conservation across the complete platform, actual swap settlement, custody proof, loss valuation, emergency response, migrations during pending redemptions, adversarial qualification and independent legal/security/reserve/financial approvals remain necessary. No deployment script, public financial activation or live signer is included.
+These are component tests, with synthetic metadata contracts and no monetary token or reserve vault. Supply conservation across the complete platform, actual swap settlement, custody proof, loss valuation, emergency response, migrations during pending redemptions, adversarial qualification and accountable legal/security/reserve/financial acceptance remains necessary; external review is advisory. No deployment script, public financial activation or live signer is included.
 
 Source references
 
@@ -38,4 +38,4 @@ ORIOTreasuryPaymaster, ORIOGasAccount and ORIOGasAccountFactory integrate the pi
 
 The repo-internal sdk/gas-permit.mjs binds committed journal evidence and an exact owned sending account to contract-compatible EIP-712 signing material. The actual PostgreSQL-to-EntryPoint integration runs through the control service's test:local harness; install locked dependencies in both packages. It prepares a non-cancellable reservation before treasury signing and binds the final operation hash before broadcast.
 
-Run npm run qualification:report for the source/artifact inventory and explicit BLOCKED release report. See docs/qualification/PAYMASTER_QUALIFICATION.md for results, network-cost/finality limitations, required independent evidence and production work. No live keys, funded network accounts, provider subscriptions, stake/deposit transactions or public deployments are included.
+Run npm run qualification:report for the source/artifact inventory and explicit BLOCKED release report. See docs/qualification/PAYMASTER_QUALIFICATION.md for results, network-cost/finality limitations, required readiness evidence and production work. No live keys, funded network accounts, provider subscriptions, stake/deposit transactions or public deployments are included.

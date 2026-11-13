@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, sign } from 'node:crypto';
-import { approvalBytes,evaluateRelease,gates } from '../src/release.ts';
+import { approvalBytes,evaluateRelease,gates,releasePolicy } from '../src/release.ts';
 import type { Approval,Deployment,TrustedSigner } from '../src/release.ts';
 
 const now=1_800_000_000_000;
@@ -18,7 +18,7 @@ function fixture() {
   return {deployment,trust,approvals,keypairs};
 }
 
-test('live finance starts disabled without independently configured approvals',()=>{
+test('live finance starts disabled without configured accountable approvals',()=>{
   const f=fixture();
   assert.equal(evaluateRelease(f.deployment,[],[],now).financialEnabled,false);
   assert.equal(evaluateRelease(f.deployment,[],f.trust,now).allowed,false);
@@ -65,13 +65,31 @@ test('expired approvals, future approvals, and invalid clock fail closed',()=>{
   assert.equal(evaluateRelease(f.deployment,f.approvals,f.trust,now-2000).allowed,false);
   assert.equal(evaluateRelease(f.deployment,f.approvals,f.trust,NaN).allowed,false);
 });
-test('five key aliases do not establish five independent approvers',()=>{
+test('one accountable principal or key may approve multiple authorized roles without external reviewers',()=>{
   const f=fixture();
   const samePrincipal=f.trust.map(s=>({...s,principalId:'single-person'}));
-  assert.equal(evaluateRelease(f.deployment,f.approvals,samePrincipal,now).allowed,false);
+  assert.equal(evaluateRelease(f.deployment,f.approvals,samePrincipal,now).allowed,true);
   const oneKey=f.trust.map(s=>({...s,publicKeyPem:f.trust[0]!.publicKeyPem}));
   const approvals=f.approvals.map(a=>({...a,signature:sign(null,approvalBytes(a),f.keypairs[0]!.privateKey).toString('base64')}));
-  assert.equal(evaluateRelease(f.deployment,approvals,oneKey,now).allowed,false);
+  assert.equal(evaluateRelease(f.deployment,approvals,oneKey,now).allowed,true);
+  const owner = { ...f.trust[0]!, principalId: 'owner', roles: [...gates] };
+  const ownerApprovals = f.approvals.map(a => {
+    const data = { ...a, signerId: owner.id };
+    return { ...data, signature: sign(null, approvalBytes(data), f.keypairs[0]!.privateKey).toString('base64') };
+  });
+  assert.equal(evaluateRelease(f.deployment, ownerApprovals, [owner], now).allowed, true);
+  assert.equal(releasePolicy.externalReviewRequired, false);
+  assert.equal(evaluateRelease(f.deployment, ownerApprovals.slice(1), [owner], now).allowed, false);
+});
+
+test('previous independent-review policy signatures cannot authorize the new policy',()=>{
+  const f = fixture();
+  const oldApprovals = f.approvals.map((approval, index) => {
+    const oldBytes = Buffer.from(approvalBytes(approval).toString('utf8').replace(
+      'ORIO-SPC-RELEASE-APPROVAL/v2', 'ORIO-SPC-RELEASE-APPROVAL/v1'));
+    return { ...approval, signature: sign(null, oldBytes, f.keypairs[index]!.privateKey).toString('base64') };
+  });
+  assert.equal(evaluateRelease(f.deployment, oldApprovals, f.trust, now).allowed, false);
 });
 test('duplicate gate approvals do not substitute for missing gates',()=>{
   const f=fixture();

@@ -4,11 +4,13 @@ import { readFile } from 'node:fs/promises';
 import { randomUUID, createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { recoverAddress, sha256 } from 'ethers';
+import { bytesToHex } from '@ethereumjs/util';
 import { paymasterFixture } from '../test/helpers/paymaster-fixture.mjs';
 import { prepareGasPermit, attachGasConsents } from '../sdk/gas-permit.mjs';
 import { ControlLedger } from '../../services/control-foundation/src/ledger.ts';
 import { GasControls, gasAccounts } from '../../services/control-foundation/src/gas-controls.ts';
 import { quoteGas } from '../../services/control-foundation/src/gas-policy.ts';
+import { verifyFinalizedUserOperation } from '../../services/control-foundation/src/finalized-user-operation.ts';
 const { Pool } = createRequire(new URL('../../services/control-foundation/package.json', import.meta.url))('pg');
 const rootUrl = new URL(process.env.ORIO_TEST_DATABASE_URL ?? 'about:blank');
 if (!['127.0.0.1', 'localhost'].includes(rootUrl.hostname) || rootUrl.pathname !== '/orio_test')
@@ -65,10 +67,28 @@ test('committed gas hold → signed permit → real EntryPoint → final user-op
     const result = await f.submit(operation); assert.equal(result.execResult.exceptionError, undefined);
     const completed = f.logs(result, f.entry).find(event => event?.name === 'UserOperationEvent');
     assert.equal(completed.args.userOpHash, userOpHash); assert.equal(completed.args.success, true);
+    const transactionHash = '0x' + 'e'.repeat(64), blockHash = '0x' + 'd'.repeat(64);
+    const rpcLogs = result.execResult.logs.map(([address, topics, logData], index) => ({
+      address: bytesToHex(address), topics: topics.map(bytesToHex), data: bytesToHex(logData),
+      logIndex: '0x' + index.toString(16), transactionHash, blockHash, blockNumber: '0x1', removed: false,
+    }));
+    const finalLog = rpcLogs.find(log => log.address.toLowerCase() === f.entry.address.toLowerCase()
+      && log.topics[0] === f.entry.api.getEvent('UserOperationEvent').topicHash);
+    const localReader = sourceId => ({ sourceId, request: async method => {
+      if (method === 'eth_chainId') return '0x14a34';
+      if (method === 'eth_getTransactionReceipt') return { status: '0x1', transactionHash, blockHash, blockNumber: '0x1', logs: rpcLogs };
+      return { number: '0x1', hash: blockHash };
+    } });
+    // The anchor/readers are synthetic fixture evidence; event bytes are from the actual VM.
+    const observed = await verifyFinalizedUserOperation(localReader('vm-primary'), localReader('vm-secondary'), {
+      chainId: '84532', entryPointAddress: f.entry.address, accountAddress: f.account.address, paymasterAddress: f.paymaster.address,
+      userOperationHash: userOpHash, nonce: operation.nonce, transactionHash, logIndex: BigInt(finalLog.logIndex).toString(),
+    });
+    assert.equal(observed.entryPointDebitWei, completed.args.actualGasCost.toString());
     // Offline VM has no Base L1 data publication. This is the exact final EntryPoint debit,
     // NOT a production proof of finality or complete Base/bundler network-cost allocation.
     const cost = { operationId: 'operation', executionRef, evidenceDigest: evidence, outcome: 'SUCCESS',
-      executionWei: completed.args.actualGasCost.toString(), l1DataWei: '0', otherNetworkWei: '0' };
+      executionWei: observed.entryPointDebitWei, l1DataWei: '0', otherNetworkWei: '0' };
     await controls.recordCost(quote.transactionId, cost);
     const settlement = await controls.settle(quote.transactionId, evidence);
     assert.equal(settlement.status, 'SETTLED');

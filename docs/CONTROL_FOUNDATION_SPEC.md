@@ -1,5 +1,7 @@
 # Control ledger and release-gate implementation slice
 
+Current-policy notice (November 13): ADR 0002 supersedes the independent-review and distinct-release-approver requirements described below. External review is advisory; signed accountable acceptance and actual readiness evidence remain required.
+
 Source requirements: master directive sections 9, 10.2, 21, and 22. This slice is a prerequisite to the full platform; it does not constitute its completion.
 
 ## Acceptance

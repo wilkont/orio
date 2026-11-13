@@ -12,7 +12,7 @@ Implemented: integer quote/reconciliation core; PostgreSQL prepayment/ETH holds,
 
 Before treasury signing, commit a reservation-specific prepared slot; after signing, bind the final UserOperation hash before broadcast. This closes the cancellation gap when a signer or process crashes. Migration 009 preserves the binding and refuses replacements of uncertain execution identities. See docs/qualification/PAYMASTER_QUALIFICATION.md.
 
-Not implemented/qualified: public-network deployment, bundler validation-rule traces/staking, consumer signing/recovery, live estimator/finality and Base cost attribution, token collection/exchange conversion, automatic replenishment, UI/statement wiring or live end-to-end abstraction. Release requires these integrations plus approved economics and independent qualification.
+Not implemented/qualified: public-network deployment, bundler validation-rule traces/staking, consumer signing/recovery, live estimator/finality and Base cost attribution, token collection/exchange conversion, automatic replenishment, UI/statement wiring or live end-to-end abstraction. Release requires these integrations plus approved economics and accountable release acceptance; external review is advisory.
 
 Sources inspected November 13, 2026:
 

@@ -1,5 +1,7 @@
 # ORIO control foundation — local engineering acceptance
 
+Current-policy notice (November 13): ADR 0002 supersedes the independent-review and distinct-release-approver requirements described below. External review is advisory; signed accountable acceptance and actual readiness evidence remain required.
+
 Date: November 3, 2026. Scope: `docs/CONTROL_FOUNDATION_SPEC.md`, implementing prerequisites from directive sections 9, 10.2, 21, and 22. The full ORIO platform is not engineering-complete or deployed.
 
 ## Implemented evidence

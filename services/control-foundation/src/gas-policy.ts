@@ -40,7 +40,7 @@ export interface GasCost {
 }
 const maxUnits = 10n ** 78n - 1n;
 export function gasUnits(value: string, positive = false): bigint {
-  if (typeof value !== 'string' || !/^(0|[1-9][0-9]{0,77})$/.test(value))
+  if (typeof value !== 'string' || !/^(0|[1-9][0-9]{0,77})(?![\s\S])/.test(value))
     throw new Error('Gas quantities must be canonical integer strings');
   const amount = BigInt(value);
   if (positive && amount === 0n) throw new Error('Gas quantity must be positive');
@@ -132,7 +132,7 @@ export function validateGasCost(quote: GasQuote, cost: GasCost): bigint {
 }
 
 /** Candidate final rounding: floor the user debit, leave its rational remainder to company expense.
- * This is simulation/control code; policy approval and independent release gates remain required. */
+ * This is simulation/control code; policy approval and accountable release gates remain required. */
 export function reconcileGas(quote: GasQuote, costs: GasCost[]): {
   status: 'SETTLED' | 'REVIEW_REQUIRED'; actualNetworkWei: string; chargeUnits: string | null;
   refundUnits: string | null; remainderNumerator: string; remainderDenominator: string; reasons: string[];

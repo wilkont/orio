@@ -3,7 +3,7 @@
   "status": "BLOCKED",
   "financialExecutionEnabled": false,
   "scope": "Undeployed source/artifact inventory and readiness gaps; not an independent audit or approval",
-  "releaseDigest": "d5adbef4932bae0feab362642dd44131ede23751f48959f0644f499bd38ea575",
+  "releaseDigest": "1538f917053f8902dce2cbbc2655c5d45e576ecc9e27123a791e7c6c85f63a4d",
   "contractSetDigest": "da2d1550abab92efc2e8d9462730398883d3f49aa74cbe78c3a1ccab60ccdc47",
   "sourceDigests": [
     {
@@ -20,7 +20,7 @@
     },
     {
       "path": "contracts/scripts/qualification-report.mjs",
-      "sha256": "d35d85e882d5e01e8c3ccb752118b2c5c17ae8e88cb2f57cdf11e63f7acea28d"
+      "sha256": "975e7c4c92c48f043baf5b1b4fef6f01c3ed6416cb42c59da761117900fdaf7a"
     },
     {
       "path": "contracts/sdk/gas-permit.mjs",
@@ -48,7 +48,7 @@
     },
     {
       "path": "services/control-foundation/src/gas-policy.ts",
-      "sha256": "18dd465582f84788f4ed8ecdee5300d48ae209c177d3b51997e61b8769048d5f"
+      "sha256": "7e6fb5ca35bc8d6f0b11d433264b0b9f23e6a5b3c28e89d8067a7b86925f20dd"
     },
     {
       "path": "services/control-foundation/src/gas-controls.ts",
@@ -60,7 +60,23 @@
     },
     {
       "path": "services/control-foundation/src/release.ts",
-      "sha256": "a5196078dba8e3e09fe55cc8d18cbe7c1511d9f70edbda42297ee97f9eaa91b5"
+      "sha256": "b91467d05bba3faa0589f96743823d48ef78a98ba0b92b6ed7205b19c0d8ca55"
+    },
+    {
+      "path": "services/control-foundation/src/monetary-policy.ts",
+      "sha256": "b62b2a1bb60645be999cd9dd261b5dfe2d683e8125063b80c10a7a19668353e3"
+    },
+    {
+      "path": "services/control-foundation/src/chain-evidence.ts",
+      "sha256": "ad46e40bc065144bf3eebb40b3e8fea5fe1341e7860ce8d0b19002f9e21d8646"
+    },
+    {
+      "path": "services/control-foundation/src/finalized-user-operation.ts",
+      "sha256": "4e1840d8cc07ac8da5701592bba83275faa4b1ed5ed73a900afd824e423b343c"
+    },
+    {
+      "path": "services/control-foundation/src/finalized-transfer.ts",
+      "sha256": "6e393fed7a50bb4b7e49ae485d81a06d7cc087051e009c5217cb02bf6b9d91c3"
     },
     {
       "path": "services/control-foundation/migrations/001_ledger.sql",
@@ -132,15 +148,21 @@
     "31337"
   ],
   "baseMainnetCompatible": false,
-  "mainnetBlocker": "Qualification account, factory and paymaster constructors reject Base mainnet; an independently reviewed production candidate is required",
+  "mainnetBlocker": "Qualification account, factory and paymaster constructors reject Base mainnet; a tested, approved production candidate is required",
   "prospectiveRelease": {
     "mode": "public-live",
-    "releaseDigest": "d5adbef4932bae0feab362642dd44131ede23751f48959f0644f499bd38ea575",
+    "releaseDigest": "1538f917053f8902dce2cbbc2655c5d45e576ecc9e27123a791e7c6c85f63a4d",
     "projectId": "orio-spc-3-prod",
     "chainId": "8453",
     "contractSetDigest": "da2d1550abab92efc2e8d9462730398883d3f49aa74cbe78c3a1ccab60ccdc47"
   },
-  "independentReleaseDecision": {
+  "releasePolicy": {
+    "version": "owner-accountable-v2",
+    "externalReviewRequired": false,
+    "distinctApproverPrincipalsRequired": false,
+    "distinctApproverKeysRequired": false
+  },
+  "releaseDecision": {
     "allowed": false,
     "financialEnabled": false,
     "capabilities": [],
@@ -163,8 +185,8 @@
       "evidenceDigest": null
     },
     {
-      "id": "independent-security",
-      "requirement": "Independent audit of exact source, bytecode, EntryPoint, account, paymaster and signing/collection services",
+      "id": "security-verification",
+      "requirement": "Documented security testing and accountable acceptance of exact source, bytecode, EntryPoint, account, paymaster and signing/collection services; external review advisory",
       "status": "NOT_VERIFIED",
       "evidenceDigest": null
     },
@@ -206,7 +228,7 @@
     },
     {
       "id": "legal-custody-financial-operations",
-      "requirement": "All five release-specific independent signed gate approvals and underlying evidence",
+      "requirement": "All five release-specific accountable signed gate approvals and underlying evidence; an authorized owner may cover multiple roles",
       "status": "NOT_VERIFIED",
       "evidenceDigest": null
     }

@@ -41,7 +41,7 @@ test('expired, future, overlong and noncanonical fee quotes fail closed', () => 
   const request = input(); request.estimatedAt = '2026-11-13T12:00:01.000Z'; assert.throws(() => quoteGas(request, now));
 });
 test('canonical integer validation refuses floating point, leading zeros, zero execution and overflow', () => {
-  for (const value of [100, '1.5', '01', '-1', '0', '1' + '0'.repeat(78)]) {
+  for (const value of [100, '1.5', '01', '-1', '0', '1\n', '1' + '0'.repeat(78)]) {
     const request = input(); Reflect.set(request.operations[0]!, 'executionGasLimit', value);
     assert.throws(() => quoteGas(request, now));
   }
