@@ -1,5 +1,7 @@
 # ORIO monetary policy proposal
 
+Update November 13: a replacement founder resolution is recorded in FINAL_POLICY_RESOLUTION_PENDING.md. It removes genesis/residual escrow proposals, changes zero-holder allocation to 100% company and retains the last valid price on reopening. Its own text requires explicit founder confirmation; that confirmation is pending. The earlier proposals below are preserved as history and are not approved production rules.
+
 Recorded November 13, 2026 from the founder's revised supplemental monetary directive. This document distinguishes confirmed requirements from proposals. The latest user-paid gas instruction supersedes earlier conflicting gas assumptions. Historical directives remain preserved.
 
 | Rule | Status | Engineering treatment |
