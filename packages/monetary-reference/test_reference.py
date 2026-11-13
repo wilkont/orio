@@ -19,7 +19,13 @@ class MonetarySpecificationTests(unittest.TestCase):
 
     def test_complete_redemption(self):
         r = redeem(100, 1, 100)
-        self.assertEqual((r.supply, r.price, r.company, r.holders, r.payout), (0, None, 1, 0, 99))
+        self.assertEqual((r.supply, r.price, r.company, r.holders, r.payout), (0, 1, 1, 0, 99))
+
+    def test_zero_holder_and_retained_reopening_reference(self):
+        first = purchase(0, 1, 1000)
+        self.assertEqual((first.company, first.holders, first.minted), (10, 0, 990))
+        reopened = purchase(0, F(5, 4), 125)
+        self.assertEqual((reopened.price, reopened.company, reopened.minted), (F(5, 4), F(5, 4), 99))
 
     def test_conservation_over_many_sizes(self):
         for s in range(1, 101):
@@ -34,7 +40,7 @@ class MonetarySpecificationTests(unittest.TestCase):
                 self.assertEqual(liability+r.company+r.payout, s*p)
 
     def test_policy_and_input_rejections(self):
-        for args in ((0, 1, 100), (-1, 1, 1), (1, 0, 1), (1, 1, 0)):
+        for args in ((-1, 1, 1), (1, 0, 1), (1, 1, 0)):
             with self.assertRaises(ValueError):
                 purchase(*args)
         for args in ((1, 1, 2), (0, 1, 1), (1, -1, 1), (1, 1, 0)):

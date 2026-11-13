@@ -1,6 +1,6 @@
 # Gas Treasury policy
 
-The company owns and operates a dedicated ETH execution treasury. It must never use customer monetary backing, genesis escrow, rounding residuals or holder appreciation to replenish gas. User gas prepayments and pending refunds remain separately identifiable obligations. Collected non-ETH denominations must be reconciled independently from ETH expenditures; a bookkeeping reimbursement does not perform an exchange.
+The company owns and operates a dedicated ETH execution treasury. It must never use customer monetary backing or segregated rounding residuals or holder appreciation to replenish gas. User gas prepayments and pending refunds remain separately identifiable obligations. Collected non-ETH denominations must be reconciled independently from ETH expenditures; a bookkeeping reimbursement does not perform an exchange.
 
 Use separate custody, scoped signer permissions, explicit EntryPoint/paymaster/relayer allowlists, call and per-user limits, nonce management and independently monitored expenditure caps. Separate routine replenishment authority from treasury withdrawal and emergency governance. Legal and custody arrangements, signer technology and operational limits require qualification before use; no production values or wallets are created here.
 

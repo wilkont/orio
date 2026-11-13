@@ -1,22 +1,15 @@
-# Residual supply analysis — candidate protections
+# Approved residual-supply policy and analysis
 
-For an epoch with backing B, supply S and total burned R, use one independently verified snapshot price B/S. Gross redemption value is G=B*R/S. Fee F=G/100. If R<S, company receives F/5 and the surviving supply receives 4F/5. Remaining backing is B-G+4F/5. Redeemed units receive none of this epoch's appreciation. If R=S, all F goes to company and no holder allocation remains.
+For common opening price P, opening supply S, total redemption Q and remaining T=S-Q: compute each redemption's 1% fee with approved native-unit quantization. If T>0, the company receives its floored ordinary entitlement and every remaining collected fee unit goes to eligible remaining supply. New reference price is P plus that holder value divided by T, with USD36 price quantization recorded separately under the rounding specification.
 
-These calculations use exact rationals in `simulateRedemptionEpoch`. Inputs are sorted by unique request ID; reversing arrival order does not change results. This is a candidate batch model, not a production epoch scheduler. Membership, cutoffs, snapshot finality, cancellation, request eligibility, competing purchases and operational fallback must be approved and implemented before deterministic fair settlement can execute.
+There is no discretionary concentration threshold, residual-supply escrow, company redirection or withholding. If precision/accounting limits make a settlement unsafe, reject or pause the batch before finality. Zero supply instead follows the full-redemption exception.
 
-| Snapshot | Burned | Remaining | Result |
-| --- | --- | --- | --- |
-| 1,000 ORIO, $1,000 backing | 500 ORIO | 500 ORIO | $4 appreciation; post-price $1.008 |
-| 1,000 ORIO, $1,000 backing | 1,000 ORIO | zero | $10 company fee; reopening blocked |
-| 1,000,000 ORIO, $1,000,000 backing | 999,999 ORIO | 1 ORIO | $7,999.992 appreciation; post-price $8,000.992 |
+| Example at $1 snapshot | Result |
+| --- | --- |
+| 500 of 1,000 ORIO redeemed | $4 holder appreciation; remaining reference $1.008 |
+| All 1,000 ORIO redeemed | $10 company fee; retain $1 reference pending reconciliation |
+| 999,999 of 1,000,000 ORIO redeemed | $7,999.992 holder appreciation; one remaining ORIO reference $8,000.992 |
 
-The candidate concentration alert is strictly remaining/S < 1%; exactly 1% does not trigger. Zero supply follows full redemption, not dust concentration. The simulator only flags concentration and withholds zero appreciation.
+The extreme concentration is an approved consequence of the allocation rule, not evidence that strategic dust incentives disappear. Tests cover tiny positive remaining supply, request permutations, native rounding, conservation and closed self-owned purchase/redemption cycles. In the tested constant-valuation model, company fees are nonnegative and even assigning all residual custody to the actor cannot create positive net reserve wealth through a closed cycle.
 
-Alternatives for approval:
-
-- Keep the confirmed allocation unchanged; disclose concentration and monitor economic manipulation. Preserves allocation but leaves strategic dust incentives.
-- Delay the affected epoch for governed review. Avoids arbitrary reallocation but imposes an explicit, disclosed exit delay; request rights and timeout need approval.
-- Place the affected holder entitlement in a restricted, legally defined escrow. Requires explicit beneficiary, entitlement, timing, loss and distribution rules; cannot silently turn the 80% allocation into company income.
-- Adopt a governed floor/concentration formula only through a separately approved economic revision and independent analysis. This changes economics and is not an engineering default.
-
-Recommendation pending approval: alert and block automatic execution for the affected epoch, preserve all redemption claims and the full holder allocation, and require an approved deterministic disposition. No production threshold or confiscation rule is activated. Further simulations must examine split identities, microbalances, MEV, epoch boundary attacks, purchase/redemption interleaving and aggregate versus sequential settlement.
+That result does not prove safety against changing market prices, liquidity conditions, collusion across users, execution ordering, quote manipulation, MEV or implementation defects. Production needs immutable platform-assigned inclusion ordinals, frozen epoch membership, authentic snapshots, user-bound minimum outputs and actual reserve/contract execution. Customer IDs must not control purchase priority. The current engine consumes supplied immutable request sets; it is not a deployed epoch coordinator.

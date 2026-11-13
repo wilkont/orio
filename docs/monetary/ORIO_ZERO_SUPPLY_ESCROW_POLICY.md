@@ -1,9 +1,9 @@
-# Zero-supply escrow and reopening — proposed
+# Zero-supply allocation: no genesis escrow
 
-When there are no eligible existing holders, the candidate rule retains the ordinary 20% company allocation and records the other 80% as a restricted protocol obligation. It must not become company revenue, ordinary token backing or immediate appreciation for the purchaser. Custody and ledger accounts must separately identify this pool and its obligations. A database segregation label alone does not establish legal ownership or bankruptcy protection.
+Superseded proposal: the founder approved 100% company allocation of the collected conversion fee when no eligible ORIO holders exist. The earlier proposed 80% genesis escrow must not be created or funded. Its prior design remains only in version history.
 
-No distribution, forfeiture, reserve substitution, treasury replenishment or company withdrawal is authorized. Legal ownership, beneficiaries, allowed investments, loss allocation, valuation, disposition and unclaimed-property treatment require explicit founder and legal approval. Recovery corrections use compensating journals and retained evidence.
+Ordinary positive-supply purchases restore the company-floor/holder-remainder allocation. Full-supply redemption also allocates its complete fee to the company. These are the two explicit exceptions to ordinary allocation.
 
-Full-supply redemption preserves its confirmed rule: the entire conversion fee belongs to the company. Previously accrued escrow is unaffected by that allocation and must remain separately reconciled.
+Segregated rounding accounts still exist under the approved precision rule; they are not genesis appreciation escrow and are not automatically company revenue. Historical unrelated obligations cannot be erased by renaming them. This implementation has not created a production genesis escrow.
 
-Candidate reopening procedure: pause new issuance after supply reaches zero; close and reconcile the prior epoch, pending redemptions, escrow and residual obligations; obtain an approved new-cycle decision; assign a new cycle identifier; then atomically open issuance under the approved reference price and eligibility rules. Options are a $1 reference reset or a governed retained reference. The recommendation is a clearly disclosed $1 new-cycle reference without importing old obligations into new backing. This is a proposal only; neither option is implemented as an automatic restart.
+Reopening is governed by ORIO_ZERO_SUPPLY_REOPENING.md: preserve the last reference and reconcile actual obligations before accepting a new issuance cycle.

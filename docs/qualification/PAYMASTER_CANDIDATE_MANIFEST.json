@@ -3,7 +3,7 @@
   "status": "BLOCKED",
   "financialExecutionEnabled": false,
   "scope": "Undeployed source/artifact inventory and readiness gaps; not an independent audit or approval",
-  "releaseDigest": "30b08490a4b82aaee7e781860a9f07165456a5bb85fa2304cfcb95d4d2b654c1",
+  "releaseDigest": "45e22633ce4abede59ad88ac2fd4a8285ad5462523714fc5c2bc043871b3342a",
   "contractSetDigest": "da2d1550abab92efc2e8d9462730398883d3f49aa74cbe78c3a1ccab60ccdc47",
   "sourceDigests": [
     {
@@ -20,7 +20,7 @@
     },
     {
       "path": "contracts/scripts/qualification-report.mjs",
-      "sha256": "a40ffe0624c837c64d6037004f1ff59cf4d82c12ba75144f61051e8856c8cfbe"
+      "sha256": "e06cbe4df6189d67a8e94716241f234927e491eb6e84776b18c5ac0962695090"
     },
     {
       "path": "contracts/sdk/gas-permit.mjs",
@@ -64,7 +64,7 @@
     },
     {
       "path": "services/control-foundation/src/monetary-policy.ts",
-      "sha256": "b62b2a1bb60645be999cd9dd261b5dfe2d683e8125063b80c10a7a19668353e3"
+      "sha256": "44d848133b1ab137e73612b2d4cc972e94e0d351eee158f526b4ffd7bad5ee63"
     },
     {
       "path": "services/control-foundation/src/gas-funding.ts",
@@ -73,6 +73,14 @@
     {
       "path": "services/control-foundation/src/gas-refunds.ts",
       "sha256": "871f5b3a27290e8ae04463cd3488f3041a035a8ae61557cd1b840f596d66ee0e"
+    },
+    {
+      "path": "services/control-foundation/src/monetary-engine.ts",
+      "sha256": "399d28f1274c39fcd8f2a4ef96da5afe53ae0fd99ad74a26564b9fe5a5778c73"
+    },
+    {
+      "path": "services/control-foundation/config/approved-monetary-policy.json",
+      "sha256": "15d3f8877305275da06a27788795107568492e28a29b4637a8ea723e257fedfe"
     },
     {
       "path": "services/control-foundation/src/chain-evidence.ts",
@@ -167,7 +175,7 @@
   "mainnetBlocker": "Qualification account, factory and paymaster constructors reject Base mainnet; a tested, approved production candidate is required",
   "prospectiveRelease": {
     "mode": "public-live",
-    "releaseDigest": "30b08490a4b82aaee7e781860a9f07165456a5bb85fa2304cfcb95d4d2b654c1",
+    "releaseDigest": "45e22633ce4abede59ad88ac2fd4a8285ad5462523714fc5c2bc043871b3342a",
     "projectId": "orio-spc-3-prod",
     "chainId": "8453",
     "contractSetDigest": "da2d1550abab92efc2e8d9462730398883d3f49aa74cbe78c3a1ccab60ccdc47"
@@ -193,10 +201,38 @@
       "Financial release requires a configured trust registry and signed approvals"
     ]
   },
+  "economicPolicy": {
+    "policyId": "orio-final-monetary-2026-11-13-v1",
+    "status": "FOUNDER_APPROVED_FOR_IMPLEMENTATION",
+    "approvalDate": "2026-11-13",
+    "approvalSource": "Explicit owner confirmation in the project conversation",
+    "confirmation": "Approve economics; external review stays advisory",
+    "externalReviewRequired": false,
+    "liveMoneyAuthorized": false,
+    "initialPriceUsd": "1.00",
+    "conversionFeeBasisPoints": "100",
+    "ordinaryCompanyShareBasisPoints": "2000",
+    "ordinaryHolderAllocation": "COLLECTED_FEE_MINUS_FLOORED_COMPANY_SHARE",
+    "zeroHolderCompanyShareBasisPoints": "10000",
+    "fullSupplyRedemptionCompanyShareBasisPoints": "10000",
+    "genesisAppreciationEscrow": false,
+    "residualSupplyEscrow": false,
+    "concentrationWithholdingThreshold": null,
+    "orioDecimals": 18,
+    "initialMasterDecimals": 6,
+    "internalUsdDecimals": 36,
+    "mintRounding": "FLOOR",
+    "payoutRounding": "FLOOR",
+    "conversionFeeRounding": "CEILING_NATIVE_SETTLEMENT_UNIT",
+    "companyAllocationRounding": "FLOOR_NATIVE_ASSET_UNIT",
+    "residualTreatment": "SEGREGATED_EXPLICIT_RECONCILED_NOT_AUTOMATIC_COMPANY_REVENUE",
+    "reopening": "RETAIN_LAST_VALID_REFERENCE_AFTER_ZERO_SUPPLY_RECONCILIATION",
+    "gas": "USER_PAID_SEPARATE_FROM_MONETARY_FEES_AND_RESERVES"
+  },
   "requiredQualification": [
     {
-      "id": "economics",
-      "requirement": "Founder-approved genesis, escrow ownership, rounding, dust, residual allocation, failure charges and reopening",
+      "id": "monetary-execution",
+      "requirement": "Approved monetary policy implemented consistently in actual contracts/controller/epochs/ledger and deployed execution; arithmetic planning alone is insufficient",
       "status": "NOT_VERIFIED",
       "evidenceDigest": null
     },

@@ -1,205 +1,354 @@
 {
-  "policyStatus": "PROPOSED_NOT_APPROVED",
+  "policyStatus": "FOUNDER_APPROVED",
+  "policyId": "orio-final-monetary-2026-11-13-v1",
   "simulationOnly": true,
   "genesis": {
-    "simulationOnly": true,
-    "approved": false,
-    "initialPriceUsd": {
-      "numerator": "1",
-      "denominator": "1"
-    },
-    "grossUsd": {
-      "numerator": "1000",
-      "denominator": "1"
-    },
-    "conversionFeeUsd": {
-      "numerator": "10",
-      "denominator": "1"
-    },
-    "companyUsd": {
-      "numerator": "2",
-      "denominator": "1"
-    },
-    "restrictedEscrowUsd": {
-      "numerator": "8",
-      "denominator": "1"
-    },
-    "backingUsd": {
-      "numerator": "990",
-      "denominator": "1"
-    },
-    "mintedTokenUnits": "990000000000000000000",
-    "mintResidualUsd": {
+    "policyId": "orio-final-monetary-2026-11-13-v1",
+    "kind": "PURCHASE",
+    "beforeDigest": "b9364464cac6af69cd35c2b7aef376809dbb23025d7e1dec17fc79b193d8906d",
+    "valuationDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "feeMasterUnits": "10000000",
+    "companyMasterUnits": "10000000",
+    "holderMasterUnits": "0",
+    "roundingUsd36": {
       "numerator": "0",
       "denominator": "1"
+    },
+    "allocations": [
+      {
+        "id": "first",
+        "grossMasterUnits": "1000000000",
+        "feeMasterUnits": "10000000",
+        "companyMasterUnits": "10000000",
+        "holderMasterUnits": "0",
+        "priceUsd36": {
+          "numerator": "1000000000000000000000000000000000000",
+          "denominator": "1"
+        },
+        "mintedAtoms": "990000000000000000000",
+        "roundingUsd36": {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        "mintRoundingUsd36": {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        "holderPriceRoundingUsd36": {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      }
+    ],
+    "next": {
+      "policyId": "orio-final-monetary-2026-11-13-v1",
+      "masterAssetId": "synthetic-usdc",
+      "electionId": "synthetic-election",
+      "masterDecimals": 6,
+      "supplyAtoms": "990000000000000000000",
+      "priceUsd36": {
+        "numerator": "1000000000000000000000000000000000000",
+        "denominator": "1"
+      },
+      "reserveMasterUnits": "990000000",
+      "roundingUsd36": {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      "cycle": "0",
+      "phase": "ACTIVE"
+    }
+  },
+  "ordinaryPurchase": {
+    "policyId": "orio-final-monetary-2026-11-13-v1",
+    "kind": "PURCHASE",
+    "beforeDigest": "afcf1c9639f19e350bcf8ef0364baa4f36b7dc519046ddc6d06a2e66569862c5",
+    "valuationDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "feeMasterUnits": "1000000",
+    "companyMasterUnits": "200000",
+    "holderMasterUnits": "800000",
+    "roundingUsd36": {
+      "numerator": "612000000000000000",
+      "denominator": "1"
+    },
+    "allocations": [
+      {
+        "id": "buyer",
+        "grossMasterUnits": "100000000",
+        "feeMasterUnits": "1000000",
+        "companyMasterUnits": "200000",
+        "holderMasterUnits": "800000",
+        "priceUsd36": {
+          "numerator": "1000800000000000000000000000000000000",
+          "denominator": "1"
+        },
+        "mintedAtoms": "98920863309352517985",
+        "roundingUsd36": {
+          "numerator": "612000000000000000",
+          "denominator": "1"
+        },
+        "mintRoundingUsd36": {
+          "numerator": "612000000000000000",
+          "denominator": "1"
+        },
+        "holderPriceRoundingUsd36": {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      }
+    ],
+    "next": {
+      "policyId": "orio-final-monetary-2026-11-13-v1",
+      "masterAssetId": "synthetic-usdc",
+      "electionId": "synthetic-election",
+      "masterDecimals": 6,
+      "supplyAtoms": "1098920863309352517985",
+      "priceUsd36": {
+        "numerator": "1000800000000000000000000000000000000",
+        "denominator": "1"
+      },
+      "reserveMasterUnits": "1099800000",
+      "roundingUsd36": {
+        "numerator": "612000000000000000",
+        "denominator": "1"
+      },
+      "cycle": "0",
+      "phase": "ACTIVE"
     }
   },
   "ordinaryEpoch": {
-    "simulationOnly": true,
-    "approved": false,
-    "snapshotPriceUsdPerOrio": {
-      "numerator": "1",
+    "policyId": "orio-final-monetary-2026-11-13-v1",
+    "kind": "REDEMPTION",
+    "beforeDigest": "afcf1c9639f19e350bcf8ef0364baa4f36b7dc519046ddc6d06a2e66569862c5",
+    "valuationDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "feeMasterUnits": "5000000",
+    "companyMasterUnits": "1000000",
+    "holderMasterUnits": "4000000",
+    "payoutMasterUnits": "495000000",
+    "roundingUsd36": {
+      "numerator": "0",
       "denominator": "1"
     },
-    "requests": [
+    "holderPriceRoundingUsd36": {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    "allocations": [
       {
         "id": "a",
-        "grossUsd": {
-          "numerator": "300",
+        "burnedAtoms": "300000000000000000000",
+        "grossUsd36": {
+          "numerator": "300000000000000000000000000000000000000",
           "denominator": "1"
         },
-        "feeUsd": {
-          "numerator": "3",
-          "denominator": "1"
-        },
-        "netBeforeGasUsd": {
-          "numerator": "297",
+        "feeMasterUnits": "3000000",
+        "companyMasterUnits": "600000",
+        "holderMasterUnits": "2400000",
+        "payoutMasterUnits": "297000000",
+        "roundingUsd36": {
+          "numerator": "0",
           "denominator": "1"
         }
       },
       {
         "id": "b",
-        "grossUsd": {
-          "numerator": "200",
+        "burnedAtoms": "200000000000000000000",
+        "grossUsd36": {
+          "numerator": "200000000000000000000000000000000000000",
           "denominator": "1"
         },
-        "feeUsd": {
-          "numerator": "2",
-          "denominator": "1"
-        },
-        "netBeforeGasUsd": {
-          "numerator": "198",
+        "feeMasterUnits": "2000000",
+        "companyMasterUnits": "400000",
+        "holderMasterUnits": "1600000",
+        "payoutMasterUnits": "198000000",
+        "roundingUsd36": {
+          "numerator": "0",
           "denominator": "1"
         }
       }
     ],
-    "remainingTokenUnits": "500000000000000000000",
-    "feeUsd": {
-      "numerator": "5",
-      "denominator": "1"
-    },
-    "companyUsd": {
-      "numerator": "1",
-      "denominator": "1"
-    },
-    "holderAppreciationUsd": {
-      "numerator": "4",
-      "denominator": "1"
-    },
-    "remainingBackingUsd": {
-      "numerator": "504",
-      "denominator": "1"
-    },
-    "postEpochPriceUsdPerOrio": {
-      "numerator": "126",
-      "denominator": "125"
-    },
-    "concentrationReview": false,
-    "withheldAppreciationUsd": {
-      "numerator": "0",
-      "denominator": "1"
-    },
-    "reopening": "NOT_APPLICABLE"
+    "next": {
+      "policyId": "orio-final-monetary-2026-11-13-v1",
+      "masterAssetId": "synthetic-usdc",
+      "electionId": "synthetic-election",
+      "masterDecimals": 6,
+      "supplyAtoms": "500000000000000000000",
+      "priceUsd36": {
+        "numerator": "1008000000000000000000000000000000000",
+        "denominator": "1"
+      },
+      "reserveMasterUnits": "504000000",
+      "roundingUsd36": {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      "cycle": "0",
+      "phase": "ACTIVE"
+    }
   },
   "fullRedemption": {
-    "simulationOnly": true,
-    "approved": false,
-    "snapshotPriceUsdPerOrio": {
-      "numerator": "1",
+    "policyId": "orio-final-monetary-2026-11-13-v1",
+    "kind": "REDEMPTION",
+    "beforeDigest": "c0fbfeb77ee88f35326911130061f85f8290ad45235fc5e31925e29144b18387",
+    "valuationDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "feeMasterUnits": "12500000",
+    "companyMasterUnits": "12500000",
+    "holderMasterUnits": "0",
+    "payoutMasterUnits": "1237500000",
+    "roundingUsd36": {
+      "numerator": "0",
       "denominator": "1"
     },
-    "requests": [
+    "holderPriceRoundingUsd36": {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    "allocations": [
       {
         "id": "all",
-        "grossUsd": {
-          "numerator": "1000",
+        "burnedAtoms": "1000000000000000000000",
+        "grossUsd36": {
+          "numerator": "1250000000000000000000000000000000000000",
           "denominator": "1"
         },
-        "feeUsd": {
-          "numerator": "10",
-          "denominator": "1"
-        },
-        "netBeforeGasUsd": {
-          "numerator": "990",
+        "feeMasterUnits": "12500000",
+        "companyMasterUnits": "12500000",
+        "holderMasterUnits": "0",
+        "payoutMasterUnits": "1237500000",
+        "roundingUsd36": {
+          "numerator": "0",
           "denominator": "1"
         }
       }
     ],
-    "remainingTokenUnits": "0",
-    "feeUsd": {
-      "numerator": "10",
-      "denominator": "1"
-    },
-    "companyUsd": {
-      "numerator": "10",
-      "denominator": "1"
-    },
-    "holderAppreciationUsd": {
+    "next": {
+      "policyId": "orio-final-monetary-2026-11-13-v1",
+      "masterAssetId": "synthetic-usdc",
+      "electionId": "synthetic-election",
+      "masterDecimals": 6,
+      "supplyAtoms": "0",
+      "priceUsd36": {
+        "numerator": "1250000000000000000000000000000000000",
+        "denominator": "1"
+      },
+      "reserveMasterUnits": "0",
+      "roundingUsd36": {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      "cycle": "0",
+      "phase": "ZERO_SUPPLY_PENDING"
+    }
+  },
+  "reopening": {
+    "policyId": "orio-final-monetary-2026-11-13-v1",
+    "kind": "PURCHASE",
+    "beforeDigest": "bc70f241805a30e54bb17154477243cba40ccadfe41a686be61d8805a94ea1fd",
+    "valuationDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "feeMasterUnits": "1250000",
+    "companyMasterUnits": "1250000",
+    "holderMasterUnits": "0",
+    "roundingUsd36": {
       "numerator": "0",
       "denominator": "1"
     },
-    "remainingBackingUsd": {
-      "numerator": "0",
-      "denominator": "1"
-    },
-    "postEpochPriceUsdPerOrio": null,
-    "concentrationReview": false,
-    "withheldAppreciationUsd": {
-      "numerator": "0",
-      "denominator": "1"
-    },
-    "reopening": "REQUIRES_APPROVED_NEW_CYCLE_POLICY"
+    "allocations": [
+      {
+        "id": "reopened",
+        "grossMasterUnits": "125000000",
+        "feeMasterUnits": "1250000",
+        "companyMasterUnits": "1250000",
+        "holderMasterUnits": "0",
+        "priceUsd36": {
+          "numerator": "1250000000000000000000000000000000000",
+          "denominator": "1"
+        },
+        "mintedAtoms": "99000000000000000000",
+        "roundingUsd36": {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        "mintRoundingUsd36": {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        "holderPriceRoundingUsd36": {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      }
+    ],
+    "next": {
+      "policyId": "orio-final-monetary-2026-11-13-v1",
+      "masterAssetId": "synthetic-usdc",
+      "electionId": "synthetic-election",
+      "masterDecimals": 6,
+      "supplyAtoms": "99000000000000000000",
+      "priceUsd36": {
+        "numerator": "1250000000000000000000000000000000000",
+        "denominator": "1"
+      },
+      "reserveMasterUnits": "123750000",
+      "roundingUsd36": {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      "cycle": "1",
+      "phase": "ACTIVE"
+    }
   },
   "concentration": {
-    "simulationOnly": true,
-    "approved": false,
-    "snapshotPriceUsdPerOrio": {
-      "numerator": "1",
-      "denominator": "1"
-    },
-    "requests": [
-      {
-        "id": "almost-all",
-        "grossUsd": {
-          "numerator": "999999",
-          "denominator": "1"
-        },
-        "feeUsd": {
-          "numerator": "999999",
-          "denominator": "100"
-        },
-        "netBeforeGasUsd": {
-          "numerator": "98999901",
-          "denominator": "100"
-        }
-      }
-    ],
-    "remainingTokenUnits": "1000000000000000000",
-    "feeUsd": {
-      "numerator": "999999",
-      "denominator": "100"
-    },
-    "companyUsd": {
-      "numerator": "999999",
-      "denominator": "500"
-    },
-    "holderAppreciationUsd": {
-      "numerator": "999999",
-      "denominator": "125"
-    },
-    "remainingBackingUsd": {
-      "numerator": "1000124",
-      "denominator": "125"
-    },
-    "postEpochPriceUsdPerOrio": {
-      "numerator": "1000124",
-      "denominator": "125"
-    },
-    "concentrationReview": true,
-    "withheldAppreciationUsd": {
+    "policyId": "orio-final-monetary-2026-11-13-v1",
+    "kind": "REDEMPTION",
+    "beforeDigest": "94c1b77a4c5c6bbce47ac9aca3f454aa4ec5c595d8ac18b1c3853977250a7461",
+    "valuationDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "feeMasterUnits": "9999990000",
+    "companyMasterUnits": "1999998000",
+    "holderMasterUnits": "7999992000",
+    "payoutMasterUnits": "989999010000",
+    "roundingUsd36": {
       "numerator": "0",
       "denominator": "1"
     },
-    "reopening": "NOT_APPLICABLE"
+    "holderPriceRoundingUsd36": {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    "allocations": [
+      {
+        "id": "almost-all",
+        "burnedAtoms": "999999000000000000000000",
+        "grossUsd36": {
+          "numerator": "999999000000000000000000000000000000000000",
+          "denominator": "1"
+        },
+        "feeMasterUnits": "9999990000",
+        "companyMasterUnits": "1999998000",
+        "holderMasterUnits": "7999992000",
+        "payoutMasterUnits": "989999010000",
+        "roundingUsd36": {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      }
+    ],
+    "next": {
+      "policyId": "orio-final-monetary-2026-11-13-v1",
+      "masterAssetId": "synthetic-usdc",
+      "electionId": "synthetic-election",
+      "masterDecimals": 6,
+      "supplyAtoms": "1000000000000000000",
+      "priceUsd36": {
+        "numerator": "8000992000000000000000000000000000000000",
+        "denominator": "1"
+      },
+      "reserveMasterUnits": "8000992000",
+      "roundingUsd36": {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      "cycle": "0",
+      "phase": "ACTIVE"
+    }
   }
 }

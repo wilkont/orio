@@ -12,6 +12,7 @@ const sourceDigests = await Promise.all(files.map(async path => ({ path: 'contra
   sha256: digest(await readFile(new URL('../' + path, import.meta.url))) })));
 for (const path of ['src/gas-policy.ts', 'src/gas-controls.ts', 'src/ledger.ts', 'src/release.ts', 'src/monetary-policy.ts',
   'src/gas-funding.ts', 'src/gas-refunds.ts',
+  'src/monetary-engine.ts', 'config/approved-monetary-policy.json',
   'src/chain-evidence.ts', 'src/finalized-user-operation.ts', 'src/finalized-transfer.ts',
   'migrations/001_ledger.sql', 'migrations/008_gas_controls.sql', 'migrations/009_gas_execution_bindings.sql',
   'migrations/010_gas_prepayment_funding.sql', 'migrations/011_gas_prepayment_refunds.sql'])
@@ -32,7 +33,7 @@ const approvals = JSON.parse(await readFile(approvalPath, 'utf8')), trust = JSON
 const prospectiveRelease = { mode: 'public-live', releaseDigest, projectId: 'orio-spc-3-prod', chainId: '8453', contractSetDigest };
 const releaseDecision = evaluateRelease(prospectiveRelease, approvals, trust);
 const requiredQualification = [
-  ['economics', 'Founder-approved genesis, escrow ownership, rounding, dust, residual allocation, failure charges and reopening'],
+  ['monetary-execution', 'Approved monetary policy implemented consistently in actual contracts/controller/epochs/ledger and deployed execution; arithmetic planning alone is insufficient'],
   ['security-verification', 'Documented security testing and accountable acceptance of exact source, bytecode, EntryPoint, account, paymaster and signing/collection services; external review advisory'],
   ['base-network-costs', 'Qualified Base fee estimates and final L1/other/per-user cost attribution without double counting'],
   ['identity-and-signers', 'Authenticated customer-account ownership; qualified user signing/recovery and treasury HSM/multisig controls'],
@@ -48,7 +49,9 @@ const report = {
   releaseDigest, contractSetDigest, sourceDigests, artifacts,
   candidateNetworks: ['84532', '31337'], baseMainnetCompatible: false,
   mainnetBlocker: 'Qualification account, factory and paymaster constructors reject Base mainnet; a tested, approved production candidate is required',
-  prospectiveRelease, releasePolicy, releaseDecision, requiredQualification,
+  prospectiveRelease, releasePolicy, releaseDecision,
+  economicPolicy: JSON.parse(await readFile(new URL('../../services/control-foundation/config/approved-monetary-policy.json', import.meta.url), 'utf8')),
+  requiredQualification,
 };
 const directory = new URL('../../docs/qualification/', import.meta.url);
 await mkdir(directory, { recursive: true });

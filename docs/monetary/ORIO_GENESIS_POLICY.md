@@ -1,9 +1,11 @@
-# Genesis policy — proposed, not approved
+# Approved genesis policy
 
-Before issuance, supply and redemption liabilities are zero. The candidate opening redemption reference is $1.00 per ORIO. This reference is not a permanent peg and does not establish that USDC equals one dollar. Independent reserve valuation must determine actual USD proceeds; a depeg must affect valuation and eligibility controls.
+The original opening reference is $1.00 USD per ORIO. Before original genesis, outstanding supply and redemption liabilities are zero. The master initially is native USDC, valued from actual approved reserve evidence rather than assumed dollar parity.
 
-For a purchase valued at $1,000, the exact proposed allocation is $990 ordinary backing, $2 company conversion revenue and $8 restricted genesis escrow, producing 990 ORIO at the opening reference. Gas is an additional authorized payment outside those amounts. The first buyer receives no appreciation from its own conversion fee. No token mint distributes appreciation.
+At zero supply the entire rounded 1% purchase fee belongs to the company. No genesis appreciation escrow exists. A purchase of 1,000 USDC valued at $1,000 collects 10 USDC company fee and creates 990 ORIO backed by 990 USDC. Gas is separately authorized and paid by the user.
 
-`simulateGenesis` uses exact rationals and labels every result simulationOnly=true, approved=false. It demonstrates fractional mint flooring and reports its entire remaining USD fraction. It neither elects USDC nor posts backing, fee or escrow journals.
+Only the actual first purchase at zero supply receives this exception. As soon as that transition mints supply, subsequent purchases use the ordinary company-floor/holder-remainder rule and appreciate existing holdings before minting. Platform-assigned inclusion ordinals determine sequential purchase ordering; customer-chosen request IDs must not control that sequence.
 
-Before implementation may mint: approve opening price, escrow ownership/disposition, backing valuation, rounding and minimums; bind the election, vault, price evidence, authorization and release to one atomic settlement. An unapproved or incomplete genesis policy blocks issuance. Treasury ETH must be funded independently.
+The $1 reference is original-genesis initialization only. A later zero-supply cycle retains its last valid reference, completes reconciliation and uses the zero-holder fee exception at that retained price. No automatic reset or escrow disposition is needed. See ORIO_ZERO_SUPPLY_REOPENING.md.
+
+initialMonetaryState and planPurchaseEpoch implement this arithmetic. They do not elect the master, authenticate reserves, move assets or mint on-chain tokens. All release and actual execution prerequisites remain separate.

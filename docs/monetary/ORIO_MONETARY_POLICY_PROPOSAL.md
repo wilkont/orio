@@ -1,27 +1,24 @@
-# ORIO monetary policy proposal
+# Approved ORIO monetary policy
 
-Update November 13: a replacement founder resolution is recorded in FINAL_POLICY_RESOLUTION_PENDING.md. It removes genesis/residual escrow proposals, changes zero-holder allocation to 100% company and retains the last valid price on reopening. Its own text requires explicit founder confirmation; that confirmation is pending. The earlier proposals below are preserved as history and are not approved production rules.
+Status: founder-approved for implementation on November 13, 2026. Explicit confirmation: "Approve economics; external review stays advisory". Policy ID: orio-final-monetary-2026-11-13-v1. The filename is retained for existing links; this is no longer an unapproved proposal. Earlier drafts remain in Git history.
 
-Recorded November 13, 2026 from the founder's revised supplemental monetary directive. This document distinguishes confirmed requirements from proposals. The latest user-paid gas instruction supersedes earlier conflicting gas assumptions. Historical directives remain preserved.
+| Rule | Approved behavior |
+| --- | --- |
+| Original genesis reference | $1.00 USD per ORIO; not a permanent peg |
+| Purchase/redemption fee | 1%, rounded up to the applicable settlement unit |
+| Positive eligible supply | Company entitlement rounded down from 20% of the collected fee; holders receive the remainder |
+| Zero-holder purchase | Entire collected fee to company; no genesis appreciation escrow |
+| Full-supply redemption batch | Entire collected fee to company; no holder appreciation |
+| Purchase ordering | Appreciate existing supply before minting each purchase |
+| Redemption batch | Common opening price; every redeemed token excluded from its own appreciation |
+| Positive residual supply | Full ordinary holder allocation regardless of concentration; no threshold withholding or residual escrow |
+| Precision | ORIO 18 decimals, initial USDC 6; USD36 integer price with exact rational residual accounting |
+| Mint/payout | Round down; reject zero output; do not confiscate dust |
+| Reopening | Retain last valid reference price after zero-supply reconciliation; never automatically reset to $1 |
+| Network gas | User-paid, company ETH intermediary, separate from monetary fees/backing/appreciation |
 
-| Rule | Status | Engineering treatment |
-| --- | --- | --- |
-| 1% purchase/redemption conversion fee | Confirmed | Preserve |
-| Ordinary fee: 20% company, 80% eligible holders | Confirmed | Preserve; no dilution from appreciation |
-| Appreciate existing holdings before purchase mint | Confirmed | Mandatory execution ordering |
-| Exclude redeemed tokens from their own appreciation | Confirmed | Mandatory eligible-supply boundary |
-| Full redemption: all conversion fee to company | Confirmed | Preserve |
-| Ordinary transfer: zero protocol fee, user pays network gas | Confirmed | Publish separately in protocol metadata |
-| Company Gas Treasury fronts ETH; user pays quoted gas | Confirmed | Segregated gas controls; no general subsidy |
-| ORIO 18 decimals; native USDC 6 decimals | Directed representation | Exact integer boundaries |
-| Genesis redemption reference $1 per ORIO | Proposed | Simulation only |
-| Zero-holder 80% fee in restricted escrow | Proposed | Simulation only, no company reclassification |
-| Final rounding/minimums, residual-supply protection, reopening | Awaiting approval | No live monetary settlement |
+USDC must be valued under the approved reserve valuation controls. Material depeg restricts issuance rather than assuming dollar parity. Secondary assets settle into the active master before minting. Master replacement does not change supply, holder balances or reference price, invent appreciation, levy conversion fees or conceal losses.
 
-Recommended review package: $1 opening reference; restricted zero-holder escrow; exact rational intermediates with a proposed USD scale of 36 decimals; floor mint/payout quantization; segregated residuals; common-snapshot redemption epochs; concentration alerts initially, with no automatic withholding; new issuance cycles only after an explicit reopening decision. Each recommendation is independently reviewable, not an inferred approval.
+The approved precision implementation uses a 36-decimal integer USD reference price. Fractional appreciation below that price unit is explicitly retained as a segregated holder-price rounding liability, never company revenue. All collected native holder units remain allocated; an unrepresentable positive increment or unsafe bound rejects the batch before finality. See ORIO_ROUNDING_SPECIFICATION.md.
 
-The revised directive names GCP, while the later operational migration mandate selected AWS account 720232346199. This policy change does not move infrastructure back to GCP or expand spending authorization. Only initial AWS migrations 001/002 were previously applied. All new gas/control migrations remain local.
-
-Approval must identify policy version/digest, jurisdiction/legal ownership determinations, rounding and dust parameters, epoch membership/cutoff, disposition of escrow/residuals, failure charges, exchange-rate risk and new-cycle treatment. Legal/security/custody/financial/operational evidence and accountable release acceptance remain necessary, but external review is advisory under ADR 0002. One authorized owner may cover multiple release roles. Policy approval does not by itself establish actual reserves or custody.
-
-Implementation map: services/control-foundation/src/{monetary-policy,gas-policy,gas-controls,monetary-simulation}.ts; migration 008; the other ten documents in this directory. GET /v1/protocol/policy publishes confirmed policy alongside explicit pending proposals and disabled execution.
+Approval is recorded in services/control-foundation/config/approved-monetary-policy.json. It is not a signature or authorization for live financial release. The current monetary engine computes exact plans; durable epoch/request consumption, actual contracts/vault execution, custody/risk adapters, accounting integration and deployment qualification must still be completed. External review is advisory under ADR 0002.

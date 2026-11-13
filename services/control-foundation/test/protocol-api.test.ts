@@ -27,7 +27,9 @@ test('reports the recorded empty/paused master without electing the configured U
     assert.equal(policy.transfer.networkFeePaidBy, 'USER');
     assert.equal(policy.gas.generatesAppreciation, false);
     assert.equal(policy.gas.liveCollectionEnabled, false);
-    assert.equal(policy.proposals.genesisEscrow, 'AWAITING_APPROVAL');
+    assert.equal(policy.economics.status, 'FOUNDER_APPROVED');
+    assert.equal(policy.economics.genesisAppreciationEscrow, false);
+    assert.equal(policy.conversion.zeroHolderCompanyShareBasisPoints, '10000');
     assert.equal(policy.releaseReview.externalReviewRequired, false);
   } finally { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); }
 });

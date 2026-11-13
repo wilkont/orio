@@ -1,6 +1,6 @@
 # Paymaster candidate and production qualification
 
-November 13, 2026. Status: local qualification candidate, not production-qualified. External independent review is advisory under owner-approved ADR 0002; it is no longer a release prerequisite. No public testnet/mainnet deployment, paid provider, treasury funding or external transaction was performed. Proposed economics remain unapproved. The candidate account, factory and paymaster constructors accept only chain IDs 84532 and 31337 and reject Base mainnet 8453.
+November 13, 2026. Status: local qualification candidate, not production-qualified. External independent review is advisory under owner-approved ADR 0002; it is no longer a release prerequisite. No public testnet/mainnet deployment, paid provider, treasury funding or external transaction was performed. The final economics are founder-approved under ADR 0003; actual monetary execution integration remains unfinished. The candidate account, factory and paymaster constructors accept only chain IDs 84532 and 31337 and reject Base mainnet 8453.
 
 ## What now runs
 
@@ -34,7 +34,7 @@ The report evaluates the v2 accountable release-signature checker using current 
 
 | Area | Evidence required before production |
 | --- | --- |
-| Economics | Explicit approved genesis, escrow ownership/disposition, rounding/minimums, concentration/epoch rules, failure charges, FX shortfalls and reopening; simulation cannot approve these |
+| Monetary execution | Founder-approved rules consistently implemented in actual controller/contracts/ledger, durable epochs and finalized settlement; arithmetic approval alone is insufficient |
 | Security | Documented testing of exact production account/paymaster/controller/signing code; adversarial/recovery qualification and accountable acceptance; external audit advisory |
 | Network/EntryPoint | Exact Base-supported EntryPoint address/version/runtime, bundler ERC-7562 validation trace, staking/deposit requirements, simulation and fee-oracle qualification |
 | Cost attribution | Actual Base execution/L1/additional costs, attributable UserOperation overhead and surplus/shortfall treatment without charging the entire bundle per user or double-counting L1 |
@@ -51,10 +51,12 @@ A tested, approved mainnet-compatible candidate is required once the remaining c
 
 Use Node 24 or later. Run npm ci in both contracts and services/control-foundation. In contracts run npm run build, npm test, npm run qualification:report and npm audit. In the control service run npm run typecheck and npm run test:local; the latter now also invokes contracts/integration/gas-ledger.test.mjs against its disposable PostgreSQL container. Tests use only published synthetic fixture keys; never fund or reuse them on a public network.
 
-Latest checks: 15 contract/SDK tests and 161 integrated backend/PostgreSQL/VM tests pass, with zero skips/failures. The two suites overlap in exercised components and are not a count of independent end-to-end production scenarios. Contract npm audit reports zero known advisories. Internal source review is not independent security qualification.
+Latest checks: 15 contract/SDK tests and 172 integrated backend/PostgreSQL/VM tests pass, with zero skips/failures. The two suites overlap in exercised components and are not a count of independent end-to-end production scenarios. Contract npm audit reports zero known advisories. Internal source review is not independent security qualification.
 
 Primary references: [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337), [reference implementation](https://github.com/eth-infinitism/account-abstraction), [Base fees](https://docs.base.org/specifications/transactions/network-fees). The exact implementation used by tests is the locked npm package 0.8.0, not the moving upstream develop branch.
 
 Finality continuation: the bridge now verifies reference EntryPoint event bytes through the shared finalized-receipt verifier before recording its local debit. The configured readers/anchors remain synthetic in that test. See FINALIZED_USER_OPERATION_EVIDENCE.md for live adapter boundaries. External review is advisory under owner-accountable-v2.
 
 Prepayment custody continuation: migrations 010/011 and GasFunding/GasRefunds add verified deposit accounting, reserved withdrawals, exact payout association and coupled cancellation. See GAS_PREPAYMENT_CUSTODY.md. These are local custody-control components, not live token dispatch or completed initial funding abstraction.
+
+Monetary approval continuation: founder economics are approved under ADR 0003. The arithmetic engine and Python cross-checks implement them; actual monetary contract/controller/ledger execution remains an implementation requirement. The candidate report now records the approval and identifies monetary execution, not unapproved economics, as unfinished.

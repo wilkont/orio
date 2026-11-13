@@ -1,17 +1,25 @@
-# Precision and rounding specification — approval pending
+# Approved monetary precision and rounding
 
-ORIO uses 18 decimal token units and native USDC uses 6. All persisted/API amounts are canonical nonnegative integer strings; positive postings exclude zero. No monetary settlement uses JavaScript floating point. USD must be independently valued, not inferred from USDC units. Candidate internal USD precision is 36 decimals; simulations retain rational numerators and denominators so no economic remainder disappears.
+ORIO uses 18 decimal token units. Initial native USDC uses 6. Prices are integer USD36 atoms per whole ORIO; this exceeds the approved minimum 27 decimal intermediate precision. All amounts cross persistence/API boundaries as canonical integer strings. Intermediate multiplication and division use bigint; there is no binary floating-point money arithmetic.
 
-Proposed monetary rules:
+Persisted fields are bounded to uint256 for eventual chain compatibility. A calculation that cannot fit safely rejects the affected batch before finality. Exact residuals use reduced nonnegative numerator/denominator pairs; reference-price denominators always equal one, preventing unbounded rational price growth during repeated conversions.
 
-1. Compute valuation, the 1% fee and 20/80 entitlements as exact rational values before quantization.
-2. Mint floor(exact ORIO units). Never round issuance upward.
-3. Pay floor(exact payout units). Never round customer payout upward into unbacked units.
-4. Quantize ordinary company and holder entitlements downward separately. Neither may exceed its exact entitlement. Record the remaining rational obligation independently; do not silently award it to either party.
-5. Maintain per-asset, per-cycle residual accounts and exact provenance. Do not count unallocated fractions as backing, gas income or holder appreciation. Founder/legal approval must define ownership and release.
+Purchase:
 
-Proposed gas rules are separate: ceiling the maximum converted cost into a refundable hold; floor the actual converted cost for the final user debit; credit the full unused integer hold. Expose the rational difference as a company gas expense, never conversion revenue or holder appreciation. A positive cost that rounds to zero user units requires review rather than a silently free transaction. The final gas quantization rule also awaits approval and is not wired to a live route.
+1. Fee = ceil(gross native master units / 100).
+2. Company = fee at zero supply, otherwise floor(fee / 5). Holder allocation is every remaining collected fee unit.
+3. Value holder allocation with the current approved master price. Add its per-existing-token appreciation before minting. Floor the resulting USD36 reference price and explicitly record the exact holder-price quantization difference in the segregated rounding liability.
+4. Mint floor(net valued deposit * 10^18 / reference price). Record its exact mint residual in the same segregated accounting pool, with separate provenance.
 
-Candidate dust controls reject zero-unit minting and zero net payouts. Economically meaningful minimum purchase/payout amounts must additionally cover operating costs and be approved by denomination and risk tier; no arbitrary production minimum is selected here. Small existing balances remain owned by their holders. Consolidation or exit options must be authorized and disclosed.
+Redemption:
 
-Quote and ledger bounds are 78 decimal digits; multiplication/division uses bigint intermediates and rejects final ledger overflow. Quote expiry uses canonical UTC timestamps. Quote ceilings are authorization limits, not earned income. Required qualification includes boundary units, residual conservation, denominator changes, adversarial transaction partitioning and independent cross-language contract/controller comparisons.
+1. Every request uses the common opening epoch price. Convert exact gross value into native master units using the actual master valuation.
+2. Fee = ceil(exact gross native value / 100). Payout = floor(exact gross native value - fee).
+3. Company = fee if the whole batch eliminates supply, otherwise floor(fee / 5) per conversion. Holders receive the remainder. Only the remaining supply appreciates.
+4. Record both payout quantization and USD36 holder-price quantization residuals. All collected native holder units remain allocated, without concentration withholding. Reject an unrepresentable positive price increment instead of silently discarding appreciation.
+
+Every residual is explicit, segregated, included in reserve reconciliation and excluded from automatic company revenue. Native reserve valuation must cover token redemption liabilities plus these residual obligations. Price rounding does not create unsupported liabilities or a new ORIO mint. Allocation-owner/custody execution must preserve residual provenance when connecting this plan to financial journals.
+
+Minimums are output-based: reject purchases producing less than one ORIO atomic unit and redemptions producing zero native payout. No arbitrary minimum holding is introduced; dust remains owned. Quote and enforce separate user-authorized gas limits. A gas estimate never reduces monetary backing implicitly.
+
+Gas quantization and failed-operation cost recovery remain separate operational controls. They cannot change the monetary fee or generate holder appreciation. The monetary arithmetic engine performs no gas debit.
