@@ -15,3 +15,9 @@ Sources
 - https://ethereum.org/developers/docs/apis/json-rpc/
 - https://eips.ethereum.org/EIPS/eip-20
 - https://docs.base.org/base-chain/api-reference/ethereum-json-rpc-api/eth_getTransactionCount
+
+## HTTPS transport
+
+HttpsChainReader provides the three required read-only Ethereum RPC methods over a configured HTTPS endpoint. It validates method/parameter shapes before sending, forbids redirects, sets a 100-30000 ms request timeout (5000 ms default), limits response bodies to 2 MiB, validates the JSON-RPC envelope and replaces provider errors with a generic failure. API headers and endpoint paths can contain secrets and must be injected through trusted deployment configuration. They are never accepted from customer requests or included in returned error messages.
+
+Transport tests use synthetic fetch responses to verify request selection, redirect/timeout options, envelope validation, oversized responses and credential-safe errors. No production endpoints, provider accounts, stored credentials or paid services are configured. Production endpoint independence, availability, authorization and latency must be verified separately.

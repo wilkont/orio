@@ -100,3 +100,9 @@ The original thread read Dot's current handoff and reconciled the shared reposit
 Continued local implementation adds verifyFinalizedTokenTransfer, a read-only ERC-20 event verifier using two configured chain readers. It validates chain ID, successful transaction status, finality height, canonical block identity, token contract, exact parties/amount/log index and agreement between the sources. It returns a canonical chain/transaction/log settlement reference. All 86 tests passed, with no failures or skipped tests. Source review found no actionable issues under the documented trust boundary.
 
 Provider transport/authentication, independently operated sources, reserve custody verification, durable receipt consumption and financial integration remain open. This module is tested with synthetic RPC evidence. No production RPC providers were activated, no AWS migrations were applied in this turn, and no asset transactions or financial release occurred. Migrations 003-005 remain local-only. See FINALIZED_TRANSFER.md for the adapter boundary.
+
+## Continued receipt and adapter integration
+
+Added local migration 006 to prevent a finalized reference being assigned to both conversion and redemption operations. It serializes concurrent claims, permits the existing same-intent direct-master alias, backfills history under source-table locks and aborts on historical conflicts. Ledger-to-operation accounting linkage remains open.
+
+Added a constrained HTTPS chain reader for the finalized-transfer verifier. It permits only chain ID, finalized/canonical block reads and transaction receipt queries, limits time/response size, refuses redirects and suppresses provider-specific error details. No production provider configuration is installed. Strict typechecking and all 95 isolated tests passed before documentation-only updates and header-construction error sanitization. Final verification follows the current work.
