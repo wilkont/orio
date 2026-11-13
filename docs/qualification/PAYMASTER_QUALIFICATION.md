@@ -51,8 +51,10 @@ A tested, approved mainnet-compatible candidate is required once the remaining c
 
 Use Node 24 or later. Run npm ci in both contracts and services/control-foundation. In contracts run npm run build, npm test, npm run qualification:report and npm audit. In the control service run npm run typecheck and npm run test:local; the latter now also invokes contracts/integration/gas-ledger.test.mjs against its disposable PostgreSQL container. Tests use only published synthetic fixture keys; never fund or reuse them on a public network.
 
-Latest checks: 15 contract/SDK tests and 144 integrated backend/PostgreSQL/VM tests pass, with zero skips/failures. The two suites overlap in exercised components and are not a count of independent end-to-end production scenarios. Contract npm audit reports zero known advisories. Internal source review is not independent security qualification.
+Latest checks: 15 contract/SDK tests and 161 integrated backend/PostgreSQL/VM tests pass, with zero skips/failures. The two suites overlap in exercised components and are not a count of independent end-to-end production scenarios. Contract npm audit reports zero known advisories. Internal source review is not independent security qualification.
 
 Primary references: [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337), [reference implementation](https://github.com/eth-infinitism/account-abstraction), [Base fees](https://docs.base.org/specifications/transactions/network-fees). The exact implementation used by tests is the locked npm package 0.8.0, not the moving upstream develop branch.
 
 Finality continuation: the bridge now verifies reference EntryPoint event bytes through the shared finalized-receipt verifier before recording its local debit. The configured readers/anchors remain synthetic in that test. See FINALIZED_USER_OPERATION_EVIDENCE.md for live adapter boundaries. External review is advisory under owner-accountable-v2.
+
+Prepayment custody continuation: migrations 010/011 and GasFunding/GasRefunds add verified deposit accounting, reserved withdrawals, exact payout association and coupled cancellation. See GAS_PREPAYMENT_CUSTODY.md. These are local custody-control components, not live token dispatch or completed initial funding abstraction.

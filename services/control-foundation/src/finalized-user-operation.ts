@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { chainAddress, chainHash, chainIdentifier, finalizedLog, finalizedReceipt, indexedAddress, requireChainSources } from './chain-evidence.ts';
+import { chainAddress, chainHash, chainIdentifier, chainObject, chainQuantity, finalizedLog, finalizedReceipt, indexedAddress, requireChainSources } from './chain-evidence.ts';
 import type { ChainReader } from './chain-evidence.ts';
 
 export interface ExpectedUserOperation {
@@ -7,6 +7,7 @@ export interface ExpectedUserOperation {
   userOperationHash: string; nonce: string; transactionHash: string; logIndex: string;
 }
 const eventTopic = '0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f';
+const beforeExecutionTopic = '0xbb47ee3e183a558b1a2ff0874b079f3fc5478b7454eacf2bfc5af2ff5878f972';
 async function verifySource(source: ChainReader, expected: ExpectedUserOperation) {
   const snapshot = await finalizedReceipt(source, expected.chainId, expected.transactionHash);
   const log = finalizedLog(snapshot, expected.transactionHash, expected.logIndex);
@@ -18,8 +19,19 @@ async function verifySource(source: ChainReader, expected: ExpectedUserOperation
   const words = [0, 1, 2, 3].map(index => BigInt('0x' + data.slice(2 + 64 * index, 66 + 64 * index)));
   if (words[0]!.toString() !== expected.nonce || (words[1] !== 0n && words[1] !== 1n) || words[3] === 0n)
     throw new Error('Malformed UserOperation event values');
+  let boundary: bigint | undefined;
+  for (const candidate of (snapshot.receipt.logs as unknown[]).map(chainObject)) {
+    const index = chainQuantity(candidate.logIndex);
+    if (index >= BigInt(expected.logIndex) || chainAddress(candidate.address) !== expected.entryPointAddress ||
+        !Array.isArray(candidate.topics) || !candidate.topics.length) continue;
+    const topic = chainHash(candidate.topics[0]);
+    if (topic !== eventTopic && topic !== beforeExecutionTopic) continue;
+    finalizedLog(snapshot, expected.transactionHash, index.toString());
+    if (boundary === undefined || index > boundary) boundary = index;
+  }
+  if (boundary === undefined) throw new Error('Missing UserOperation execution boundary');
   return { blockHash: snapshot.blockHash, blockNumber: snapshot.blockNumber, success: words[1] === 1n,
-    entryPointDebitWei: words[2]!.toString(), actualGasUsed: words[3]!.toString() };
+    entryPointDebitWei: words[2]!.toString(), actualGasUsed: words[3]!.toString(), executionBoundaryLogIndex: boundary.toString() };
 }
 
 /** Read-only final per-operation EntryPoint-debit observation, not a final customer network bill.

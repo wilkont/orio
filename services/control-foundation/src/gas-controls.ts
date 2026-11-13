@@ -235,6 +235,12 @@ export class GasControls {
       const { quote } = await this.locked(client, transactionId), previous = await this.closure(client, transactionId);
       if (previous?.kind === 'CANCELLED') return;
       if (previous) throw new Error('Gas reservation is closed');
+      // Older local installations do not yet have withdrawal controls. Checking under the
+      // reservation lock also serializes cancellation with a linked withdrawal's creation.
+      const refundSchema = (await client.query<{ relation: string | null }>(
+        "SELECT to_regclass('orio_gas.refund_requests')::text AS relation")).rows[0]?.relation;
+      if (refundSchema && (await client.query('SELECT 1 FROM orio_gas.refund_requests WHERE gas_transaction_id=$1', [transactionId])).rowCount)
+        throw new Error('Gas reservation supports a pending withdrawal and cannot be cancelled separately');
       if ((await client.query('SELECT 1 FROM orio_gas.submissions WHERE transaction_id=$1', [transactionId])).rowCount)
         throw new Error('Prepared execution requires reconciliation, not cancellation');
       const accounts = gasAccounts(quote);

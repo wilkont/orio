@@ -57,11 +57,11 @@ export function gasDigest(value: unknown): string {
   return createHash('sha256').update(JSON.stringify(canonical(value))).digest('hex');
 }
 export function gasReference(value: string): void {
-  if (typeof value !== 'string' || !/^[A-Za-z0-9:_./-]{1,180}$/.test(value))
+  if (typeof value !== 'string' || !/^[A-Za-z0-9:_./-]{1,180}(?![\s\S])/.test(value))
     throw new Error('Invalid gas reference');
 }
 function digest(value: string): void {
-  if (typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value)) throw new Error('Invalid gas evidence digest');
+  if (typeof value !== 'string' || !/^[a-f0-9]{64}(?![\s\S])/.test(value)) throw new Error('Invalid gas evidence digest');
 }
 function timestamp(value: string): number {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value))

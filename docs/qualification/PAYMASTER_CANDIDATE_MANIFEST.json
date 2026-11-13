@@ -3,7 +3,7 @@
   "status": "BLOCKED",
   "financialExecutionEnabled": false,
   "scope": "Undeployed source/artifact inventory and readiness gaps; not an independent audit or approval",
-  "releaseDigest": "1538f917053f8902dce2cbbc2655c5d45e576ecc9e27123a791e7c6c85f63a4d",
+  "releaseDigest": "30b08490a4b82aaee7e781860a9f07165456a5bb85fa2304cfcb95d4d2b654c1",
   "contractSetDigest": "da2d1550abab92efc2e8d9462730398883d3f49aa74cbe78c3a1ccab60ccdc47",
   "sourceDigests": [
     {
@@ -20,7 +20,7 @@
     },
     {
       "path": "contracts/scripts/qualification-report.mjs",
-      "sha256": "975e7c4c92c48f043baf5b1b4fef6f01c3ed6416cb42c59da761117900fdaf7a"
+      "sha256": "a40ffe0624c837c64d6037004f1ff59cf4d82c12ba75144f61051e8856c8cfbe"
     },
     {
       "path": "contracts/sdk/gas-permit.mjs",
@@ -48,11 +48,11 @@
     },
     {
       "path": "services/control-foundation/src/gas-policy.ts",
-      "sha256": "7e6fb5ca35bc8d6f0b11d433264b0b9f23e6a5b3c28e89d8067a7b86925f20dd"
+      "sha256": "f8fdd075f9112894fc769c2545d0cadb2578f31526b8b57c446ee4c0fd0c7c75"
     },
     {
       "path": "services/control-foundation/src/gas-controls.ts",
-      "sha256": "3a5cc755f0277a6fde16996afbe99279ad92a80b94905e16cab917a174005c3d"
+      "sha256": "37947ef9717a68409a0bc91429cdbb16a66f948edbd243c945f6e45c6409e7b5"
     },
     {
       "path": "services/control-foundation/src/ledger.ts",
@@ -67,12 +67,20 @@
       "sha256": "b62b2a1bb60645be999cd9dd261b5dfe2d683e8125063b80c10a7a19668353e3"
     },
     {
+      "path": "services/control-foundation/src/gas-funding.ts",
+      "sha256": "6d93ae1eff3ae83fc4b1f5534a949e7eb7f031dc8b835f8fe26d244ede34acbb"
+    },
+    {
+      "path": "services/control-foundation/src/gas-refunds.ts",
+      "sha256": "871f5b3a27290e8ae04463cd3488f3041a035a8ae61557cd1b840f596d66ee0e"
+    },
+    {
       "path": "services/control-foundation/src/chain-evidence.ts",
       "sha256": "ad46e40bc065144bf3eebb40b3e8fea5fe1341e7860ce8d0b19002f9e21d8646"
     },
     {
       "path": "services/control-foundation/src/finalized-user-operation.ts",
-      "sha256": "4e1840d8cc07ac8da5701592bba83275faa4b1ed5ed73a900afd824e423b343c"
+      "sha256": "ad870cf1d7fe4940993ad406e6080844ac115cd5f269d4b06e1893ffdac80f2b"
     },
     {
       "path": "services/control-foundation/src/finalized-transfer.ts",
@@ -89,6 +97,14 @@
     {
       "path": "services/control-foundation/migrations/009_gas_execution_bindings.sql",
       "sha256": "11cd9afc50e9fe19f2a6689c98afed6c6c211dee5a805ee7e4d0ae25b6b4e68e"
+    },
+    {
+      "path": "services/control-foundation/migrations/010_gas_prepayment_funding.sql",
+      "sha256": "0add8e61ed7749b16fcb3387847600c659df3eb4795f186979b3e2f8d139f999"
+    },
+    {
+      "path": "services/control-foundation/migrations/011_gas_prepayment_refunds.sql",
+      "sha256": "7f9eb3dc1d1f0e7de0d4b30065703a76a39f8c90782e2d751ec3bed5c6968650"
     }
   ],
   "artifacts": [
@@ -151,7 +167,7 @@
   "mainnetBlocker": "Qualification account, factory and paymaster constructors reject Base mainnet; a tested, approved production candidate is required",
   "prospectiveRelease": {
     "mode": "public-live",
-    "releaseDigest": "1538f917053f8902dce2cbbc2655c5d45e576ecc9e27123a791e7c6c85f63a4d",
+    "releaseDigest": "30b08490a4b82aaee7e781860a9f07165456a5bb85fa2304cfcb95d4d2b654c1",
     "projectId": "orio-spc-3-prod",
     "chainId": "8453",
     "contractSetDigest": "da2d1550abab92efc2e8d9462730398883d3f49aa74cbe78c3a1ccab60ccdc47"

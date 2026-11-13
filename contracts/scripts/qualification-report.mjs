@@ -11,8 +11,10 @@ const files = ['package.json', 'package-lock.json', 'scripts/compile.mjs', 'scri
 const sourceDigests = await Promise.all(files.map(async path => ({ path: 'contracts/' + path,
   sha256: digest(await readFile(new URL('../' + path, import.meta.url))) })));
 for (const path of ['src/gas-policy.ts', 'src/gas-controls.ts', 'src/ledger.ts', 'src/release.ts', 'src/monetary-policy.ts',
+  'src/gas-funding.ts', 'src/gas-refunds.ts',
   'src/chain-evidence.ts', 'src/finalized-user-operation.ts', 'src/finalized-transfer.ts',
-  'migrations/001_ledger.sql', 'migrations/008_gas_controls.sql', 'migrations/009_gas_execution_bindings.sql'])
+  'migrations/001_ledger.sql', 'migrations/008_gas_controls.sql', 'migrations/009_gas_execution_bindings.sql',
+  'migrations/010_gas_prepayment_funding.sql', 'migrations/011_gas_prepayment_refunds.sql'])
   sourceDigests.push({ path: 'services/control-foundation/' + path,
     sha256: digest(await readFile(new URL('../../services/control-foundation/' + path, import.meta.url))) });
 const compiled = compileContracts();

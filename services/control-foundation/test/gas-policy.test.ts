@@ -87,4 +87,10 @@ test('redemption proceeds cannot finance another action and duplicate/empty oper
   request.action = 'REDEMPTION'; assert.doesNotThrow(() => quoteGas(request, now));
   request.operations.push(request.operations[0]!); assert.throws(() => quoteGas(request, now));
   request.operations = []; assert.throws(() => quoteGas(request, now));
+  for (const field of ['transactionId', 'ownerRef', 'paymentAsset']) {
+    const malformed = input(); Reflect.set(malformed, field, 'valid\n');
+    assert.throws(() => quoteGas(malformed, now));
+  }
+  const malformed = input(); malformed.rate.evidenceDigest += '\n';
+  assert.throws(() => quoteGas(malformed, now));
 });

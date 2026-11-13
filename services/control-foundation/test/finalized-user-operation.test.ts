@@ -12,12 +12,13 @@ function data(nonce = 7n, success = 1n, cost = 9007199254740993n, used = 123456n
 const log = { logIndex: '0x2', removed: false, address: entry, transactionHash: tx, blockHash: block, blockNumber: '0xa',
   topics: ['0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f', userOp,
     '0x' + '0'.repeat(24) + account.slice(2), '0x' + '0'.repeat(24) + paymaster.slice(2)], data: data() };
+const boundary = { ...log, logIndex: '0x1', topics: ['0xbb47ee3e183a558b1a2ff0874b079f3fc5478b7454eacf2bfc5af2ff5878f972'], data: '0x' };
 function reader(sourceId: string, receiptChanges: Record<string, unknown> = {}, logChanges: Record<string, unknown> = {},
   other: { finalized?: unknown; canonical?: unknown; chain?: unknown } = {}): ChainReader {
   return { sourceId, request: async (method, params) => {
     if (method === 'eth_chainId') return other.chain ?? '0x14a34';
     if (method === 'eth_getTransactionReceipt') return { status: '0x1', transactionHash: tx, blockHash: block,
-      blockNumber: '0xa', logs: [{ ...log, ...logChanges }], ...receiptChanges };
+      blockNumber: '0xa', logs: [boundary, { ...log, ...logChanges }], ...receiptChanges };
     return params[0] === 'finalized' ? other.finalized ?? { number: '0xb', hash: '0x' + 'd'.repeat(64) }
       : other.canonical ?? { number: '0xa', hash: block };
   } };

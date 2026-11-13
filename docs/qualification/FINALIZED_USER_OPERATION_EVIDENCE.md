@@ -8,6 +8,8 @@ The output includes a canonical execution reference compatible with immutable ga
 
 The PostgreSQL/VM bridge now passes real reference-EntryPoint event bytes through this verifier before recording its local debit. The RPC/finality anchors in that test are synthetic, with no public network or independent provider connection. Unit tests cover malformed and conflicting evidence; the bridge ensures the parser matches the actual pinned contract event ABI. No production provider, continuous observer or automated customer-billing route is activated.
 
+For exact payout attribution the verifier also returns executionBoundaryLogIndex, the latest preceding BeforeExecution or UserOperationEvent from the same trusted EntryPoint. A withdrawal transfer must fall strictly after that boundary and before its own final UserOperationEvent, with the same canonical block and transaction. This prevents using a different operation's payout within one bundle. Caller inputs are snapshotted before asynchronous verification; comparisons use verified observation fields.
+
 External reviewers are optional under ADR 0002. The two-source technical verification, user/treasury consent and actual evidence requirements remain intact; they are not independent-review mandates.
 
 Source: the locked @account-abstraction/contracts 0.8.0 interfaces/IEntryPoint.sol and [upstream v0.8 event interface](https://github.com/eth-infinitism/account-abstraction/blob/releases/v0.8/contracts/interfaces/IEntryPoint.sol).
