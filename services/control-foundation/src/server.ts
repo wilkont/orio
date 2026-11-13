@@ -18,6 +18,9 @@ if (databaseUrl.search !== '')
 const portText = process.env.PORT ?? '8080';
 if (!/^[1-9][0-9]{0,4}$/.test(portText) || Number(portText) > 65535) throw new Error('Invalid service port');
 
+const bindAddress = process.env.ORIO_BIND_ADDRESS ?? '127.0.0.1';
+if (!['127.0.0.1', '0.0.0.0', '::1'].includes(bindAddress)) throw new Error('Invalid service bind address');
+
 const pool = new Pool({
   connectionString, max: 5, connectionTimeoutMillis: 5000,
   query_timeout: 5000, ssl: { ca: await readFile(caPath, 'utf8'), rejectUnauthorized: true },
@@ -27,7 +30,7 @@ pool.on('error', () => { console.error('Protocol database connection error'); })
 const server = createProtocolServer(new ProtocolReader(pool));
 await new Promise<void>((resolve, reject) => {
   server.once('error', reject);
-  server.listen(Number(portText), '127.0.0.1', resolve);
+  server.listen(Number(portText), bindAddress, resolve);
 });
 console.log('ORIO protocol metadata service started');
 let closing = false;

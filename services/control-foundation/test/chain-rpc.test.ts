@@ -60,3 +60,10 @@ test('bounds response size and replaces network exceptions with a credential-saf
     await assert.rejects(client.request('eth_chainId', []), { message: 'Chain RPC request failed' });
   }
 });
+
+test('malformed credential headers are rejected without disclosing their contents', () => {
+  assert.throws(() => new HttpsChainReader({
+    sourceId: 'provider', endpoint: 'https://rpc.invalid',
+    headers: { Authorization: 'Bearer synthetic-private-value\r\nInjected: true'.replaceAll('\\r\\n', '\r\n') },
+  }), { message: 'Invalid chain RPC headers' });
+});

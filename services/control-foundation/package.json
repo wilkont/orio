@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "node src/server.ts",
+    "test:container": "node scripts/test-container.mjs",
     "typecheck": "tsc --noEmit",
     "test:local": "node scripts/test-local.mjs",
     "test:unit": "node --test test/release.test.ts",

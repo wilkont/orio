@@ -124,3 +124,15 @@ New source inserts trigger the shared claim check in their existing recording tr
 Canonical references must come from the finalized adapter and include chain, transaction and event/output identity. String uniqueness cannot detect two spellings of the same event or establish authenticity. The shared registry currently coordinates conversion and redemption observations. Ledger accounting still needs a reviewed operation-to-journal linkage that permits accounting for the same observation without allowing reuse for a different obligation. This migration does not change financial journals, execute any settlement or resolve independent chain custody.
 
 Local integration tests apply migrations 001-006 to dedicated databases inside the disposable test container. Tests cover concurrent cross-module claims, replay rollback, direct master aliases, immutable claims, clean historical backfill and conflicting-history upgrade rollback. Migration 006 is local-only.
+
+## Master receipt accounting (local migration 007)
+
+`MasterReceiptAccounting.credit` binds a MASTER_RECEIVED conversion's expected version, historical master asset/vault, recorded custody event and shared receipt owner to one balanced journal. It debits the reserve asset and credits that customer's escrow liability for the exact received token units. Accounts, journal, receipt linkage and outbox commit together. Concurrent retries return the original journal; a failure rolls back the complete operation. A later protocol pause does not erase historical custody or prevent its bookkeeping.
+
+This is historical receipt accounting, not ORIO issuance, valuation or fee recognition. It neither authenticates custody independently nor moves assets. Monetary settlement must separately enforce approved eligibility, fees, appreciation, rounding and release authorization before minting. No runtime grants are introduced. Migration 007 is local-only; AWS still has only migrations 001 and 002.
+
+## Container verification
+
+The Dockerfile pins its Node base by digest, installs locked production dependencies, runs as the unprivileged node user and exposes metadata only. Set ORIO_DATABASE_URL and mount a trusted certificate at ORIO_PG_CA_FILE. Never embed database credentials or private keys in an image. ORIO_BIND_ADDRESS defaults to loopback outside the image; the image uses 0.0.0.0 within its container. Restrict external ingress separately.
+
+`npm run test:container` builds and runs the actual image against disposable PostgreSQL with TLS and a dedicated registry-only reader. It checks empty/paused readiness, a read-only filesystem, unprivileged execution, ledger access denial and certificate-hostname failure. Test resources are removed afterward. Passing this test does not deploy the image or qualify production networking, workload credentials, monitoring or release controls.
