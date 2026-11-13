@@ -1,8 +1,8 @@
-# ORIO on-chain master designation
+# ORIO governance and gas qualification contracts
 
 These contracts implement the Ledger B master designation component in the existing ORIO repository. They compile with pinned Solidity 0.8.38 and OpenZeppelin Contracts 5.6.1, targeting Cancun bytecode. This is a local implementation awaiting Base qualification, independent audit and release evidence.
 
-Run npm ci, npm run build and npm test in this directory with Node 24 or later. Build writes ABI, creation bytecode, runtime bytecode and compiler metadata to ignored artifacts files. Tests execute signed synthetic transactions in an in-memory EthereumJS VM with chain ID 31337. No RPC connection or real asset transaction occurs.
+Run npm ci, npm run build and npm test in this directory with Node 24 or later. Build writes ABI, creation bytecode, runtime bytecode and compiler metadata to ignored artifacts files. Tests execute signed synthetic transactions in an in-memory EthereumJS VM with qualification chain IDs 31337/84532, plus rejection checks for 8453. No RPC connection or real asset transaction occurs.
 
 ## Governance and authorization
 
@@ -31,3 +31,11 @@ Source references
 - The pinned EthereumJS VM package README documents the in-memory signed-transaction execution API.
 
 The compiler's transitive tmp dependency is overridden to exact version 0.2.7 to resolve GHSA-7c78-jf6q-g5cm. The locked compiler remains solc 0.8.38; compilation and all VM tests pass with the patched dependency. npm audit reports no known advisories for this dependency tree at verification time.
+
+## Account-abstraction candidate
+
+ORIOTreasuryPaymaster, ORIOGasAccount and ORIOGasAccountFactory integrate the pinned ERC-4337 reference package 0.8.0. All three reject Base mainnet deployment. They implement qualification-network company ETH payment, dual-signed maximum-cost permits, deterministic account deployment, EntryPoint-only wallet execution, reservation replay protection and governed pause/signer revision checks. PostOp emits cost-so-far observations, not final bills. Token collection and monetary execution are absent.
+
+The repo-internal sdk/gas-permit.mjs binds committed journal evidence and an exact owned sending account to contract-compatible EIP-712 signing material. The actual PostgreSQL-to-EntryPoint integration runs through the control service's test:local harness; install locked dependencies in both packages. It prepares a non-cancellable reservation before treasury signing and binds the final operation hash before broadcast.
+
+Run npm run qualification:report for the source/artifact inventory and explicit BLOCKED release report. See docs/qualification/PAYMASTER_QUALIFICATION.md for results, network-cost/finality limitations, required independent evidence and production work. No live keys, funded network accounts, provider subscriptions, stake/deposit transactions or public deployments are included.

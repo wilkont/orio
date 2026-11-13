@@ -30,7 +30,7 @@ function cost(executionRef = 'eip155:84532:userop:one'): GasCost {
   return { operationId: 'call', executionRef, evidenceDigest: evidence, outcome: 'SUCCESS',
     executionWei: '100', l1DataWei: '20', otherNetworkWei: '5' };
 }
-async function fixture(run: (pool: Pool, ledger: ControlLedger, controls: GasControls) => Promise<void>) {
+async function fixture(run: (pool: Pool, ledger: ControlLedger, controls: GasControls) => Promise<void>, installBindings = true) {
   const root = new Pool({ connectionString: rootUrl.href });
   const name = 'orio_test_gas_' + randomUUID().replaceAll('-', ''), runtime = name + '_rt';
   const url = new URL(rootUrl); url.pathname = '/' + name;
@@ -38,7 +38,7 @@ async function fixture(run: (pool: Pool, ledger: ControlLedger, controls: GasCon
   try {
     await root.query('CREATE DATABASE ' + name); created = true;
     pool = new Pool({ connectionString: url.href });
-    for (const migration of ['001_ledger.sql', '008_gas_controls.sql'])
+    for (const migration of ['001_ledger.sql', '008_gas_controls.sql', ...(installBindings ? ['009_gas_execution_bindings.sql'] : [])])
       await pool.query((await readFile(new URL('../migrations/' + migration, import.meta.url), 'utf8')).replaceAll('orio_ledger_runtime', runtime));
     await run(pool, new ControlLedger(pool), new GasControls(pool));
   } finally {
@@ -127,7 +127,7 @@ test('cost retries do not double book; conflicting receipts and cross-user-opera
   await prepareAndRecord(controls, q); const checkpoint = (await ledger.verify()).head;
   await controls.recordCost(q.transactionId, cost()); assert.deepEqual((await ledger.verify()).head, checkpoint);
   await assert.rejects(controls.recordCost(q.transactionId, { ...cost(), executionWei: '101' }), /Conflicting/);
-  await assert.rejects(controls.prepare(other.transactionId, 'call', cost().executionRef, evidence), /unique/);
+  await assert.rejects(controls.prepare(other.transactionId, 'call', cost().executionRef, evidence), /claimed/);
 }));
 test('unsubmitted cancellation refunds all gas holds once and prevents later execution', async () => fixture(async (_pool, ledger, controls) => {
   const q = quote(); await fund(ledger, q); await controls.reserve(q, authorization(q));
@@ -200,3 +200,61 @@ test('non-prepaid quotes cannot imply an unimplemented collection mechanism has 
   const q = quoteGas(request, new Date().toISOString()); await fund(ledger, q);
   await assert.rejects(controls.reserve(q, authorization(q)), /collection adapter/);
 }));
+
+test('permit preparation prevents cancellation before signing; final execution binds exactly once', async () => fixture(async (pool, ledger, controls) => {
+  const q = quote(), prepared = 'eip155:84532:reservation:' + evidence;
+  const execution = 'eip155:84532:userop:' + 'b'.repeat(64);
+  await fund(ledger, q); await controls.reserve(q, authorization(q));
+  await assert.rejects(controls.bindExecution(q.transactionId, 'call', prepared, execution, evidence), /not prepared/);
+  await controls.prepare(q.transactionId, 'call', prepared, evidence);
+  await assert.rejects(controls.cancelUnsubmitted(q.transactionId), /reconciliation/);
+  await assert.rejects(controls.recordCost(q.transactionId, cost(execution)), /does not match/);
+  await controls.bindExecution(q.transactionId, 'call', prepared, execution, evidence);
+  await controls.bindExecution(q.transactionId, 'call', prepared, execution, evidence);
+  await assert.rejects(controls.bindExecution(q.transactionId, 'call', prepared, 'eip155:84532:userop:' + 'c'.repeat(64), evidence), /Conflicting/);
+  await assert.rejects(pool.query('DELETE FROM orio_gas.execution_bindings'), /append-only/);
+  await controls.recordCost(q.transactionId, cost(execution));
+  assert.equal((await controls.settle(q.transactionId, evidence)).status, 'SETTLED');
+}));
+
+test('direct and bound execution references share one claim namespace in either insertion order', async () => {
+  for (const directFirst of [true, false]) await fixture(async (pool, ledger, controls) => {
+    const direct = quote('direct'), bound = quote('bound'), prepared = 'eip155:84532:reservation:' + evidence;
+    const execution = 'eip155:84532:userop:' + 'b'.repeat(64);
+    await fund(ledger, direct); await controls.reserve(direct, authorization(direct)); await controls.reserve(bound, authorization(bound));
+    await controls.prepare(bound.transactionId, 'call', prepared, evidence);
+    if (directFirst) {
+      await controls.prepare(direct.transactionId, 'call', execution, evidence);
+      await assert.rejects(controls.bindExecution(bound.transactionId, 'call', prepared, execution, evidence), /claimed/);
+      assert.equal((await pool.query('SELECT * FROM orio_gas.execution_bindings')).rowCount, 0);
+      await controls.recordCost(direct.transactionId, cost(execution));
+    } else {
+      await controls.bindExecution(bound.transactionId, 'call', prepared, execution, evidence);
+      await assert.rejects(controls.prepare(direct.transactionId, 'call', execution, evidence), /claimed/);
+      assert.equal((await pool.query('SELECT * FROM orio_gas.submissions WHERE transaction_id=$1', [direct.transactionId])).rowCount, 0);
+      await controls.recordCost(bound.transactionId, cost(execution));
+    }
+    assert.equal((await pool.query('SELECT * FROM orio_gas.costs')).rowCount, 1);
+    assert.equal((await ledger.verify()).ok, true);
+  });
+});
+test('concurrent direct preparation and final binding cannot own the same execution', async () => fixture(async (_pool, ledger, controls) => {
+  const direct = quote('direct'), bound = quote('bound'), prepared = 'eip155:84532:reservation:' + evidence;
+  const execution = 'eip155:84532:userop:' + 'b'.repeat(64);
+  await fund(ledger, direct); await controls.reserve(direct, authorization(direct)); await controls.reserve(bound, authorization(bound));
+  await controls.prepare(bound.transactionId, 'call', prepared, evidence);
+  const results = await Promise.allSettled([controls.prepare(direct.transactionId, 'call', execution, evidence),
+    controls.bindExecution(bound.transactionId, 'call', prepared, execution, evidence)]);
+  assert.equal(results.filter(item => item.status === 'fulfilled').length, 1);
+  assert.equal((await ledger.verify()).ok, true);
+}));
+test('binding migration backfills existing direct executions and retains immutable claim ownership', async () => fixture(async (pool, ledger, controls) => {
+  const q = quote(); await fund(ledger, q); await controls.reserve(q, authorization(q));
+  await controls.prepare(q.transactionId, 'call', cost().executionRef, evidence);
+  await pool.query(await readFile(new URL('../migrations/009_gas_execution_bindings.sql', import.meta.url), 'utf8'));
+  const claims = await pool.query('SELECT * FROM orio_gas.execution_claims');
+  assert.equal(claims.rowCount, 1); assert.equal(claims.rows[0].transaction_id, q.transactionId);
+  await assert.rejects(pool.query('DELETE FROM orio_gas.execution_claims'), /append-only/);
+  await controls.recordCost(q.transactionId, cost());
+  assert.equal((await controls.settle(q.transactionId, evidence)).status, 'SETTLED');
+}, false));

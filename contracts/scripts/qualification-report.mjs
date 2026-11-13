@@ -1,0 +1,54 @@
+import { createHash } from 'node:crypto';
+import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import solc from 'solc';
+import { compileContracts } from './compile.mjs';
+import { evaluateRelease } from '../../services/control-foundation/src/release.ts';
+
+const digest = value => createHash('sha256').update(value).digest('hex');
+const names = ['ORIOGovernanceTimelock', 'MasterAssetRegistry', 'ORIOTreasuryPaymaster', 'ORIOGasAccount', 'ORIOGasAccountFactory'];
+const files = ['package.json', 'package-lock.json', 'scripts/compile.mjs', 'scripts/qualification-report.mjs',
+  'sdk/gas-permit.mjs', ...names.map(name => 'src/' + name + '.sol')];
+const sourceDigests = await Promise.all(files.map(async path => ({ path: 'contracts/' + path,
+  sha256: digest(await readFile(new URL('../' + path, import.meta.url))) })));
+for (const path of ['src/gas-policy.ts', 'src/gas-controls.ts', 'src/ledger.ts', 'src/release.ts',
+  'migrations/001_ledger.sql', 'migrations/008_gas_controls.sql', 'migrations/009_gas_execution_bindings.sql'])
+  sourceDigests.push({ path: 'services/control-foundation/' + path,
+    sha256: digest(await readFile(new URL('../../services/control-foundation/' + path, import.meta.url))) });
+const compiled = compileContracts();
+const artifacts = names.map(name => {
+  const artifact = compiled['src/' + name + '.sol'][name];
+  return { contractName: name, compiler: solc.version(), creationSha256: digest(Buffer.from(artifact.evm.bytecode.object, 'hex')),
+    runtimeTemplateSha256: digest(Buffer.from(artifact.evm.deployedBytecode.object, 'hex')),
+    runtimeTemplateBytes: artifact.evm.deployedBytecode.object.length / 2,
+    metadataSha256: digest(artifact.metadata), deployedAddress: null, deployedRuntimeSha256: null };
+});
+const releaseDigest = digest(JSON.stringify(sourceDigests)), contractSetDigest = digest(JSON.stringify(artifacts));
+const approvalPath = new URL('../../services/control-foundation/config/approvals.json', import.meta.url);
+const trustPath = new URL('../../services/control-foundation/config/trust-registry.json', import.meta.url);
+const approvals = JSON.parse(await readFile(approvalPath, 'utf8')), trust = JSON.parse(await readFile(trustPath, 'utf8'));
+const prospectiveRelease = { mode: 'public-live', releaseDigest, projectId: 'orio-spc-3-prod', chainId: '8453', contractSetDigest };
+const independentReleaseDecision = evaluateRelease(prospectiveRelease, approvals, trust);
+const requiredQualification = [
+  ['economics', 'Founder-approved genesis, escrow ownership, rounding, dust, residual allocation, failure charges and reopening'],
+  ['independent-security', 'Independent audit of exact source, bytecode, EntryPoint, account, paymaster and signing/collection services'],
+  ['base-network-costs', 'Qualified Base fee estimates and final L1/other/per-user cost attribution without double counting'],
+  ['identity-and-signers', 'Authenticated customer-account ownership; qualified user signing/recovery and treasury HSM/multisig controls'],
+  ['live-collection', 'Verified funding, collection, asset exchange, excess refunds and failed-operation recovery'],
+  ['treasury-operations', 'Separate custody; replenishment, alerts, failover, spend limits and outage rehearsals'],
+  ['deployment', 'Approved target configuration, real bytecode/constructor/roles, TLS/workload/networking and deployed integration checks'],
+  ['reconciliation', 'Independent finality/custody checks, continuous dual-ledger matching, discrepancies, backups and restoration'],
+  ['legal-custody-financial-operations', 'All five release-specific independent signed gate approvals and underlying evidence'],
+].map(([id, requirement]) => ({ id, requirement, status: 'NOT_VERIFIED', evidenceDigest: null }));
+const report = {
+  schemaVersion: 1, status: 'BLOCKED', financialExecutionEnabled: false,
+  scope: 'Undeployed source/artifact inventory and readiness gaps; not an independent audit or approval',
+  releaseDigest, contractSetDigest, sourceDigests, artifacts,
+  candidateNetworks: ['84532', '31337'], baseMainnetCompatible: false,
+  mainnetBlocker: 'Qualification account, factory and paymaster constructors reject Base mainnet; an independently reviewed production candidate is required',
+  prospectiveRelease, independentReleaseDecision, requiredQualification,
+};
+const directory = new URL('../../docs/qualification/', import.meta.url);
+await mkdir(directory, { recursive: true });
+await writeFile(new URL('PAYMASTER_CANDIDATE_MANIFEST.json', directory), JSON.stringify(report, null, 2) + '\n');
+console.log('Wrote candidate inventory: BLOCKED; no mainnet compatibility, deployment or independent qualification');
+// Inventory creation succeeds; its result is explicitly blocked. It grants no execution capability.

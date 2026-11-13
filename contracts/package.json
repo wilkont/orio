@@ -7,10 +7,12 @@
     "node": ">=24"
   },
   "scripts": {
+    "qualification:report": "node scripts/qualification-report.mjs",
     "build": "node scripts/compile.mjs",
     "test": "node --test test/*.test.mjs"
   },
   "devDependencies": {
+    "@account-abstraction/contracts": "0.8.0",
     "@ethereumjs/block": "10.1.3",
     "@ethereumjs/common": "10.1.3",
     "@ethereumjs/tx": "10.1.3",

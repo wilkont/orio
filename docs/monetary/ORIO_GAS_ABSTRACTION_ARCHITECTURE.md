@@ -8,7 +8,11 @@ ERC-4337 estimates must cover account deployment when needed, validation, pre-ve
 
 Flow: complete quote → authenticated maximum authorization → pre-funded gas hold → deterministic preparation → broadcast → independent finalized receipt verification → actual ETH expense → reconciliation → authorized user reimbursement and unused credit. An uncertain submission queries the same operation identity; it does not automatically replace it. Replacement/failover may rebroadcast the same signed operation, but a new operation requires an independently safe nonce/replacement and authorization procedure.
 
-Implemented: integer quote/reconciliation core; PostgreSQL prepayment/ETH holds, immutable submissions/costs/closures, atomic journal/outbox integration; policy metadata. Not implemented: actual smart account/paymaster contract, EntryPoint/bundler integration, signatures, network estimator, live fee attribution, token collection, exchange conversion, automatic replenishment, UI/statement wiring or full end-to-end abstraction. Release requires all these adapters plus independent qualification.
+Implemented: integer quote/reconciliation core; PostgreSQL prepayment/ETH holds, immutable submissions/costs/closures and final execution bindings; atomic journal/outbox integration; policy metadata. A qualification-only smart account, factory and dual-signed EIP-712 paymaster now execute through the pinned reference EntryPoint in an offline VM. The SDK binds actual reservation journals; the bridge test reconciles the final local EntryPoint debit and unused credit. These contracts reject mainnet deployment.
+
+Before treasury signing, commit a reservation-specific prepared slot; after signing, bind the final UserOperation hash before broadcast. This closes the cancellation gap when a signer or process crashes. Migration 009 preserves the binding and refuses replacements of uncertain execution identities. See docs/qualification/PAYMASTER_QUALIFICATION.md.
+
+Not implemented/qualified: public-network deployment, bundler validation-rule traces/staking, consumer signing/recovery, live estimator/finality and Base cost attribution, token collection/exchange conversion, automatic replenishment, UI/statement wiring or live end-to-end abstraction. Release requires these integrations plus approved economics and independent qualification.
 
 Sources inspected November 13, 2026:
 

@@ -132,6 +132,35 @@ export class GasControls {
       'SELECT evidence,expense_sequence FROM orio_gas.costs WHERE transaction_id=$1 ORDER BY operation_id', [transactionId])).rows;
   }
 
+  /** For account abstraction, prepare the deterministic reservation reference BEFORE obtaining
+   * any treasury signature. Bind its final UserOperation hash once after signing, before broadcast.
+   * A crash at either stage leaves a non-cancellable hold for reconciliation. */
+  async bindExecution(transactionId: string, operationId: string, preparedRef: string,
+    executionRef: string, signedPayloadDigest: string): Promise<void> {
+    gasReference(preparedRef); gasReference(executionRef);
+    if (typeof signedPayloadDigest !== 'string' || !/^[a-f0-9]{64}$/.test(signedPayloadDigest))
+      throw new Error('Invalid signed execution digest');
+    await this.transaction(async client => {
+      const { quote } = await this.locked(client, transactionId);
+      if (!new RegExp('^eip155:' + quote.chainId + ':reservation:[a-f0-9]{64}$').test(preparedRef) ||
+          !new RegExp('^eip155:' + quote.chainId + ':userop:[a-f0-9]{64}$').test(executionRef))
+        throw new Error('Invalid account-abstraction execution binding');
+      const submission = (await client.query<{ execution_ref: string }>(
+        'SELECT execution_ref FROM orio_gas.submissions WHERE transaction_id=$1 AND operation_id=$2', [transactionId, operationId])).rows[0];
+      if (!submission || submission.execution_ref !== preparedRef) throw new Error('Execution was not prepared before signing');
+      const prior = (await client.query<{ execution_ref: string; signed_payload_digest: string }>(
+        'SELECT * FROM orio_gas.execution_bindings WHERE transaction_id=$1 AND operation_id=$2', [transactionId, operationId])).rows[0];
+      if (prior) {
+        if (prior.execution_ref !== executionRef || prior.signed_payload_digest !== signedPayloadDigest)
+          throw new Error('Conflicting signed execution binding');
+        return;
+      }
+      if (await this.closure(client, transactionId)) throw new Error('Gas reservation is closed');
+      await client.query('INSERT INTO orio_gas.execution_bindings VALUES($1,$2,$3,$4)',
+        [transactionId, operationId, executionRef, signedPayloadDigest]);
+    });
+  }
+
   /** Receipt adapters must authenticate finality, actual fees and per-user-operation allocation.
    * Never submit the entire bundler transaction cost once for each user. */
   async recordCost(transactionId: string, cost: GasCost): Promise<'RECORDED' | 'REVIEW_REQUIRED'> {
@@ -147,7 +176,11 @@ export class GasControls {
       }
       if (await this.closure(client, transactionId)) throw new Error('Gas reservation is closed');
       const submission = (await client.query<{ execution_ref: string }>('SELECT execution_ref FROM orio_gas.submissions WHERE transaction_id=$1 AND operation_id=$2', [transactionId, cost.operationId])).rows[0];
-      if (!submission || submission.execution_ref !== cost.executionRef) throw new Error('Gas receipt does not match prepared execution');
+      const binding = (await client.query<{ execution_ref: string }>(
+        'SELECT execution_ref FROM orio_gas.execution_bindings WHERE transaction_id=$1 AND operation_id=$2', [transactionId, cost.operationId])).rows[0];
+      if (!submission || (binding?.execution_ref ?? submission.execution_ref) !== cost.executionRef ||
+          (!binding && submission.execution_ref.includes(':reservation:')))
+        throw new Error('Gas receipt does not match prepared execution');
       const existing = await this.costs(client, transactionId);
       const booked = existing.filter(item => item.expense_sequence).reduce((sum, item) => sum + validateGasCost(quote, item.evidence), 0n);
       let sequence: string | null = null;
