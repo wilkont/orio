@@ -1,0 +1,15 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["cloudformation:DescribeStacks", "cloudformation:DescribeStackEvents", "cloudformation:DescribeStackResources", "cloudformation:DescribeStackResource", "cloudformation:GetTemplate"],
+      "Resource": "arn:aws:cloudformation:us-east-1:720232346199:stack/orio-spc-3-ledger/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["rds:DescribeDBInstances"],
+      "Resource": "arn:aws:rds:us-east-1:720232346199:db:orio-spc-3-ledger-ledgerdatabase-sdrgecp35snc"
+    }
+  ]
+}

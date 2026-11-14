@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Private PostgreSQL foundation for ORIO SPC 3 Ledger A
+Parameters:
+  ZoneA:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: us-east-1a
+  ZoneB:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: us-east-1b
+Rules:
+  SeparateZones:
+    Assertions:
+      - Assert: !Not [!Equals [!Ref ZoneA, !Ref ZoneB]]
+        AssertDescription: Choose two distinct Availability Zones.
+Resources:
+  Network:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.87.0.0/24
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+  DatabaseSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Network
+      CidrBlock: 10.87.0.0/26
+      AvailabilityZone: !Ref ZoneA
+  DatabaseSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Network
+      CidrBlock: 10.87.0.64/26
+      AvailabilityZone: !Ref ZoneB
+  DatabaseSubnets:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: ORIO private ledger subnets
+      SubnetIds: [!Ref DatabaseSubnetA, !Ref DatabaseSubnetB]
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ORIO ledger database with no inbound access until workload integration
+      VpcId: !Ref Network
+  DatabaseParameters:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: Require TLS for ORIO Ledger A
+      Family: postgres17
+      Parameters:
+        rds.force_ssl: '1'
+  LedgerDatabase:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      Engine: postgres
+      EngineVersion: '17.9'
+      DBInstanceClass: db.t4g.medium
+      DBName: orio_control
+      MasterUsername: orio_ledger_admin
+      ManageMasterUserPassword: true
+      AllocatedStorage: '20'
+      StorageType: gp3
+      StorageEncrypted: true
+      PubliclyAccessible: false
+      MultiAZ: true
+      DeletionProtection: true
+      BackupRetentionPeriod: 14
+      CopyTagsToSnapshot: true
+      DBParameterGroupName: !Ref DatabaseParameters
+      DBSubnetGroupName: !Ref DatabaseSubnets
+      VPCSecurityGroups: [!GetAtt DatabaseSecurityGroup.GroupId]
+      EnableCloudwatchLogsExports: [postgresql]
+Outputs:
+  VpcId:
+    Value: !Ref Network
+  DatabaseSecurityGroupId:
+    Value: !GetAtt DatabaseSecurityGroup.GroupId
+  DatabaseEndpoint:
+    Value: !GetAtt LedgerDatabase.Endpoint.Address
+  MigrationSecretArn:
+    Value: !GetAtt LedgerDatabase.MasterUserSecret.SecretArn

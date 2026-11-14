@@ -1,0 +1,416 @@
+{
+  "schemaVersion": 1,
+  "status": "BLOCKED",
+  "financialExecutionEnabled": false,
+  "scope": "Undeployed source/artifact inventory and readiness gaps; not an independent audit or approval",
+  "releaseDigest": "73b49d4614d0232e912f646aac2c9c2d8019cc235e15fb4331f11bfd68e2713c",
+  "contractSetDigest": "8ee1d0b9ef2ad61b80ebe103e7712fa6495e839b24a501defb6542f996a75516",
+  "sourceDigests": [
+    {
+      "path": "contracts/package.json",
+      "sha256": "ff2db051c4ca502545043b6fa8b6f3eeb6737b6e2bfef87409a7c9e0a532349f"
+    },
+    {
+      "path": "contracts/package-lock.json",
+      "sha256": "93e7222ce17eefd726806ad144d592aaa389318b30465109d6b21fd7890827db"
+    },
+    {
+      "path": "contracts/scripts/compile.mjs",
+      "sha256": "2e684e9e7a34f97633ed55c1a541a589af232f7bb8a35781bc0f1da9ea0aba7e"
+    },
+    {
+      "path": "contracts/scripts/qualification-report.mjs",
+      "sha256": "f5cab5584e0b635297dc014e0dfdbc0e4c65aa0a2c08f624d99422100a1b4366"
+    },
+    {
+      "path": "contracts/sdk/gas-permit.mjs",
+      "sha256": "23b9fdf4dd61630e3f1c932b56ac2844cb62c20cdfa94ed2ace90ff9bfb8df4e"
+    },
+    {
+      "path": "contracts/sdk/recovery.mjs",
+      "sha256": "131aace19145e5630a1b21e6b126993c1263ca12e90749e4c5dab6e24eef0da9"
+    },
+    {
+      "path": "contracts/src/ORIOGovernanceTimelock.sol",
+      "sha256": "51f9024ef32b20d812ac0e4bf2313790bbfa835ceffbad389ed560d3de4cf0d7"
+    },
+    {
+      "path": "contracts/src/MasterAssetRegistry.sol",
+      "sha256": "92d838ffff84d89afc74c8cb3fa3b94386961f458d4a10e13a9ec76b82535c45"
+    },
+    {
+      "path": "contracts/src/ORIOTreasuryPaymaster.sol",
+      "sha256": "aee2a67ee7b716a0ebbdc16ca55d56cb1b226cbda3da2c27c1fec200ceaebfd7"
+    },
+    {
+      "path": "contracts/src/ORIOGasAccount.sol",
+      "sha256": "266daae50808ac806ccba96b9756771431d85b829812148507cf1c7e5577d896"
+    },
+    {
+      "path": "contracts/src/ORIOGasAccountFactory.sol",
+      "sha256": "d70e9859d2e8504addda548597717b48bf1d92f10ff5c999feb30678dfb9cc87"
+    },
+    {
+      "path": "contracts/src/ORIOCurrency.sol",
+      "sha256": "af95ee85063fe7f2a126c040861ef9782cafc38893208006efabf254d1c960ac"
+    },
+    {
+      "path": "contracts/src/ORIOReserveVault.sol",
+      "sha256": "48d815eb1ccac27b0551e6bb684f889d41494d6dbf7a3ffb3ed92f9ae5a85027"
+    },
+    {
+      "path": "contracts/src/ORIOMonetaryController.sol",
+      "sha256": "48e8c22174ebcef51181ed903b4cada150fa10c43991df75f7d4f076b22f539b"
+    },
+    {
+      "path": "contracts/src/ORIORedemptionLocks.sol",
+      "sha256": "a840581c93f5803059d6ab5ca5e49d7e42f821f42238d8afc7c3ac568aec1d37"
+    },
+    {
+      "path": "contracts/src/ORIORecoverableGasAccount.sol",
+      "sha256": "d6e4f8bb03f273be6413dc12ce6bcc3a28bef158a704aca5faa7083348521e1d"
+    },
+    {
+      "path": "contracts/src/ORIORecoverableGasAccountFactory.sol",
+      "sha256": "6041fb2bdcc49c74ce279f799021864ef97b9127d126e047b594f883db3aac65"
+    },
+    {
+      "path": "services/control-foundation/src/gas-policy.ts",
+      "sha256": "f8fdd075f9112894fc769c2545d0cadb2578f31526b8b57c446ee4c0fd0c7c75"
+    },
+    {
+      "path": "services/control-foundation/src/gas-controls.ts",
+      "sha256": "37947ef9717a68409a0bc91429cdbb16a66f948edbd243c945f6e45c6409e7b5"
+    },
+    {
+      "path": "services/control-foundation/src/ledger.ts",
+      "sha256": "f207d783b7831a5286601ffa698443a3472e32b06bd6e3b30bec95c408d4ec5f"
+    },
+    {
+      "path": "services/control-foundation/src/release.ts",
+      "sha256": "b91467d05bba3faa0589f96743823d48ef78a98ba0b92b6ed7205b19c0d8ca55"
+    },
+    {
+      "path": "services/control-foundation/src/monetary-policy.ts",
+      "sha256": "44d848133b1ab137e73612b2d4cc972e94e0d351eee158f526b4ffd7bad5ee63"
+    },
+    {
+      "path": "services/control-foundation/src/gas-funding.ts",
+      "sha256": "6d93ae1eff3ae83fc4b1f5534a949e7eb7f031dc8b835f8fe26d244ede34acbb"
+    },
+    {
+      "path": "services/control-foundation/src/gas-refunds.ts",
+      "sha256": "871f5b3a27290e8ae04463cd3488f3041a035a8ae61557cd1b840f596d66ee0e"
+    },
+    {
+      "path": "services/control-foundation/src/monetary-engine.ts",
+      "sha256": "399d28f1274c39fcd8f2a4ef96da5afe53ae0fd99ad74a26564b9fe5a5778c73"
+    },
+    {
+      "path": "services/control-foundation/src/finalized-monetary.ts",
+      "sha256": "3a3e0304ef39019f3c6055f141ec225302b40a59e9e1439a3552f71bfd59567f"
+    },
+    {
+      "path": "services/control-foundation/src/finalized-company-withdrawal.ts",
+      "sha256": "c7347fead8f25e4be752c5ff0dd354daf908a5095294a0fe5088607300f937ef"
+    },
+    {
+      "path": "services/control-foundation/src/monetary-settlement.ts",
+      "sha256": "93335ccb0cdd3ce251b3bee8e1c7a00eb97bd491a6cb675c544ec47cd6039d5f"
+    },
+    {
+      "path": "services/control-foundation/config/approved-monetary-policy.json",
+      "sha256": "15d3f8877305275da06a27788795107568492e28a29b4637a8ea723e257fedfe"
+    },
+    {
+      "path": "services/control-foundation/src/chain-evidence.ts",
+      "sha256": "ad46e40bc065144bf3eebb40b3e8fea5fe1341e7860ce8d0b19002f9e21d8646"
+    },
+    {
+      "path": "services/control-foundation/src/finalized-user-operation.ts",
+      "sha256": "ad870cf1d7fe4940993ad406e6080844ac115cd5f269d4b06e1893ffdac80f2b"
+    },
+    {
+      "path": "services/control-foundation/src/finalized-transfer.ts",
+      "sha256": "6e393fed7a50bb4b7e49ae485d81a06d7cc087051e009c5217cb02bf6b9d91c3"
+    },
+    {
+      "path": "services/control-foundation/src/provider-qualification.ts",
+      "sha256": "7998d5457e505bd6c1ed091a18fc4d4b117d355271fa3719a1ea57188d0e6c97"
+    },
+    {
+      "path": "services/control-foundation/src/chain-rpc.ts",
+      "sha256": "ec542bf9be6cedba18cac375f564459aae631ed56b4d07623d359da73892036c"
+    },
+    {
+      "path": "services/control-foundation/src/bundler-qualification.ts",
+      "sha256": "22715cf26999972324db5c45b23f2225a70daf4c37fb1f47bff39e49aea9ec20"
+    },
+    {
+      "path": "services/control-foundation/migrations/001_ledger.sql",
+      "sha256": "45e26c543c22a476c1d8365128028bb428b9ec2cce4dd0537ae3c48e382aa6a7"
+    },
+    {
+      "path": "services/control-foundation/migrations/008_gas_controls.sql",
+      "sha256": "20a1fdea41a1e92823b096b4d5d4b60940b1d83012297368ab1486b33528c78f"
+    },
+    {
+      "path": "services/control-foundation/migrations/009_gas_execution_bindings.sql",
+      "sha256": "11cd9afc50e9fe19f2a6689c98afed6c6c211dee5a805ee7e4d0ae25b6b4e68e"
+    },
+    {
+      "path": "services/control-foundation/migrations/010_gas_prepayment_funding.sql",
+      "sha256": "0add8e61ed7749b16fcb3387847600c659df3eb4795f186979b3e2f8d139f999"
+    },
+    {
+      "path": "services/control-foundation/migrations/011_gas_prepayment_refunds.sql",
+      "sha256": "7f9eb3dc1d1f0e7de0d4b30065703a76a39f8c90782e2d751ec3bed5c6968650"
+    },
+    {
+      "path": "services/control-foundation/migrations/012_monetary_execution.sql",
+      "sha256": "c7b11ddd6b4a03fd6c196d3517f9fbab04f217819706ebd8c4b77a12a0ab195a"
+    },
+    {
+      "path": "services/control-foundation/migrations/013_zero_supply_execution.sql",
+      "sha256": "d11e584e5f7922129f79a9e495d30585a112205fc55b26ae576cf0762722f697"
+    },
+    {
+      "path": "services/control-foundation/migrations/014_company_withdrawal_execution.sql",
+      "sha256": "811ddb03ac8b5a7a85d6290621c6d242a7527be67e7cb71f2848137140037ad8"
+    },
+    {
+      "path": "services/control-foundation/migrations/015_reserve_migration_execution.sql",
+      "sha256": "fdc4668c2dcaf24be5004bf09f0a4cacef0a08349c7d7d9a9b6524d3f9bbc875"
+    }
+  ],
+  "artifacts": [
+    {
+      "contractName": "ORIOGovernanceTimelock",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "8b38af627889ccd86b35700f1f7eb68c72613c0e958b55be4c54ea0a1ccffb37",
+      "runtimeTemplateSha256": "e47dcbb310521ddea4e0a73f87a780823c25273733af3e7286d46cd9b9bb3649",
+      "runtimeTemplateBytes": 6690,
+      "metadataSha256": "53147c350687046a755d44364d5ec26d4add69ef08c2502b87f4bad4803b94e7",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "MasterAssetRegistry",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "7ebcf68bb48121851f072908a85729ce944249c3401779f6eb7d0672a933c3ea",
+      "runtimeTemplateSha256": "c1431fcfbe7d6ce06a36b20ea42f3b3703b323ed882ff49dafc71f73f42b3226",
+      "runtimeTemplateBytes": 5688,
+      "metadataSha256": "17375aaad7adfd899f0aed2382ebac95e65193c2e180bf01371fd774113653b0",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIOTreasuryPaymaster",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "6a4146c29766915a4bf947c6445538caf9cdae4be227ad6ed91edc162b07c8dc",
+      "runtimeTemplateSha256": "709937efe6c1697e8e4938071e2e0a4a66ba03c3e644876157afb39bf26905eb",
+      "runtimeTemplateBytes": 7363,
+      "metadataSha256": "2bd36c5dba7aedf73a1df6e9bffb1d565f4166799f325b7885c624d0c572e41c",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIOGasAccount",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "95f0863082b5240cd926ad0e26016333cb51348e412e653c055ba909e3caa805",
+      "runtimeTemplateSha256": "036cf8ec359155eac5602c48cdb36c1895775a009d82c2373aff35e1527be72e",
+      "runtimeTemplateBytes": 2960,
+      "metadataSha256": "ee845b88e0faf92bdf31365551d95258b2bcd4384703ebc05a50638807a652da",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIOGasAccountFactory",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "91f2d8c9d9275999d02ba15155e6301a8d2fdad9c945d3d95da344dea1441192",
+      "runtimeTemplateSha256": "78f0ed67bf3a93f94439f8e155f569711f078566f5426ef2f74f65356e3e5bb6",
+      "runtimeTemplateBytes": 4390,
+      "metadataSha256": "a00e7d2869e4d2caa093bbb3eca87c4f340c2b9b7d8934cde468c6e968bc0b52",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIOCurrency",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "6ee1c22e0535a27941d73a1bfc56f11907a90287f91158b5b0675be39311f507",
+      "runtimeTemplateSha256": "9f61f0816f8bbefb5d562066a541427a18a73b4b422522368ba55191bc8d17f4",
+      "runtimeTemplateBytes": 2955,
+      "metadataSha256": "0e0471b62fa55f643ca52b62c0c1f737d084187860f04658063785e46b1a961d",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIOReserveVault",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "e86d487807d52ac1d3b69a3a54b4431c1f0d5864c2a05ae75640b5f811d29ca2",
+      "runtimeTemplateSha256": "f639c16391f0641e6c31f4a5cca6729e35103ec520d31c3fc87d20d6d7539754",
+      "runtimeTemplateBytes": 4351,
+      "metadataSha256": "e7c5b85579636b3602d359ad857b887709a0ea5a8e0fe06a4d213c89e53d3326",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIOMonetaryController",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "7935267b39e280f289eb9a8bb0d71c4ba8775167a52fd5e0f79412d905aaa635",
+      "runtimeTemplateSha256": "d4b05004a147283269ecef3a487362a0b15a2e5ba301c3caa2db05451c29ef2f",
+      "runtimeTemplateBytes": 24337,
+      "metadataSha256": "6b6378000d455ee21f2017c0811a72b155f4840e6fe14580a6eb9de0805c0e20",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIORedemptionLocks",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "fad0bd5bbab30828578381bca049c318514e1e05aa951a4a091adfb912919dea",
+      "runtimeTemplateSha256": "77c1b51fba2e514635b7435d6715dcd80a1a312f2eb680ddd0dcdc4794da9aa9",
+      "runtimeTemplateBytes": 3468,
+      "metadataSha256": "cb3a5526d9bcf1c6a47864bd2bba7391a769f7f1f110ce61132e5a08965fc64e",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIORecoverableGasAccount",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "9c72ab1f56d04131ed8aa7152b09e7d2249685cf0e6c36d7eb99c7216eb28154",
+      "runtimeTemplateSha256": "8a53b0770a08f3e0fb4a78b9701648e8ec54576ed5257ad491c0abfddc66a31b",
+      "runtimeTemplateBytes": 7059,
+      "metadataSha256": "29bd8bb38af484efa4d6bc205093e2aee8361aa63549d738dc7b09f802e1f828",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIORecoverableGasAccountFactory",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "3beeebd9988a25f8b75d8c8442ce63c87d9f0fc604d4da175bee8fd1983fe8d0",
+      "runtimeTemplateSha256": "88dfb8088ef6f9c1bbff6380500587f81aee0f99e2850e31f863d7f1d4477b40",
+      "runtimeTemplateBytes": 10147,
+      "metadataSha256": "4106c66f868b3fbd23d0c05010a0e8491dd3b73e1fe3b6c8ed0691beec0a7583",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    }
+  ],
+  "candidateNetworks": [
+    "84532",
+    "31337"
+  ],
+  "baseMainnetCompatible": false,
+  "mainnetBlocker": "Qualification account, factory and paymaster constructors reject Base mainnet; a tested, approved production candidate is required",
+  "prospectiveRelease": {
+    "mode": "public-live",
+    "releaseDigest": "73b49d4614d0232e912f646aac2c9c2d8019cc235e15fb4331f11bfd68e2713c",
+    "projectId": "orio-spc-3-prod",
+    "chainId": "8453",
+    "contractSetDigest": "8ee1d0b9ef2ad61b80ebe103e7712fa6495e839b24a501defb6542f996a75516"
+  },
+  "releasePolicy": {
+    "version": "owner-accountable-v2",
+    "externalReviewRequired": false,
+    "distinctApproverPrincipalsRequired": false,
+    "distinctApproverKeysRequired": false
+  },
+  "releaseDecision": {
+    "allowed": false,
+    "financialEnabled": false,
+    "capabilities": [],
+    "missingGates": [
+      "legal",
+      "security",
+      "custody",
+      "financial",
+      "operations"
+    ],
+    "errors": [
+      "Financial release requires a configured trust registry and signed approvals"
+    ]
+  },
+  "economicPolicy": {
+    "policyId": "orio-final-monetary-2026-11-13-v1",
+    "status": "FOUNDER_APPROVED_FOR_IMPLEMENTATION",
+    "approvalDate": "2026-11-13",
+    "approvalSource": "Explicit owner confirmation in the project conversation",
+    "confirmation": "Approve economics; external review stays advisory",
+    "externalReviewRequired": false,
+    "liveMoneyAuthorized": false,
+    "initialPriceUsd": "1.00",
+    "conversionFeeBasisPoints": "100",
+    "ordinaryCompanyShareBasisPoints": "2000",
+    "ordinaryHolderAllocation": "COLLECTED_FEE_MINUS_FLOORED_COMPANY_SHARE",
+    "zeroHolderCompanyShareBasisPoints": "10000",
+    "fullSupplyRedemptionCompanyShareBasisPoints": "10000",
+    "genesisAppreciationEscrow": false,
+    "residualSupplyEscrow": false,
+    "concentrationWithholdingThreshold": null,
+    "orioDecimals": 18,
+    "initialMasterDecimals": 6,
+    "internalUsdDecimals": 36,
+    "mintRounding": "FLOOR",
+    "payoutRounding": "FLOOR",
+    "conversionFeeRounding": "CEILING_NATIVE_SETTLEMENT_UNIT",
+    "companyAllocationRounding": "FLOOR_NATIVE_ASSET_UNIT",
+    "residualTreatment": "SEGREGATED_EXPLICIT_RECONCILED_NOT_AUTOMATIC_COMPANY_REVENUE",
+    "reopening": "RETAIN_LAST_VALID_REFERENCE_AFTER_ZERO_SUPPLY_RECONCILIATION",
+    "gas": "USER_PAID_SEPARATE_FROM_MONETARY_FEES_AND_RESERVES"
+  },
+  "requiredQualification": [
+    {
+      "id": "monetary-execution",
+      "requirement": "Approved monetary policy implemented consistently in actual contracts/controller/epochs/ledger and deployed execution; arithmetic planning alone is insufficient",
+      "status": "NOT_VERIFIED",
+      "evidenceDigest": null
+    },
+    {
+      "id": "security-verification",
+      "requirement": "Documented security testing and accountable acceptance of exact source, bytecode, EntryPoint, account, paymaster and signing/collection services; external review advisory",
+      "status": "NOT_VERIFIED",
+      "evidenceDigest": null
+    },
+    {
+      "id": "base-network-costs",
+      "requirement": "Qualified Base fee estimates and final L1/other/per-user cost attribution without double counting",
+      "status": "NOT_VERIFIED",
+      "evidenceDigest": null
+    },
+    {
+      "id": "identity-and-signers",
+      "requirement": "Authenticated customer-account ownership; qualified user signing/recovery and treasury HSM/multisig controls",
+      "status": "NOT_VERIFIED",
+      "evidenceDigest": null
+    },
+    {
+      "id": "live-collection",
+      "requirement": "Verified funding, collection, asset exchange, excess refunds and failed-operation recovery",
+      "status": "NOT_VERIFIED",
+      "evidenceDigest": null
+    },
+    {
+      "id": "treasury-operations",
+      "requirement": "Separate custody; replenishment, alerts, failover, spend limits and outage rehearsals",
+      "status": "NOT_VERIFIED",
+      "evidenceDigest": null
+    },
+    {
+      "id": "deployment",
+      "requirement": "Approved target configuration, real bytecode/constructor/roles, TLS/workload/networking and deployed integration checks",
+      "status": "NOT_VERIFIED",
+      "evidenceDigest": null
+    },
+    {
+      "id": "reconciliation",
+      "requirement": "Independent finality/custody checks, continuous dual-ledger matching, discrepancies, backups and restoration",
+      "status": "NOT_VERIFIED",
+      "evidenceDigest": null
+    },
+    {
+      "id": "legal-custody-financial-operations",
+      "requirement": "All five release-specific accountable signed gate approvals and underlying evidence; an authorized owner may cover multiple roles",
+      "status": "NOT_VERIFIED",
+      "evidenceDigest": null
+    }
+  ]
+}

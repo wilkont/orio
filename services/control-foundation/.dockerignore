@@ -1,0 +1,8 @@
+node_modules
+test
+migrations
+.env*
+*.pem
+*.key
+config/approvals.json
+config/trust-registry.json

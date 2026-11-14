@@ -1,0 +1,15 @@
+# Gas integration test report — local controls
+
+Date: November 13, 2026. Environment: disposable loopback PostgreSQL, pinned image, synthetic funds and fee evidence. No AWS migration, ETH transaction, paymaster provisioning or financial activation occurs.
+
+Gas quote tests cover all action types and ORIO/stablecoin denominations; multi-operation execution/L1/other caps; integer validation and overflow; expiry; quote tampering and JSONB key order; exact ceiling holds, floor candidate charge and refund/remainder; missing/duplicate/unknown operation evidence; gas spikes/component overruns; all failure classifications; redemption-proceeds restrictions and non-pegged exchange-rate inputs.
+
+PostgreSQL tests cover user/ETH segregation; concurrent identical reservation and settlement; insufficient prepayment or company ETH; competing holds; exact call/reference preparation; uncertain submission; duplicate and cross-operation receipt reuse; actual expense without platform-failure user charging; over-cap evidence retention; safe pre-broadcast cancellation; atomic closure failure rollback; ORIO reimbursement without conversion or appreciation; immutable evidence and authorization conflicts.
+
+Reproduce: `npm run typecheck` and `npm run test:local` in services/control-foundation. Test sources: gas-policy.test.ts, gas-controls.test.ts, monetary-simulation.test.ts and the policy metadata assertion in protocol-api.test.ts. The final integrated test count is recorded in docs/EXECUTION_STATUS.md.
+
+Qualification extension: 15 contract/SDK tests now include actual reference EntryPoint execution, a zero-ETH account, counterfactual creation, dual-signed gas permits, failed business calls with actual ETH debit, expired/mutated/replayed/capped permissions, mainnet deployment rejection and SDK ownership/overhead bounds. The 172-test integrated harness includes a real PostgreSQL hold through signed offline UserOperation execution, final event debit and refund, plus immutable preparation/binding before signing/broadcast. These counts describe different overlapping suites, not independent production qualification cases.
+
+Not verified: live Base estimation, actual L1/per-user fee attribution, Base fee-oracle changes, token collection, bundler validation-rule traces/staking, paymaster/relayer or RPC failover, consumer signing/recovery, automatic replenishment/alerts, real fee refunds, ORIO liquidity conversion, custody reconciliation, customer UI or public-network end-to-end abstraction. UNKNOWN/failure component tests exercise conservative control outcomes, not a working provider outage recovery. These remain mandatory release tests, not inferred successes. See docs/qualification/PAYMASTER_QUALIFICATION.md for the exact evidence inventory and blocked release status.
+
+Custody continuation: the suite now covers verified gas prepayment funding and withdrawal holds, shared receipt competition, treasury self-transfer rejection, bound UserOperation payout attribution, asynchronous input mutation and atomic cancellation/rollback. See docs/qualification/GAS_PREPAYMENT_CUSTODY.md. Live first-funding abstraction and token dispatch remain unverified.
