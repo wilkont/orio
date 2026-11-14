@@ -43,3 +43,6 @@ Sources reviewed November 14, 2026:
 - https://docs.aws.amazon.com/kms/latest/APIReference/API_CreateAlias.html
 - https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-kms-key.html
 - https://aws.amazon.com/kms/pricing/
+
+
+November 14 approved bootstrap completed: owner approved the disabled qualification key, scoped operator administration and recurring cost. Stack orio-spc-3-protected-signing is CREATE_COMPLETE; key 479ae4e7-483e-4d17-8f46-232f08c5c6ee is Disabled (ECC_SECG_P256K1/SIGN_VERIFY/AWS_KMS). Policy and operator public-key inspection verified; derived public signer 0xB1E1d791a518931042Fed65778a2f8E11938eae1. No Sign grant, enablement, funding or financial activation. This evidence supersedes earlier pending-bootstrap statements. See infrastructure/aws/PROTECTED_KEY_DEPLOYMENT_2026-11-14.json.
