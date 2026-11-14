@@ -19,7 +19,8 @@
     "test:local": "node scripts/test-local.mjs",
     "test:unit": "node --test test/release.test.ts",
     "test:integration": "node --test test/ledger.test.ts",
-    "test": "node --test test/*.test.ts test/*.test.mjs"
+    "test": "node --test test/*.test.ts test/*.test.mjs",
+    "scan:history": "node scripts/scan-history.mjs"
   },
   "dependencies": {
     "pg": "8.23.1"

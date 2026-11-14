@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund
 COPY src ./src
+COPY scripts/scan-history.mjs ./scripts/scan-history.mjs
 COPY config/initial-master.json ./config/initial-master.json
 ENV NODE_ENV=production ORIO_BIND_ADDRESS=0.0.0.0 PORT=8080
 USER node
