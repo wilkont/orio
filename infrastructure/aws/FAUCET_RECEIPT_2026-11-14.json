@@ -1,0 +1,17 @@
+{
+  "network": "Base Sepolia",
+  "chainId": "84532",
+  "address": "0xB1E1d791a518931042Fed65778a2f8E11938eae1",
+  "provider": "Coinbase Developer Platform faucet",
+  "transactionHash": "0xb0b1eaf7df9229bec19183043b81665946840d88f971f3fab52a60b0787b631f",
+  "status": "0x1",
+  "blockNumber": "0x38278fa",
+  "balanceWei": "100000000000000",
+  "testEth": "0.0001",
+  "mainnetRequest": false,
+  "apiKeyCreated": false,
+  "walletCreated": false,
+  "paidUpgrade": false,
+  "keyRemainsDisabled": true,
+  "limits": "Receipt mined and latest balance observed through official public Base Sepolia RPC; finality not claimed."
+}
