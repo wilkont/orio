@@ -1,0 +1,18 @@
+{
+  "version": "orio-operating-intent-2026-11-14-v1",
+  "source": "Direct owner confirmation",
+  "company": {
+    "name": "ORIO Inc.",
+    "registrationCountry": "US",
+    "registrationState": "Delaware",
+    "verification": "OWNER_STATED"
+  },
+  "launchOrigin": "US",
+  "marketIntent": "GLOBAL_WHERE_USDC_AVAILABLE",
+  "custodySigningApproach": "COMPANY_OPERATED_PROTECTED_SIGNING",
+  "productionSignerConfigured": false,
+  "reserveCustodyEstablished": false,
+  "financialExecutionEnabled": false,
+  "jurisdictionPolicy": "USDC support is necessary but does not establish ORIO service eligibility; require current ORIO-specific operating and participant eligibility evidence.",
+  "externalReviewRequired": false
+}
