@@ -1,0 +1,20 @@
+{
+  "chainId": "84532",
+  "address": "0xB1E1d791a518931042Fed65778a2f8E11938eae1",
+  "provider": "Coinbase Developer Platform faucet",
+  "transactions": [
+    "0x2afaa984580a2c6c675eab68e06ff225e7a00b6e929d3302c7d69b4aba1581ea",
+    "0x1e6b011aaeff26f0f838e625bda6ccc8dccbf3d190dd39c2b1e92ea6b0cc49a1",
+    "0x3e9e68237e1d4a894f4975f4b9f35ca6be96b7bd4b0003d1fbc18ba469df6251"
+  ],
+  "allDistributorReceiptsStatus": "0x1",
+  "aggregateTestWeiAdded": "300000000000000",
+  "previousBalanceWei": "89743536190728",
+  "observedBalanceWei": "389743536190728",
+  "pendingSenderNonce": "1",
+  "financialExecutionEnabled": false,
+  "paidUpgrade": false,
+  "newApiKey": false,
+  "newWallet": false,
+  "limits": "Receipts execute the faucet distributor, not direct recipient transactions. Aggregate balance gain separately matches the three claims. Finality is not claimed."
+}

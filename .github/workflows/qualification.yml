@@ -29,6 +29,8 @@ jobs:
         working-directory: services/control-foundation
       - run: ../services/control-foundation/node_modules/.bin/tsc --strict --noEmit --target ES2023 --module NodeNext --moduleResolution NodeNext scripts/prepare-sepolia-deployment.ts scripts/submit-sepolia-timelock.ts scripts/verify-sepolia-timelock.ts
         working-directory: contracts
+      - run: ../services/control-foundation/node_modules/.bin/tsc --strict --noEmit --target ES2023 --module NodeNext --moduleResolution NodeNext --allowImportingTsExtensions scripts/prepare-remaining-sepolia.ts scripts/execute-remaining-sepolia.ts scripts/verify-remaining-sepolia.ts
+        working-directory: contracts
       - run: npm run test:provider-session
         working-directory: services/control-foundation
       - run: npm run test:local
