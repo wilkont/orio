@@ -3,7 +3,7 @@ import {computeAddress,getAddress,getBytes,recoverAddress,Signature,TypedDataEnc
 import {gasPermitTypes} from './gas-permit.mjs';
 
 const order=0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
-function derSignature(input){
+export function derSignature(input){
  if(!(input instanceof Uint8Array)||input.length<8||input.length>72)throw new Error('Invalid ECDSA encoding');
  const bytes=Buffer.from(input);let offset=2;
  if(bytes[0]!==0x30||bytes[1]!==bytes.length-2)throw new Error('Invalid ECDSA sequence');
@@ -20,7 +20,7 @@ function derSignature(input){
  const r=integer(),s=integer();if(offset!==bytes.length)throw new Error('Trailing ECDSA bytes');
  return {r:'0x'+r.toString(16).padStart(64,'0'),s:'0x'+(s>order/2n?order-s:s).toString(16).padStart(64,'0')};
 }
-function publicAddress(response,keyArn){
+export function publicAddress(response,keyArn){
  if(response?.KeyId!==keyArn||response.KeySpec!=='ECC_SECG_P256K1'||response.KeyUsage!=='SIGN_VERIFY'||
   !Array.isArray(response.SigningAlgorithms)||!response.SigningAlgorithms.includes('ECDSA_SHA_256')||
   !(response.PublicKey instanceof Uint8Array)||response.PublicKey.length>256)throw new Error('Unexpected KMS key');

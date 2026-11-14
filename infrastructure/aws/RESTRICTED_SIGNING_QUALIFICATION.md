@@ -1,0 +1,15 @@
+# Restricted protected-key qualification change
+
+Target: existing orio-spc-3-protected-signing stack, account 720232346199, us-east-1. This is an unapplied update proposal.
+
+The update retains the existing key and alias, enables the qualification key, and adds a named Lambda-only role, one private fixed-challenge function, its exact-key KMS policy and one operator invoke-only policy. No public URL, API gateway, schedule, wallet, reserve access or blockchain broadcast is provided. No human principal receives direct Sign permission. The function accepts only an empty object, signs a compiled-in non-monetary EIP-712 challenge tied to Base Sepolia, and returns its public signature/key for independent local verification. KMS IAM restricts Sign to DIGEST/ECDSA_SHA_256, but cannot restrict the digest itself; the pinned function code is the additional enforcement boundary. A privileged administrator can change that code/policy. This is not the production monetary signer and cannot sign a caller-supplied Gas Permit.
+
+The Lambda is 128 MiB, timeout 15 seconds, reserved concurrency one, with no provisioned concurrency. It has no database, secret retrieval, fund transfer or CloudWatch log-write permissions. AWS still records normal service metrics/CloudTrail according to account settings; this proposal does not alter those settings. Invocation payloads must contain no customer data.
+
+Expected verification is fewer than ten invocations, under USD0.01 before any free-tier allowance; propose a USD0.10 verification budget in addition to the previously approved stored-key charge. Lambda usage and KMS API requests are metered; reserved concurrency is not a total spending cap. No paid upgrade is included. After verification, pause invocation (reserved concurrency zero) and disable the qualification key. Additional production workload/network costs need their own concrete plan.
+
+Approval is required immediately before this update because it enables cryptographic signing, creates a service role and expands operator invocation access. Do not replace the existing key, export private material, grant human Sign, or authorize real-money activation. First inspect the CloudFormation change set and reject any key replacement. Verify policy, code checksum, role identity and active key state, then invoke only the fixed challenge and validate its signature against the independently recorded signer address. Record failures honestly; do not call this a live UserOperation or full testnet settlement.
+
+Remaining: deploy actual Base Sepolia contracts, obtain test ETH, configure ledger-backed signer runtime, install unapplied hosted database migrations, execute and reconcile complete testnet operations, then qualify production reserve/customer/recovery/operational arrangements. External review remains advisory.
+
+Sources: https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html ; https://aws.amazon.com/lambda/pricing/ ; https://docs.aws.amazon.com/lambda/latest/dg/lambda-concurrency.html
