@@ -37,7 +37,9 @@ try {
   containers.push(database);
   let ready = false;
   for (let i = 0; i < 120; i++) {
-    if (spawnSync('docker', ['exec', database, 'pg_isready', '-U', 'postgres', '-d', 'orio_test'],
+    // The image's temporary initialization server accepts Unix sockets but no TCP.
+    // Wait for the final server, not the socket that disappears during its handoff.
+    if (spawnSync('docker', ['exec', database, 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres', '-d', 'orio_test'],
       { stdio: 'pipe' }).status === 0) { ready = true; break; }
     await setTimeout(250);
   }

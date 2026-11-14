@@ -11,7 +11,8 @@ try {
   created=true;
   let ready=false;
   for (let i=0;i<120;i++) {
-    if (spawnSync('docker',['exec',name,'pg_isready','-U','postgres','-d','orio_test'],{stdio:'pipe'}).status===0) { ready=true;break; }
+    // The temporary init server is socket-only; TCP readiness identifies final startup.
+    if (spawnSync('docker',['exec',name,'pg_isready','-h','127.0.0.1','-U','postgres','-d','orio_test'],{stdio:'pipe'}).status===0) { ready=true;break; }
     await setTimeout(250);
   }
   if (!ready) throw new Error('PostgreSQL test container did not become ready');
