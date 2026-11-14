@@ -6,7 +6,7 @@ November 14, 2026: owner completed authentication and reported all three signed 
 
 | Provider | Current observed state | Remaining configuration |
 |---|---|---|
-| Alchemy | Free selected; vendor-created app renamed `orio-spc-3-qualification`; saved name observed | Base Sepolia remains disabled. Vendor defaults enabled Ethereum endpoints; none were used by ORIO. Base mainnet remains disabled. |
+| Alchemy | Free selected; vendor-created app renamed `orio-spc-3-qualification`; saved name observed | Owner confirmed Base Sepolia enabling; enabled state observed. Base mainnet remains disabled. Vendor default Ethereum endpoints remain unused. |
 | Infura | Core Free selected: 3 million credits/day, 500 credits/second; initial vendor-created key exists | Name field has `orio-spc-3-qualification`, but selector still says My First Key; persisted rename is not verified. Vendor default selections include mainnets. |
 | Pimlico | Free, no payment method, $0 balance/overdraft; card enrollment skipped | Owner confirmed key creation at action time. Table shows `orio-spc-3-qualification`, masked secret, Bundler/Paymaster features, 0 requests; notification says API Key generated. |
 
@@ -14,11 +14,11 @@ Vendor default endpoint availability is not completed testnet isolation or finan
 
 `npm run check:provider-session` now prepares a ten-minute, single-use loopback form with masked key inputs. Credentials stay in browser/process memory and never go to files, process arguments, environment variables or reports. Fixed destinations are Alchemy/Infura Base Sepolia and Pimlico chain84532. Existing bounded read-only adapters check finality and bundler capability; no signing, sponsorship or broadcast is possible. This does not protect against a compromised local account, browser extension or memory capture.
 
-The local form requires a random session path, exact loopback Host and POST Origin, rejects cross-site submissions, caps body size, rejects duplicate fields/replay and sets no-store/CSP/no-referrer headers. Generic errors avoid credential exposure. Four passing tests cover fixed destinations, origin/replay/body controls, failure reporting and overlapping request bodies. Strict service typecheck passes. No long-lived workload secret store is provisioned.
+The local form requires a random session path, exact loopback Host and POST Origin, rejects cross-site submissions, caps body size, rejects duplicate fields/replay and sets no-store/CSP/same-origin referrer headers. Chromium suppresses POST Origin with no-referrer; same-origin preserves the required origin assertion while sending no external referrer. The initial rejected submission was corrected without accepting null origins or disabling origin checks. Four tests cover fixed destinations, origin/replay/body controls, failure reporting and overlapping bodies. Strict service typecheck passes. No long-lived workload secret store is provisioned.
 
-The actual local page is prepared. Credential transfer to this tool and enabling Alchemy Base Sepolia await narrow browser action-time confirmation. No account-owned endpoint probe has run. Earlier public diagnostics remain separate evidence; they do not establish private provider readiness or custom contract admission.
+Owner confirmed local credential transfer and Alchemy Base Sepolia access. Account-owned credentials were used in memory, and both checks passed at 2026-11-14T18:44:58.170Z. Alchemy and Infura agreed on finalized block58794597 and its canonical hash; Pimlico advertised the pinned EntryPoint v0.8. The credential-free report is docs/qualification/OWNED_PROVIDER_DIAGNOSTIC_2026-11-14.json. Runtime credential variables were cleared, the Pimlico key was hidden again, and the browser clipboard was cleared. No keys were saved. The loopback service expires after ten minutes; durable workload connections remain unconfigured.
 
-Remaining: two-provider canonical-finality evidence, account-owned bundler capability probe, method/network restrictions, deployed workload secret handling, runtime EntryPoint verification, custom contract admission, recovery operations and production deployment. No card, paid upgrade, AWS deployment or live-money activation occurred.
+Remaining: historical receipt/failure drills, method/network restrictions, deployed workload secret handling, runtime EntryPoint verification, custom contract admission, recovery operations and production deployment. No card, paid upgrade, AWS deployment or live-money activation occurred. The completed checks are one-time connectivity/capability evidence, not production readiness.
 
 ## Historical signup handoff (superseded by update above)
 

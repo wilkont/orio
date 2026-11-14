@@ -1,6 +1,6 @@
 # ORIO provider setup proposal
 
-Prepared November 14, 2026. Status: owner-approved free-account scope; signup authentication pending, not provisioned. Scope is the first 30 days of Base Sepolia qualification, chain ID 84532. This does not authorize financial activation, mainnet subscriptions, card enrollment, AWS changes or real-fund transactions. External independent review remains advisory.
+Prepared November 14, 2026. Status: owner-approved free-account scope; onboarding and account-owned read-only connectivity checks completed. See ACCOUNT_SETUP_STATUS.md for remaining configuration. Scope is the first 30 days of Base Sepolia qualification, chain ID 84532. This does not authorize financial activation, mainnet subscriptions, card enrollment, AWS changes or real-fund transactions. External independent review remains advisory.
 
 ## Recommended services
 

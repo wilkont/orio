@@ -50,9 +50,11 @@ export async function startProviderSession(probe = probeCredentials) {
     res.setHeader('Content-Security-Policy', "default-src 'none'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Referrer-Policy', 'no-referrer');
+    // Chromium suppresses POST Origin under no-referrer. Same-origin preserves our
+    // strict origin check while sending no referrer to external destinations.
+    res.setHeader('Referrer-Policy', 'same-origin');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    const deny = (status = 403) => { res.writeHead(status); res.end('Request rejected'); };
+    const deny = (status = 403, reason = 'request-policy') => { res.writeHead(status); res.end('Request rejected: ' + reason); };
     if (req.headers.host !== new URL(origin).host || req.method !== 'GET' && req.headers['sec-fetch-site'] === 'cross-site') return deny();
     if (req.method === 'GET' && req.url === '/' + token) {
       res.end('<!doctype html><title>ORIO test-network qualification</title><h1>ORIO test-network qualification</h1>' +
@@ -64,8 +66,9 @@ export async function startProviderSession(probe = probeCredentials) {
           '<button>Run read-only test-network checks</button></form>'));
       return;
     }
-    if (req.method !== 'POST' || req.url !== '/' + token || used || req.headers.origin !== origin ||
-        req.headers['content-type'] !== 'application/x-www-form-urlencoded') return deny();
+    if (req.method !== 'POST' || req.url !== '/' + token || used) return deny();
+    if (req.headers.origin !== origin) return deny(403, 'origin-policy');
+    if (req.headers['content-type'] !== 'application/x-www-form-urlencoded') return deny(403, 'content-type-policy');
     const chunks = []; let size = 0;
     try {
       for await (const chunk of req) {
@@ -82,7 +85,7 @@ export async function startProviderSession(probe = probeCredentials) {
       try { result = await probe(values); }
       catch { result = { status: 'BLOCKED', financialExecutionEnabled: false, reason: 'Read-only qualification failed' }; }
       res.writeHead(303, { Location: '/' + token }); res.end();
-    } catch { deny(400); }
+    } catch { deny(400, 'input-policy'); }
   });
   server.requestTimeout = 15000;
   server.headersTimeout = 10000;

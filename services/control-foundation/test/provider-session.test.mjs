@@ -24,10 +24,12 @@ test('local credential session rejects cross-origin, replay and malformed inputs
       headers: { 'content-type': 'application/x-www-form-urlencoded', origin, ...headers }, body });
     const page = await fetch(session.url);
     assert.equal(page.headers.get('cache-control'), 'no-store');
+    assert.equal(page.headers.get('referrer-policy'), 'same-origin');
     assert.match(page.headers.get('content-security-policy'), /frame-ancestors 'none'/);
     assert.match(await page.text(), /type="password"/);
     assert.equal((await fetch(origin + '/wrong')).status, 403);
     assert.equal((await post(new URLSearchParams(values), { origin: 'https://evil.invalid' })).status, 403);
+    assert.equal((await post(new URLSearchParams(values), { origin: 'null' })).status, 403);
     assert.equal((await post(new URLSearchParams(values), { 'sec-fetch-site': 'cross-site' })).status, 403);
     assert.equal((await post(new URLSearchParams({ ...values, extra: 'x' }))).status, 400);
     assert.equal((await post('x'.repeat(4097))).status, 413);

@@ -1,5 +1,13 @@
 # Live chain provider checks
 
+## Latest account-owned evidence — November 14, 2026
+
+The owner completed signup and confirmed in-memory credential transfer and Alchemy Base Sepolia access. Free/Core Free plans were selected without cards or paid upgrades. Actual Alchemy and Infura credentials returned the same canonical finalized Base Sepolia block58794597; Pimlico's account-owned endpoint advertised expected EntryPoint v0.8. Credential-free evidence is OWNED_PROVIDER_DIAGNOSTIC_2026-11-14.json, observed at 2026-11-14T18:44:58.170Z. Keys were not saved to files or environment configuration. This supersedes historical pending-account statements below.
+
+The one-time local session is not durable workload provisioning or a guarantee of availability. Historical receipt/failure drills, network/method restrictions, EntryPoint bytecode verification, actual custom-contract admission, deployed workload secret configuration and production acceptance remain outstanding. Financial execution stays disabled. No signing, sponsorship, broadcast, mainnet operation or AWS deployment occurred.
+
+## Historical public diagnostics and setup preparation
+
 The owner has authorized continuing provider integration. No paid subscription, third-party wallet, API key, funded signer or transaction was created. Provider discovery through Stripe Directory was attempted using its current CLI/plugin; the service rejected the request as an invalid user agent. Official Base documentation was used for the public diagnostic instead.
 
 The read-only check in `services/control-foundation/scripts/check-base-public.mjs` reached Base's documented public Sepolia endpoint, checked chain ID 84532, read a finalized block and checked its canonical identity by height. The exact timestamp/block evidence is in BASE_PUBLIC_RPC_DIAGNOSTIC.json. This is a single-source live diagnostic with financialExecutionEnabled=false and productionQualified=false. Base explicitly describes public endpoints as free, rate limited, best effort and unsuitable for production apps: https://docs.base.org/get-started/connect-to-base . No signed transaction or token movement occurred.
