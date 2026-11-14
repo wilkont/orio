@@ -15,3 +15,8 @@ The existing paused protected-signing-qualification.json is the cleanup target. 
 Commands require owner-controlled local files. TypeScript strict checks cover both deployment commands. No private credentials enter this repository. The public RPC is used for qualification diagnostics only; production needs the previously selected dedicated providers and durable protected credential handling.
 
 Sources checked November 14, 2026: https://docs.base.org/get-started/get-funds ; https://docs.cdp.coinbase.com/faucets/introduction/quickstart ; https://docs.base.org/specifications/transactions/network-fees
+
+
+## Approved first deployment completed
+
+The owner approved the exact test transaction, proposed test governance settings and USD0.10 AWS budget. The contract mined successfully with matching creation input and roles; its receipt and complete observed network fees are in BASE_SEPOLIA_TIMELOCK_RECEIPT_2026-11-14.json. The approved nonce-zero signature is consumed by this transaction; future deployments require new pinned plans. Actual AWS billing is not yet available. This completion supersedes the preparation-only statements above for this one transaction. Remaining ORIO contracts and platform financial operations are not deployed or activated by it.
