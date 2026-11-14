@@ -132,6 +132,43 @@ export class GasControls {
       'SELECT evidence,expense_sequence FROM orio_gas.costs WHERE transaction_id=$1 ORDER BY operation_id', [transactionId])).rows;
   }
 
+  /** Trusted signing coordinator only. Load committed monetary inputs; never accept
+   * a caller-supplied quote or a fabricated journal receipt at the signer boundary. */
+  async signingReservation(transactionId:string):Promise<{quote:GasQuote;reserveReceipt:Receipt}> {
+    return this.transaction(async client=>{
+      const reservation=await this.locked(client,transactionId);
+      if(await this.closure(client,transactionId))throw new Error('Gas reservation is closed');
+      validateGasQuote(reservation.quote,await this.now(client));
+      const row=(await client.query<{sequence:string;request_hash:string;event_hash:string}>(
+        'SELECT sequence::text,request_hash,event_hash FROM orio_ledger.journals WHERE sequence=$1',[reservation.reserve_sequence])).rows[0];
+      if(!row)throw new Error('Missing committed gas reservation journal');
+      return {quote:structuredClone(reservation.quote),reserveReceipt:{sequence:row.sequence,requestHash:row.request_hash,eventHash:row.event_hash}};
+    });
+  }
+
+  /** Commit the unique EIP-712 permit before a protected backend sees signing material.
+   * A timeout may mean signing happened: retain the preparation and held funds. */
+  async prepareProtectedSignature(transactionId:string,operationId:string,preparedRef:string,typedDigest:string):Promise<void> {
+    gasReference(preparedRef);
+    if(typeof typedDigest!=='string'||!/^0x[0-9a-f]{64}$/.test(typedDigest))throw new Error('Invalid protected signing digest');
+    await this.transaction(async client=>{
+      const {quote}=await this.locked(client,transactionId);
+      if(await this.closure(client,transactionId))throw new Error('Gas reservation is closed');
+      validateGasQuote(quote,await this.now(client));
+      if(!new RegExp('^eip155:'+quote.chainId+':reservation:[a-f0-9]{64}$').test(preparedRef))throw new Error('Invalid protected signing reference');
+      const submission=(await client.query<{execution_ref:string}>(
+        'SELECT execution_ref FROM orio_gas.submissions WHERE transaction_id=$1 AND operation_id=$2',[transactionId,operationId])).rows[0];
+      if(submission?.execution_ref!==preparedRef)throw new Error('Gas execution must be prepared before signing');
+      const previous=(await client.query<{prepared_ref:string;typed_digest:string}>(
+        'SELECT prepared_ref,typed_digest FROM orio_gas.signing_preparations WHERE transaction_id=$1 AND operation_id=$2',[transactionId,operationId])).rows[0];
+      if(previous){
+        if(previous.prepared_ref!==preparedRef||previous.typed_digest!==typedDigest)throw new Error('Protected signing payload conflict');
+        return;
+      }
+      await client.query('INSERT INTO orio_gas.signing_preparations VALUES($1,$2,$3,$4)',[transactionId,operationId,preparedRef,typedDigest]);
+    });
+  }
+
   /** For account abstraction, prepare the deterministic reservation reference BEFORE obtaining
    * any treasury signature. Bind its final UserOperation hash once after signing, before broadcast.
    * A crash at either stage leaves a non-cancellable hold for reconciliation. */

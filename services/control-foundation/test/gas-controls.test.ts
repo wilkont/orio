@@ -38,7 +38,7 @@ async function fixture(run: (pool: Pool, ledger: ControlLedger, controls: GasCon
   try {
     await root.query('CREATE DATABASE ' + name); created = true;
     pool = new Pool({ connectionString: url.href });
-    for (const migration of ['001_ledger.sql', '008_gas_controls.sql', ...(installBindings ? ['009_gas_execution_bindings.sql'] : [])])
+    for (const migration of ['001_ledger.sql', '008_gas_controls.sql', ...(installBindings ? ['009_gas_execution_bindings.sql','018_protected_gas_signing.sql'] : [])])
       await pool.query((await readFile(new URL('../migrations/' + migration, import.meta.url), 'utf8')).replaceAll('orio_ledger_runtime', runtime));
     await run(pool, new ControlLedger(pool), new GasControls(pool));
   } finally {
@@ -258,3 +258,23 @@ test('binding migration backfills existing direct executions and retains immutab
   await controls.recordCost(q.transactionId, cost());
   assert.equal((await controls.settle(q.transactionId, evidence)).status, 'SETTLED');
 }, false));
+
+
+test('protected signing pins exactly one permit after funded preparation and never changes it on retry',async()=>fixture(async(pool,ledger,controls)=>{
+ const q=quote();await fund(ledger,q);await controls.reserve(q,authorization(q));
+ const snapshot=await controls.signingReservation(q.transactionId);
+ assert.equal(snapshot.quote.digest,q.digest);assert.ok(BigInt(snapshot.reserveReceipt.sequence)>0n);
+ const ref='eip155:84532:reservation:'+'c'.repeat(64),digest='0x'+'d'.repeat(64);
+ await assert.rejects(controls.prepareProtectedSignature(q.transactionId,'call',ref,digest),/prepared before signing/);
+ await controls.prepare(q.transactionId,'call',ref,evidence);
+ await Promise.all(Array.from({length:5},()=>controls.prepareProtectedSignature(q.transactionId,'call',ref,digest)));
+ await assert.rejects(controls.prepareProtectedSignature(q.transactionId,'call',ref,'0x'+'e'.repeat(64)),/payload conflict/);
+ assert.equal((await pool.query('SELECT count(*) FROM orio_gas.signing_preparations')).rows[0].count,'1');
+ for(const sql of ['UPDATE orio_gas.signing_preparations SET typed_digest=typed_digest','DELETE FROM orio_gas.signing_preparations','TRUNCATE orio_gas.signing_preparations'])await assert.rejects(pool.query(sql));
+ await assert.rejects(controls.cancelUnsubmitted(q.transactionId),/reconciliation/);
+}));
+test('cancelled gas reservations cannot be loaded or prepared for protected signing',async()=>fixture(async(_pool,ledger,controls)=>{
+ const q=quote();await fund(ledger,q);await controls.reserve(q,authorization(q));await controls.cancelUnsubmitted(q.transactionId);
+ await assert.rejects(controls.signingReservation(q.transactionId),/closed/);
+ await assert.rejects(controls.prepareProtectedSignature(q.transactionId,'call','eip155:84532:reservation:'+'c'.repeat(64),'0x'+'d'.repeat(64)),/closed/);
+}));

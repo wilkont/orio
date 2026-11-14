@@ -8,7 +8,8 @@ import { bytesToHex } from '@ethereumjs/util';
 import { paymasterFixture } from '../test/helpers/paymaster-fixture.mjs';
 import { monetaryFixture,hash } from '../test/helpers/monetary-fixture.mjs';
 import { MonetarySettlement } from '../../services/control-foundation/src/monetary-settlement.ts';
-import { prepareGasPermit, attachGasConsents } from '../sdk/gas-permit.mjs';
+import { attachGasConsents } from '../sdk/gas-permit.mjs';
+import { signCompanyGasPermit } from '../sdk/protected-gas-signing.mjs';
 import { ControlLedger } from '../../services/control-foundation/src/ledger.ts';
 import { GasControls, gasAccounts } from '../../services/control-foundation/src/gas-controls.ts';
 import { quoteGas } from '../../services/control-foundation/src/gas-policy.ts';
@@ -55,17 +56,19 @@ test('committed user gas → real EntryPoint monetary purchase → vault/mint jo
     const reserveSequence = await controls.reserve(quote, { ownerRef: quote.ownerRef, quoteDigest: quote.digest,
       actionDigest: quote.actionDigest, maximumPaymentUnits: quote.maximumPaymentUnits,
       authorizationDigest: createHash('sha256').update(quoteConsent).digest('hex') });
-    const row = (await pool.query('SELECT * FROM orio_ledger.journals WHERE sequence=$1', [reserveSequence])).rows[0];
-    const material = prepareGasPermit({ quote, operationId: 'operation', reserveReceipt: {
-      sequence: row.sequence, requestHash: row.request_hash, eventHash: row.event_hash }, entryPoint: f.entry.address,
-      paymaster: f.paymaster.address, userOperation: operation, revision: '1', now });
-    assert.equal((await f.read(f.paymaster, 'permitHash', [operation, material.permit]))[0], material.digest);
-    const preparedRef = 'eip155:84532:reservation:' + material.permit.reservationId.slice(2);
-    await controls.prepare(quote.transactionId, 'operation', preparedRef, quote.operations[0].callDigest);
-    await assert.rejects(controls.cancelUnsubmitted(quote.transactionId), /reconciliation/);
-    // No treasury signer may be called until that immutable preparation has committed.
-    operation.paymasterAndData = attachGasConsents(material, f.owner.signingKey.sign(material.digest).serialized,
-      f.operator.signingKey.sign(material.digest).serialized);
+    assert.ok(BigInt(reserveSequence)>0n);
+    let protectedCalls=0;
+    const {material,preparedRef,operatorConsent}=await signCompanyGasPermit(controls,{
+      signTypedData:async(...args)=>{
+        protectedCalls++;
+        assert.equal((await pool.query('SELECT count(*) FROM orio_gas.signing_preparations')).rows[0].count,'1');
+        return f.operator.signTypedData(...args);
+      }}, {chainId:'84532',revision:'1',signer:f.operator.address,entryPoint:f.entry.address,paymaster:f.paymaster.address},
+      {transactionId:quote.transactionId,operationId:'operation',userOperation:operation},now);
+    assert.equal(protectedCalls,1);
+    assert.equal((await f.read(f.paymaster,'permitHash',[operation,material.permit]))[0],material.digest);
+    await assert.rejects(controls.cancelUnsubmitted(quote.transactionId),/reconciliation/);
+    operation.paymasterAndData=attachGasConsents(material,f.owner.signingKey.sign(material.digest).serialized,operatorConsent);
     const userOpHash = (await f.read(f.entry, 'getUserOpHash', [operation]))[0];
     operation.signature = f.owner.signingKey.sign(userOpHash).serialized;
     const executionRef = 'eip155:84532:userop:' + userOpHash.slice(2);
