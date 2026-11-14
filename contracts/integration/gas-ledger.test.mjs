@@ -71,8 +71,10 @@ test('committed user gas → real EntryPoint monetary purchase → vault/mint jo
     const executionRef = 'eip155:84532:userop:' + userOpHash.slice(2);
     await controls.bindExecution(quote.transactionId, 'operation', preparedRef, executionRef,
       createHash('sha256').update(JSON.stringify(operation)).digest('hex'));
-    f.advance(1); // EntryPoint v0.8 validAfter is exclusive; inclusion is a subsequent block.
-    const result = await f.submit(operation); assert.equal(result.execResult.exceptionError, undefined);
+    // Bind inclusion to the actual permit, not an earlier wall-clock sample that may cross a second.
+    const inclusion=BigInt(material.permit.validAfter)+1n;
+    f.setTime(f.time()>inclusion?f.time():inclusion);
+    const result = await f.submit(operation); assert.equal(result.execResult.exceptionError, undefined,bytesToHex(result.execResult.returnValue));
     const completed = f.logs(result, f.entry).find(event => event?.name === 'UserOperationEvent');
     assert.equal(completed.args.userOpHash, userOpHash); assert.equal(completed.args.success, true);
     assert.equal((await f.read(monetary.currency,'balanceOf',[f.account.address]))[0],99n*10n**18n);

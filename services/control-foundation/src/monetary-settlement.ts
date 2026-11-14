@@ -4,8 +4,9 @@ import type { ChainReader } from './chain-evidence.ts';
 import { verifyFinalizedMonetaryExecution } from './finalized-monetary.ts';
 import { verifyFinalizedTokenTransfer } from './finalized-transfer.ts';
 import type { ExpectedTokenTransfer } from './finalized-transfer.ts';
-import { initialMonetaryState, planPurchaseEpoch, planRedemptionEpoch } from './monetary-engine.ts';
-import type { MonetaryState, Ratio } from './monetary-engine.ts';
+import { verifyFinalizedCompanyWithdrawal } from './finalized-company-withdrawal.ts';
+import { initialMonetaryState, planPurchaseEpoch, planRedemptionEpoch, reconcileZeroSupply } from './monetary-engine.ts';
+import type { MonetaryState, Ratio, ZeroSupplyReconciliation } from './monetary-engine.ts';
 import { gasDigest } from './gas-policy.ts';
 import type { Account, Posting } from './ledger.ts';
 
@@ -49,6 +50,30 @@ export class MonetarySettlement {
     const result=await this.pool.query<{configuration: MonetaryDeployment}>('SELECT configuration FROM orio_monetary.deployments WHERE id=$1',[c.id]);
     if (!same(result.rows[0]?.configuration,c)) throw new Error('Deployment configuration conflict');
   }
+  async importCompanyWithdrawal(input:{transactionHash:string;startLogIndex:string;completionLogIndex:string}){
+    const c=this.deployment,proof=await verifyFinalizedCompanyWithdrawal(this.first,this.second,{...structuredClone(input),...c});
+    const client=await this.pool.connect();
+    try{
+      await client.query('BEGIN');
+      const row=(await client.query<{configuration:MonetaryDeployment}>('SELECT configuration FROM orio_monetary.deployments WHERE id=$1 FOR UPDATE',[c.id])).rows[0];
+      if(!row||!same(row.configuration,c))throw new Error('Deployment is not initialized');
+      const prior=(await client.query<{evidence:unknown;journal_sequence:string}>(
+        'SELECT evidence,journal_sequence FROM orio_monetary.company_withdrawals WHERE external_ref=$1',[proof.settlementRef])).rows[0];
+      if(prior){if(!same(prior.evidence,proof))throw new Error('Company withdrawal idempotency conflict');
+        await client.query('COMMIT');return prior.journal_sequence;}
+      for(const ref of [proof.startRef,proof.cashRef,proof.settlementRef])await client.query(
+        'INSERT INTO orio_settlement.receipt_claims VALUES($1,$2,$3)',[ref,'monetary',c.id+':company-withdrawal']);
+      const asset=`erc20:${c.chainId}:${c.master}`,cash='mon_'+gasDigest([c.id,asset,'company_cash']),
+        distribution='mon_'+gasDigest([c.id,asset,'company_distributions']);
+      await client.query('SELECT orio_ledger.create_account($1,$2,$3,$4)',[cash,asset,'debit',false]);
+      await client.query('SELECT orio_ledger.create_account($1,$2,$3,$4)',[distribution,asset,'debit',false]);
+      const sequence=(await client.query<{sequence:string}>('SELECT sequence::text FROM orio_ledger.post_journal($1,$2,$3,$4::jsonb)',
+        ['company_withdrawal:'+gasDigest(proof.settlementRef),proof.settlementRef,'Finalized distribution of recognized company fees; reserve untouched',
+          JSON.stringify([{accountId:cash,side:'credit',units:proof.units},{accountId:distribution,side:'debit',units:proof.units}])])).rows[0]!.sequence;
+      await client.query('INSERT INTO orio_monetary.company_withdrawals VALUES($1,$2,$3::jsonb,$4)',[proof.settlementRef,c.id,JSON.stringify(proof),sequence]);
+      await client.query('COMMIT');return sequence;
+    }catch(error){await client.query('ROLLBACK');throw error;}finally{client.release();}
+  }
   async importTransfer(input: Omit<ExpectedTokenTransfer,'chainId'|'tokenAddress'>) {
     const c=this.deployment;
     const proof=await verifyFinalizedTokenTransfer(this.first,this.second,{...structuredClone(input),chainId:c.chainId,tokenAddress:c.currency});
@@ -77,9 +102,10 @@ export class MonetarySettlement {
       await client.query('COMMIT');return sequence;
     }catch(error){await client.query('ROLLBACK');throw error;}finally{client.release();}
   }
-  async import(input: { transactionHash: string; checkpointLogIndex: string; operationId: string; version: string; kind: 'PURCHASE'|'REDEMPTION' }) {
-    const c=this.deployment;
-    const proof=await verifyFinalizedMonetaryExecution(this.first,this.second,{...structuredClone(input),...c});
+  async import(input: { transactionHash: string; checkpointLogIndex: string; operationId: string; version: string;
+    kind: 'PURCHASE'|'REDEMPTION'|'ZERO_SUPPLY_RECONCILIATION'; reconciliation?:ZeroSupplyReconciliation }) {
+    const c=this.deployment,request=structuredClone(input);
+    const proof=await verifyFinalizedMonetaryExecution(this.first,this.second,{...request,...c});
     if(proof.registryEpoch !== c.registryEpoch) throw new Error('Master election transition requires reconciliation');
     const client=await this.pool.connect();
     try {
@@ -87,7 +113,7 @@ export class MonetarySettlement {
       const row=(await client.query<{configuration: MonetaryDeployment;version:string;state:MonetaryState}>(
         'SELECT configuration,version::text,state FROM orio_monetary.deployments WHERE id=$1 FOR UPDATE',[c.id])).rows[0];
       if(!row || !same(row.configuration,c)) throw new Error('Deployment is not initialized');
-      const prior=(await client.query<{evidence:unknown;journal_sequence:string}>(
+      const prior=(await client.query<{evidence:unknown;journal_sequence:string|null}>(
         'SELECT evidence,journal_sequence FROM orio_monetary.executions WHERE deployment_id=$1 AND version=$2',[c.id,proof.version])).rows[0];
       if(prior) {
         if(!same(prior.evidence,proof)) throw new Error('Monetary execution idempotency conflict');
@@ -105,7 +131,12 @@ export class MonetarySettlement {
         if(!('gross' in allocation)) throw new Error('Unexpected purchase allocation');
         return {id,masterUnits:allocation.gross!};
       }) : [];
-      const plan=proof.kind==='PURCHASE' ? planPurchaseEpoch(row.state,valuation,purchases,now) :
+      const reconciliation=request.reconciliation;
+      if(proof.kind==='ZERO_SUPPLY_RECONCILIATION' && (!reconciliation || reconciliation.checkpointDigest!==proof.evidenceDigest.slice(2)))
+        throw new Error('Zero-supply reconciliation must match finalized governance checkpoint');
+      const plan=proof.kind==='ZERO_SUPPLY_RECONCILIATION' ? {
+        next:reconcileZeroSupply(row.state,valuation,reconciliation!,now),allocations:[]
+      } : proof.kind==='PURCHASE' ? planPurchaseEpoch(row.state,valuation,purchases,now) :
         planRedemptionEpoch(row.state,valuation,indexed.map(({allocation,id})=>{
           if(!('burned' in allocation)) throw new Error('Unexpected redemption allocation');
           return {id,tokenAtoms:allocation.burned};
@@ -152,17 +183,17 @@ export class MonetarySettlement {
         await client.query('INSERT INTO orio_settlement.receipt_claims(external_ref,consumer,operation_id) VALUES($1,$2,$3)',[ref(index),'monetary',operation]);
       for(const a of accounts.values()) await client.query('SELECT orio_ledger.create_account($1,$2,$3,$4)',[a.id,a.asset,a.normalSide,false]);
       const postings:Posting[]=[...amounts].filter(([,n])=>n!==0n).map(([accountId,n])=>({accountId,side:n>0n?'debit':'credit',units:(n>0n?n:-n).toString()}));
-      const journal=(await client.query<{sequence:string}>('SELECT sequence::text FROM orio_ledger.post_journal($1,$2,$3,$4::jsonb)',
-        ['monetary:'+operation,ref(proof.checkpointLogIndex),'Finalized '+proof.kind.toLowerCase()+'; segregated monetary reserve and company cash',JSON.stringify(postings)])).rows[0]!;
+      const sequence=postings.length ? (await client.query<{sequence:string}>('SELECT sequence::text FROM orio_ledger.post_journal($1,$2,$3,$4::jsonb)',
+        ['monetary:'+operation,ref(proof.checkpointLogIndex),'Finalized '+proof.kind.toLowerCase()+'; segregated monetary reserve and company cash',JSON.stringify(postings)])).rows[0]!.sequence : null;
       for(const [label,units] of [['reserve_cash',proof.reserveMasterUnits],['company_cash',proof.companyMasterUnits]] as const){
         const balance=(await client.query<{units:string}>('SELECT units::text FROM orio_ledger.balances WHERE id=$1',
           ['mon_'+gasDigest([c.id,masterAsset,label])])).rows[0]?.units??'0';
         if(balance!==units)throw new Error('Unreconciled reserve or company cash movement');
       }
       await client.query('INSERT INTO orio_monetary.executions VALUES($1,$2,$3,$4::jsonb,$5::jsonb,$6)',
-        [c.id,proof.version,proof.operationId,JSON.stringify(proof),JSON.stringify(plan.next),journal.sequence]);
+        [c.id,proof.version,proof.operationId,JSON.stringify(proof),JSON.stringify(plan.next),sequence]);
       await client.query('UPDATE orio_monetary.deployments SET version=$2,state=$3::jsonb WHERE id=$1',[c.id,proof.version,JSON.stringify(plan.next)]);
-      await client.query('COMMIT');return {journalSequence:journal.sequence,version:proof.version};
+      await client.query('COMMIT');return {journalSequence:sequence,version:proof.version};
     } catch(error) {await client.query('ROLLBACK');throw error;} finally {client.release();}
   }
 }

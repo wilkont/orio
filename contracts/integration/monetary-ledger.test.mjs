@@ -71,12 +71,43 @@ test('executed monetary contracts commit verified native/token/rounding journals
     await settlement.import(evidence(result,received.id,'REDEMPTION','3'));
     assert.equal(await balance('wallet:'+f.second.address,`erc20:84532:${f.currency.address}`),'0');
     assert.equal((await ledger.verify()).ok,true);
+    const all=await f.seal([{atoms:(await f.read(f.currency,'totalSupply'))[0]}]);quote=await f.valuation();
+    result=await f.call(f.controller,'redeemBatch',[all.requests,quote.value,quote.signature]);ok(result);
+    await settlement.import(evidence(result,all.id,'REDEMPTION','4'));
+    const zero=(await pool.query('SELECT state FROM orio_monetary.deployments')).rows[0].state;
+    const reconciliation={expectedStateDigest:gasDigest(zero),checkpointDigest:hash('zero-audit').slice(2),
+      reserveMasterUnits:zero.reserveMasterUnits,pendingRedemptionUnits:'0',unsettledCompanyFeeUnits:'0'};
+    quote=await f.valuation();id=hash('zero-reconciled');
+    result=await f.govern(f.controller,'reconcileZeroSupply',[id,4,hash('zero-audit'),quote.value,quote.signature]);ok(result);
+    const checkpoint=evidence(result,id,'ZERO_SUPPLY_RECONCILIATION','5');
+    await assert.rejects(settlement.import(checkpoint),/must match finalized governance checkpoint/);
+    const journalCount=(await pool.query('SELECT count(*) FROM orio_ledger.journals')).rows[0].count;
+    assert.equal((await settlement.import({...checkpoint,reconciliation})).journalSequence,null);
+    assert.equal((await pool.query('SELECT count(*) FROM orio_ledger.journals')).rows[0].count,journalCount);
+    assert.equal((await pool.query('SELECT state FROM orio_monetary.deployments')).rows[0].state.priceUsd36.numerator,zero.priceUsd36.numerator);
+    quote=await f.valuation();id=hash('reopened');
+    result=await f.call(f.controller,'purchase',[id,5n,100000000n,1n,quote.value,quote.signature]);ok(result);
+    await settlement.import(evidence(result,id,'PURCHASE','6'));
     // A non-versioned company withdrawal cannot silently overstate company cash on the next import.
-    ok(await f.govern(f.controller,'withdrawCompany',[f.master.address,f.sender,1n]));
+    const withdrawal=await f.govern(f.controller,'withdrawCompany',[f.master.address,f.sender,1n]);ok(withdrawal);
+    evidence(withdrawal,hash('company-withdrawal'),'PURCHASE','7');const withdrawalReceipt=structuredClone(current);
+    const withdrawalInput={transactionHash:current.transactionHash,
+      startLogIndex:BigInt(current.logs.find(log=>log.topics[0]===f.vault.api.getEvent('CompanyWithdrawalStarted').topicHash).logIndex).toString(),
+      completionLogIndex:BigInt(current.logs.find(log=>log.topics[0]===f.controller.api.getEvent('CompanyFeesWithdrawn').topicHash).logIndex).toString()};
     quote=await f.valuation();id=hash('after-withdrawal');
-    result=await f.call(f.controller,'purchase',[id,3n,100000000n,1n,quote.value,quote.signature]);ok(result);
-    await assert.rejects(settlement.import(evidence(result,id,'PURCHASE','4')),/Unreconciled reserve or company cash/);
-    assert.equal((await pool.query('SELECT version::text FROM orio_monetary.deployments')).rows[0].version,'3');
+    result=await f.call(f.controller,'purchase',[id,6n,100000000n,1n,quote.value,quote.signature]);ok(result);
+    const seventh=evidence(result,id,'PURCHASE','7'),pendingPurchase=structuredClone(current);
+    await assert.rejects(settlement.import(seventh),/Unreconciled reserve or company cash/);
+    assert.equal((await pool.query('SELECT version::text FROM orio_monetary.deployments')).rows[0].version,'6');
+    current=withdrawalReceipt;
+    const withdrawn=await settlement.importCompanyWithdrawal(withdrawalInput);
+    assert.equal(await settlement.importCompanyWithdrawal(withdrawalInput),withdrawn);
+    const tampered=structuredClone(current);current.logs=current.logs.filter(log=>log.address.toLowerCase()!==f.master.address.toLowerCase());
+    await assert.rejects(settlement.importCompanyWithdrawal(withdrawalInput),/exact cash movement/);current=tampered;
+    current=pendingPurchase;await settlement.import(seventh);
+    assert.equal((await pool.query('SELECT version::text FROM orio_monetary.deployments')).rows[0].version,'7');
+    assert.equal(await balance('company_cash'),(await f.read(f.vault,'companyFees',[f.master.address]))[0].toString());
+    assert.equal((await ledger.verify()).ok,true);
   } finally {
     if(pool)await pool.end();await root.query('DROP DATABASE IF EXISTS '+name);await root.query('DROP ROLE IF EXISTS '+runtime);await root.end();
   }

@@ -3,8 +3,8 @@
   "status": "BLOCKED",
   "financialExecutionEnabled": false,
   "scope": "Undeployed source/artifact inventory and readiness gaps; not an independent audit or approval",
-  "releaseDigest": "896c91334b0b62dfdac04b3b8eb980b304d703c1866eac624615916b24bd9f6f",
-  "contractSetDigest": "c81169fe39551e40b6fed7cabbb2117951b10f2775f8e7d675f0a550ef1641bb",
+  "releaseDigest": "70d12b73aaa8305a882426b46a4932c7a9f45afa0ad93eff58d8db9016008dae",
+  "contractSetDigest": "60b79cc30d90f53af28f434b819300477a3835e8701453ea378592ed1ba06c81",
   "sourceDigests": [
     {
       "path": "contracts/package.json",
@@ -20,7 +20,7 @@
     },
     {
       "path": "contracts/scripts/qualification-report.mjs",
-      "sha256": "bc161303b80bddd0010ae6266013f519ae8ba9a4cc69436cebee2bdb814daefb"
+      "sha256": "441ae77ad8087dc8224a322ea7c53169b6be98e99019d881fdca3fea65b1697b"
     },
     {
       "path": "contracts/sdk/gas-permit.mjs",
@@ -52,7 +52,7 @@
     },
     {
       "path": "contracts/src/ORIOReserveVault.sol",
-      "sha256": "61c3f8cbe15dd476768f5dc56b9779e04d28af702c47383b4658098222d7631d"
+      "sha256": "48d815eb1ccac27b0551e6bb684f889d41494d6dbf7a3ffb3ed92f9ae5a85027"
     },
     {
       "path": "contracts/src/ORIOMonetaryController.sol",
@@ -96,11 +96,15 @@
     },
     {
       "path": "services/control-foundation/src/finalized-monetary.ts",
-      "sha256": "7e2c1f5acff8eddcd61d02582e78b86bf5e7fed8f54c0a2d23ad4a5c6e038cc0"
+      "sha256": "7c297f0a3843d3c1ba48d8474be74e15eb112fcb87223247aa20a2b9e1183093"
+    },
+    {
+      "path": "services/control-foundation/src/finalized-company-withdrawal.ts",
+      "sha256": "c7347fead8f25e4be752c5ff0dd354daf908a5095294a0fe5088607300f937ef"
     },
     {
       "path": "services/control-foundation/src/monetary-settlement.ts",
-      "sha256": "70692b01b312eee1d326151e3263819c47ce3015f16e52cc3e620f47a2d9c99c"
+      "sha256": "02734230d707ad1ff905b3bbf74bf8a4aae785f1b88bd960e7b7abfd8df2451d"
     },
     {
       "path": "services/control-foundation/config/approved-monetary-policy.json",
@@ -141,6 +145,14 @@
     {
       "path": "services/control-foundation/migrations/012_monetary_execution.sql",
       "sha256": "c7b11ddd6b4a03fd6c196d3517f9fbab04f217819706ebd8c4b77a12a0ab195a"
+    },
+    {
+      "path": "services/control-foundation/migrations/013_zero_supply_execution.sql",
+      "sha256": "d11e584e5f7922129f79a9e495d30585a112205fc55b26ae576cf0762722f697"
+    },
+    {
+      "path": "services/control-foundation/migrations/014_company_withdrawal_execution.sql",
+      "sha256": "811ddb03ac8b5a7a85d6290621c6d242a7527be67e7cb71f2848137140037ad8"
     }
   ],
   "artifacts": [
@@ -207,20 +219,20 @@
     {
       "contractName": "ORIOReserveVault",
       "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
-      "creationSha256": "9c0e4406f924f4bd05302936ff391bd60a5b6de43cba33790855605b27b75209",
-      "runtimeTemplateSha256": "193c19b7d25c689f7ded40ee6f2acb180522cf42b3341c4767ad5c4af9faadb2",
-      "runtimeTemplateBytes": 4296,
-      "metadataSha256": "db25a9b61fad64b6992123ec29f8f0058d21e0ab87f71d250b1e942ccf4ba70f",
+      "creationSha256": "e86d487807d52ac1d3b69a3a54b4431c1f0d5864c2a05ae75640b5f811d29ca2",
+      "runtimeTemplateSha256": "f639c16391f0641e6c31f4a5cca6729e35103ec520d31c3fc87d20d6d7539754",
+      "runtimeTemplateBytes": 4351,
+      "metadataSha256": "e7c5b85579636b3602d359ad857b887709a0ea5a8e0fe06a4d213c89e53d3326",
       "deployedAddress": null,
       "deployedRuntimeSha256": null
     },
     {
       "contractName": "ORIOMonetaryController",
       "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
-      "creationSha256": "a69a666bbacc8aa2cf9a02aef3c18cc1677672df48b772e835a63ccdd310acda",
-      "runtimeTemplateSha256": "db34583f291ff6562d0b8327d47306fde0814f82ffe9b4d1fa8c7107194cfccc",
+      "creationSha256": "ff61193b6755b2b3a576df79c8374da58e6e96d72db093ff56c42f48aae11cbf",
+      "runtimeTemplateSha256": "088e2d1cdc95ef82a03193df76eec8fc5bc9d3dd82f6960fb22ca6889c1aa33c",
       "runtimeTemplateBytes": 24062,
-      "metadataSha256": "02993dde16adb7e070c8489b4d8760818c8e4dc2657288bacc3df6f417d71ea7",
+      "metadataSha256": "5fb58c232443716fc3f92edac802a7e27d08e16dac02f0dabdf6a6fa7e00ef6c",
       "deployedAddress": null,
       "deployedRuntimeSha256": null
     },
@@ -243,10 +255,10 @@
   "mainnetBlocker": "Qualification account, factory and paymaster constructors reject Base mainnet; a tested, approved production candidate is required",
   "prospectiveRelease": {
     "mode": "public-live",
-    "releaseDigest": "896c91334b0b62dfdac04b3b8eb980b304d703c1866eac624615916b24bd9f6f",
+    "releaseDigest": "70d12b73aaa8305a882426b46a4932c7a9f45afa0ad93eff58d8db9016008dae",
     "projectId": "orio-spc-3-prod",
     "chainId": "8453",
-    "contractSetDigest": "c81169fe39551e40b6fed7cabbb2117951b10f2775f8e7d675f0a550ef1641bb"
+    "contractSetDigest": "60b79cc30d90f53af28f434b819300477a3835e8701453ea378592ed1ba06c81"
   },
   "releasePolicy": {
     "version": "owner-accountable-v2",

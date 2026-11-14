@@ -15,6 +15,7 @@ contract ORIOReserveVault is ReentrancyGuard {
     IERC20 public masterAsset;
     uint256 public reserveUnits;
     mapping(address => uint256) public companyFees;
+    event CompanyWithdrawalStarted(address indexed asset, address indexed recipient, uint256 units);
     modifier onlyController() { require(msg.sender == controller, "Only monetary controller"); _; }
     constructor(IERC20 asset) {
         require(address(asset).code.length != 0, "Invalid master asset"); controller = msg.sender; masterAsset = asset;
@@ -38,6 +39,7 @@ contract ORIOReserveVault is ReentrancyGuard {
     }
     function withdrawCompany(address asset, address recipient, uint256 units) external onlyController nonReentrant {
         require(units > 0 && units <= companyFees[asset], "Company funds only");
+        emit CompanyWithdrawalStarted(asset, recipient, units);
         companyFees[asset] -= units; _send(IERC20(asset), recipient, units); _assertCustody(asset);
     }
     function migrate(IERC20 replacement, address adapter, bytes calldata data, uint256 minimumReceived)

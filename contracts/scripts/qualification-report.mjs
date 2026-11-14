@@ -12,10 +12,11 @@ const sourceDigests = await Promise.all(files.map(async path => ({ path: 'contra
   sha256: digest(await readFile(new URL('../' + path, import.meta.url))) })));
 for (const path of ['src/gas-policy.ts', 'src/gas-controls.ts', 'src/ledger.ts', 'src/release.ts', 'src/monetary-policy.ts',
   'src/gas-funding.ts', 'src/gas-refunds.ts',
-  'src/monetary-engine.ts', 'src/finalized-monetary.ts', 'src/monetary-settlement.ts', 'config/approved-monetary-policy.json',
+  'src/monetary-engine.ts', 'src/finalized-monetary.ts', 'src/finalized-company-withdrawal.ts', 'src/monetary-settlement.ts', 'config/approved-monetary-policy.json',
   'src/chain-evidence.ts', 'src/finalized-user-operation.ts', 'src/finalized-transfer.ts',
   'migrations/001_ledger.sql', 'migrations/008_gas_controls.sql', 'migrations/009_gas_execution_bindings.sql',
-  'migrations/010_gas_prepayment_funding.sql', 'migrations/011_gas_prepayment_refunds.sql', 'migrations/012_monetary_execution.sql'])
+  'migrations/010_gas_prepayment_funding.sql', 'migrations/011_gas_prepayment_refunds.sql', 'migrations/012_monetary_execution.sql',
+  'migrations/013_zero_supply_execution.sql', 'migrations/014_company_withdrawal_execution.sql'])
   sourceDigests.push({ path: 'services/control-foundation/' + path,
     sha256: digest(await readFile(new URL('../../services/control-foundation/' + path, import.meta.url))) });
 const compiled = compileContracts();

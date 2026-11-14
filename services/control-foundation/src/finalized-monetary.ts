@@ -4,7 +4,7 @@ import type { ChainReader } from './chain-evidence.ts';
 export interface MonetaryExecutionExpectation {
   chainId: string; controller: string; currency: string; vault: string; master: string;
   transactionHash: string; checkpointLogIndex: string; operationId: string; version: string;
-  kind: 'PURCHASE' | 'REDEMPTION';
+  kind: 'PURCHASE' | 'REDEMPTION' | 'ZERO_SUPPLY_RECONCILIATION';
 }
 const topics = {
   checkpoint: '0x20898450f31a91406bb3ae22abdc1bc501e0d5f8fd28bbcbd0f334fd60381bf2',
@@ -28,7 +28,7 @@ function eventTopics(log: Record<string, unknown>): string[] {
 async function verifySource(source: ChainReader, expected: MonetaryExecutionExpectation) {
   const snapshot = await finalizedReceipt(source, expected.chainId, expected.transactionHash);
   const checkpoint = finalizedLog(snapshot, expected.transactionHash, expected.checkpointLogIndex);
-  const t = eventTopics(checkpoint), kind = expected.kind === 'PURCHASE' ? '0' : '1';
+  const t = eventTopics(checkpoint), kind = expected.kind === 'PURCHASE' ? '0' : expected.kind === 'REDEMPTION' ? '1' : '2';
   if (chainAddress(checkpoint.address) !== expected.controller || t.length !== 4 || t[0] !== topics.checkpoint ||
       t[1] !== expected.operationId || uint(t[2]!.slice(2)) !== kind || uint(t[3]!.slice(2)) !== expected.version)
     throw new Error('Monetary checkpoint identity mismatch');
@@ -63,8 +63,11 @@ async function verifySource(source: ChainReader, expected: MonetaryExecutionExpe
     return transfers.splice(index, 1)[0]!.logIndex;
   };
   const events = segment.filter(log => chainAddress(log.address) === expected.controller &&
-    eventTopics(log)[0] === (expected.kind === 'PURCHASE' ? topics.purchase : topics.redemption));
-  if (!events.length || (expected.kind === 'PURCHASE' && events.length !== 1)) throw new Error('Missing settlement allocation');
+    [topics.purchase,topics.redemption].includes(eventTopics(log)[0]!));
+  if (expected.kind === 'ZERO_SUPPLY_RECONCILIATION' ? events.length !== 0 :
+    !events.length || (expected.kind === 'PURCHASE' && events.length !== 1)) throw new Error('Missing or unexpected settlement allocation');
+  if(events.some(log=>eventTopics(log)[0] !== (expected.kind === 'PURCHASE'?topics.purchase:topics.redemption)))
+    throw new Error('Unexpected monetary allocation kind');
   const allocations = events.map(log => {
     const ts = eventTopics(log);
     if (ts[1] !== expected.operationId || ts.length !== (expected.kind === 'PURCHASE' ? 3 : 4))
@@ -104,7 +107,7 @@ export async function verifyFinalizedMonetaryExecution(first: ChainReader, secon
     if (typeof value !== 'string' || !/^[1-9][0-9]{0,77}$/.test(value) || BigInt(value) >= 1n << 256n)
       throw new Error('Invalid monetary expectation');
   if (typeof expected.checkpointLogIndex !== 'string' || !/^(0|[1-9][0-9]{0,77})$/.test(expected.checkpointLogIndex) ||
-      !['PURCHASE','REDEMPTION'].includes(expected.kind)) throw new Error('Invalid monetary expectation');
+      !['PURCHASE','REDEMPTION','ZERO_SUPPLY_RECONCILIATION'].includes(expected.kind)) throw new Error('Invalid monetary expectation');
   for (const key of ['controller','currency','vault','master'] as const) {
     expected[key] = chainAddress(expected[key]); if (expected[key] === zero) throw new Error('Zero deployment address');
   }
