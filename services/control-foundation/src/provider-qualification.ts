@@ -1,6 +1,6 @@
 import { chainHash,chainObject,chainQuantity,requireChainSources } from './chain-evidence.ts';
 import type { ChainReader } from './chain-evidence.ts';
-import { HttpsChainReader } from './chain-rpc.ts';
+import { HttpsChainReader,parseRpcHeaders } from './chain-rpc.ts';
 
 export interface ProviderPolicy { chainId:string;maximumFinalizedAgeSeconds:string;maximumHeightSkew:string }
 function quantity(value:unknown,positive=false):bigint{
@@ -51,14 +51,7 @@ export function configuredChainProviders(environment:Record<string,string|undefi
     if(!endpoint||!operatorId)throw new Error('Two provider URLs and operator identities must be configured');
     let origin:string;try{origin=new URL(endpoint).origin;}catch{throw new Error('Invalid provider URL configuration');}
     endpoints.push(origin);
-    let headers:Record<string,string>|undefined;
-    const encoded=environment['ORIO_RPC_'+label+'_HEADERS'];
-    if(encoded){
-      let parsed:unknown;try{parsed=JSON.parse(encoded);}catch{throw new Error('Invalid provider header configuration');}
-      if(parsed===null||typeof parsed!=='object'||Array.isArray(parsed)||Object.values(parsed).some(value=>typeof value!=='string'))
-        throw new Error('Invalid provider header configuration');
-      headers=parsed as Record<string,string>;
-    }
+    const headers=parseRpcHeaders(environment['ORIO_RPC_'+label+'_HEADERS']);
     return {operatorId,reader:new HttpsChainReader({sourceId:'orio-rpc-'+label.toLowerCase(),endpoint,...(headers?{headers}:{})})};
   });
   if(endpoints[0]===endpoints[1])throw new Error('Provider endpoints must use distinct origins');

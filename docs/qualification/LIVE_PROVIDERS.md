@@ -20,3 +20,11 @@ The source uses the existing read-only transport, retaining method restrictions,
 ## New provider setup proposal — November 14, 2026
 
 The owner requested preparation of a new provider setup for approval. The concrete proposal is infrastructure/providers/SETUP_PROPOSAL_2026-11-14.md: Alchemy Free primary RPC, Infura Core Free secondary RPC, and Pimlico Free Base Sepolia bundler qualification, with a $0 service-charge scope and no paid/card/mainnet activation. Credentials remain empty in the adjacent qualification.env.example. Account creation is pending owner approval; no provider account, subscription, AWS secret or transaction was created. Provider selection does not complete custom-paymaster/bundler qualification.
+
+## Approved signup and bundler probe continuation
+
+The owner subsequently approved the exact free/testnet scope. All three Chrome signup forms were prepared with the approved work email; password, terms submission and verification are handed to the owner. No provider account or key creation has been verified. This is an authentication handoff, not a renewed request to approve the same scope. See infrastructure/providers/ACCOUNT_SETUP_STATUS.md.
+
+The separate HttpsBundlerReader now permits only eth_chainId and eth_supportedEntryPoints. It shares the bounded HTTPS transport without widening the settlement reader's original three-method allowlist. Neither reader can sign, sponsor, estimate or submit a transaction. The bundler qualification check pins expected chain and EntryPoint before waiting on network responses, rejects malformed/duplicate support lists and reports capabilities only.
+
+Run npm run check:bundler with trusted ORIO_BUNDLER_URL, optional ORIO_BUNDLER_HEADERS and an explicitly pinned ORIO_ENTRYPOINT_ADDRESS. Defaults use chain 84532; no expected address is inferred from a provider response. CLI failures omit endpoints, headers and raw provider exceptions. A live two-read diagnostic against Pimlico's documented public Base Sepolia endpoint advertised the expected v0.8 address. Exact evidence is in PIMLICO_PUBLIC_BUNDLER_DIAGNOSTIC.json; no account key was used and no transaction was sent. Source: https://docs.pimlico.io/references/bundler/public-endpoint . Public endpoint support is not authenticated-account availability, deployed-code verification, ERC-7562 admission or production qualification.

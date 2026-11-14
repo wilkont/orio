@@ -3,7 +3,7 @@
   "status": "BLOCKED",
   "financialExecutionEnabled": false,
   "scope": "Undeployed source/artifact inventory and readiness gaps; not an independent audit or approval",
-  "releaseDigest": "780bdac41a8146c519176b5bfb04bb3f47e955d84de23219e74b7c1638eb120e",
+  "releaseDigest": "73b49d4614d0232e912f646aac2c9c2d8019cc235e15fb4331f11bfd68e2713c",
   "contractSetDigest": "8ee1d0b9ef2ad61b80ebe103e7712fa6495e839b24a501defb6542f996a75516",
   "sourceDigests": [
     {
@@ -20,7 +20,7 @@
     },
     {
       "path": "contracts/scripts/qualification-report.mjs",
-      "sha256": "81c55abe5c1c8d0b9799c17be26d6bf4be5fd4aff0213cc39c1759c3c669ff73"
+      "sha256": "f5cab5584e0b635297dc014e0dfdbc0e4c65aa0a2c08f624d99422100a1b4366"
     },
     {
       "path": "contracts/sdk/gas-permit.mjs",
@@ -136,7 +136,15 @@
     },
     {
       "path": "services/control-foundation/src/provider-qualification.ts",
-      "sha256": "9e3b9937484da95ad62c3004fb21f095b67640d6db6a0e4ccb90d474b69fa993"
+      "sha256": "7998d5457e505bd6c1ed091a18fc4d4b117d355271fa3719a1ea57188d0e6c97"
+    },
+    {
+      "path": "services/control-foundation/src/chain-rpc.ts",
+      "sha256": "ec542bf9be6cedba18cac375f564459aae631ed56b4d07623d359da73892036c"
+    },
+    {
+      "path": "services/control-foundation/src/bundler-qualification.ts",
+      "sha256": "22715cf26999972324db5c45b23f2225a70daf4c37fb1f47bff39e49aea9ec20"
     },
     {
       "path": "services/control-foundation/migrations/001_ledger.sql",
@@ -295,7 +303,7 @@
   "mainnetBlocker": "Qualification account, factory and paymaster constructors reject Base mainnet; a tested, approved production candidate is required",
   "prospectiveRelease": {
     "mode": "public-live",
-    "releaseDigest": "780bdac41a8146c519176b5bfb04bb3f47e955d84de23219e74b7c1638eb120e",
+    "releaseDigest": "73b49d4614d0232e912f646aac2c9c2d8019cc235e15fb4331f11bfd68e2713c",
     "projectId": "orio-spc-3-prod",
     "chainId": "8453",
     "contractSetDigest": "8ee1d0b9ef2ad61b80ebe103e7712fa6495e839b24a501defb6542f996a75516"

@@ -1,6 +1,6 @@
 # ORIO provider setup proposal
 
-Prepared November 14, 2026. Status: prepared for owner approval, not provisioned. Scope is the first 30 days of Base Sepolia qualification, chain ID 84532. This does not authorize financial activation, mainnet subscriptions, card enrollment, AWS changes or real-fund transactions. External independent review remains advisory.
+Prepared November 14, 2026. Status: owner-approved free-account scope; signup authentication pending, not provisioned. Scope is the first 30 days of Base Sepolia qualification, chain ID 84532. This does not authorize financial activation, mainnet subscriptions, card enrollment, AWS changes or real-fund transactions. External independent review remains advisory.
 
 ## Recommended services
 
@@ -70,4 +70,4 @@ Rollback: remove application connections, revoke qualification keys and delete/d
 
 ## Approval decision
 
-Approve creating the Alchemy Free, Infura Core Free and Pimlico Free testnet accounts/projects under ORIO.IO Lab for the above qualification scope, with $0 service charges, no card enrollment, no paid upgrades and no mainnet activation. This is the final decision needed to move this prepared proposal into account setup.
+Approve creating the Alchemy Free, Infura Core Free and Pimlico Free testnet accounts/projects under ORIO.IO Lab for the above qualification scope, with $0 service charges, no card enrollment, no paid upgrades and no mainnet activation. The owner explicitly approved this scope on November 14, 2026. The actual forms are now prepared for password/terms/verification handoff; see ACCOUNT_SETUP_STATUS.md. Do not ask again to approve the same free-account scope.

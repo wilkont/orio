@@ -10,6 +10,7 @@
     "simulate:monetary": "node scripts/simulate-monetary.mjs",
     "start": "node src/server.ts",
     "check:providers": "node scripts/check-providers.mjs",
+    "check:bundler": "node scripts/check-bundler.mjs",
     "check:base-public": "node scripts/check-base-public.mjs",
     "test:container": "node scripts/test-container.mjs",
     "typecheck": "tsc --noEmit",

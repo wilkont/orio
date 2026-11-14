@@ -1,6 +1,11 @@
 import type { ChainReader } from './finalized-transfer.ts';
 
 type Method = Parameters<ChainReader['request']>[0];
+type BundlerMethod = 'eth_chainId' | 'eth_supportedEntryPoints';
+export interface BundlerReader {
+  readonly sourceId: string;
+  request(method: BundlerMethod, params: unknown[]): Promise<unknown>;
+}
 
 export interface ChainRpcConfiguration {
   sourceId: string;
@@ -10,7 +15,7 @@ export interface ChainRpcConfiguration {
 }
 
 /** Trusted deployment configuration only. No customer-controlled URLs or headers. */
-export class HttpsChainReader implements ChainReader {
+class ReadOnlyHttpsRpc {
   readonly sourceId: string;
   private readonly endpoint: string;
   private readonly headers: Headers;
@@ -37,14 +42,15 @@ export class HttpsChainReader implements ChainReader {
     this.fetch = fetchImplementation;
   }
 
-  async request(method: Method, params: unknown[]): Promise<unknown> {
+  async request(method: Method | BundlerMethod, params: unknown[]): Promise<unknown> {
     if (!Array.isArray(params)) throw new Error('Invalid read-only RPC parameters');
     const chainId = method === 'eth_chainId' && params.length === 0;
     const receipt = method === 'eth_getTransactionReceipt' && params.length === 1 &&
       typeof params[0] === 'string' && /^0x[0-9a-f]{64}$/.test(params[0]);
     const block = method === 'eth_getBlockByNumber' && params.length === 2 && params[1] === false &&
       typeof params[0] === 'string' && (params[0] === 'finalized' || /^0x(?:0|[1-9a-f][0-9a-f]*)$/.test(params[0]));
-    if (!chainId && !receipt && !block) throw new Error('Unsupported read-only chain RPC request');
+    const supported = method === 'eth_supportedEntryPoints' && params.length === 0;
+    if (!chainId && !receipt && !block && !supported) throw new Error('Unsupported read-only chain RPC request');
     try {
       const response = await this.fetch(this.endpoint, {
         method: 'POST', headers: this.headers, redirect: 'error',
@@ -80,4 +86,39 @@ export class HttpsChainReader implements ChainReader {
       throw new Error('Chain RPC request failed');
     }
   }
+}
+
+/** Settlement reader deliberately excludes bundler and broadcast methods. */
+export class HttpsChainReader implements ChainReader {
+  readonly sourceId: string;
+  private readonly transport: ReadOnlyHttpsRpc;
+  constructor(configuration: ChainRpcConfiguration, fetchImplementation: typeof fetch = fetch) {
+    this.transport = new ReadOnlyHttpsRpc(configuration, fetchImplementation); this.sourceId = this.transport.sourceId;
+  }
+  async request(method: Method, params: unknown[]): Promise<unknown> {
+    if (!['eth_chainId','eth_getTransactionReceipt','eth_getBlockByNumber'].includes(method))
+      throw new Error('Unsupported read-only chain RPC request');
+    return this.transport.request(method, params);
+  }
+}
+
+/** Capability diagnostics only; no estimation, sponsorship, signing or submission. */
+export class HttpsBundlerReader implements BundlerReader {
+  readonly sourceId: string;
+  private readonly transport: ReadOnlyHttpsRpc;
+  constructor(configuration: ChainRpcConfiguration, fetchImplementation: typeof fetch = fetch) {
+    this.transport = new ReadOnlyHttpsRpc(configuration, fetchImplementation); this.sourceId = this.transport.sourceId;
+  }
+  async request(method: BundlerMethod, params: unknown[]): Promise<unknown> {
+    if (!['eth_chainId','eth_supportedEntryPoints'].includes(method)) throw new Error('Unsupported read-only bundler RPC request');
+    return this.transport.request(method, params);
+  }
+}
+
+export function parseRpcHeaders(encoded: string | undefined): Record<string,string> | undefined {
+  if (!encoded) return undefined;
+  let parsed: unknown; try { parsed=JSON.parse(encoded); } catch { throw new Error('Invalid provider header configuration'); }
+  if (parsed===null || typeof parsed!=='object' || Array.isArray(parsed) || Object.values(parsed).some(value=>typeof value!=='string'))
+    throw new Error('Invalid provider header configuration');
+  return parsed as Record<string,string>;
 }
