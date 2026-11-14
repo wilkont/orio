@@ -224,3 +224,10 @@ The owner resolved geographic direction: US-origin launch with intended global a
 Added immutable signing preparations in local migration 018. The coordinator loads the real funded reservation/journal, derives the typed Gas Permit, commits its unique digest before invoking a configured typed-signing backend, and verifies the configured company operator signature. A changed payload cannot obtain another permit against the same reservation. Closed reservations, mainnet/deployment substitution, wrong keys and backend failures reject. Ambiguous signing preserves prepared funds instead of refunding a potentially signed operation.
 
 The actual local PostgreSQL/reference EntryPoint purchase/gas-reconciliation test now uses this coordinator with synthetic keys. All 200 backend/PG/local execution tests, 42 contract/SDK tests, strict TypeScript and container TLS/non-root/paused/restricted-reader checks pass. No production signer, key, funds, public-network transaction, IAM permission, paid service or hosted migration was created. The SDK is a qualification integration, not a deployed protected signer. See PROTECTED_COMPANY_SIGNING.md and the approved operating intent configuration.
+
+
+## November 14: protected AWS signer and bootstrap preparation
+
+Implemented official AWS KMS client binding, strict secp256k1 public-key/DER signature verification, low-S Ethereum recovery, and trusted-pipe signing CLI. Local integration exercises the adapter with synthetic KMS responses: 200 backend/integration tests and 50 contract/SDK/template tests pass; contract dependency audit reports zero vulnerabilities. No live AWS signing occurred.
+
+Administrator STS verified account 720232346199, the existing operator principal exists, and the proposed alias is available. AWS ValidateTemplate succeeded against pinned commit ba7b484. One disabled qualification key plus scoped key administration remains pending action-time approval and recurring key cost authorization. No key, signing grant, funded reserve, production workload or financial activation was created.

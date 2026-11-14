@@ -6,7 +6,7 @@ Target account 720232346199; Region us-east-1; proposed stack orio-spc-3-protect
 
 On November 14, 2026 the connected console identified arn:aws:iam::720232346199:user/orio/orio-operator. It read the orio-spc-3-ledger stack as CREATE_COMPLETE and read its existing network/database outputs. ListStackResources, kms:ListAliases and tag:GetResources were denied. List failures are permission evidence, not proof that resources or keys are absent. The existing operator remains inspection-scoped; it cannot authorize its own bootstrap.
 
-AWS multi-session support was enabled to preserve that operator session while the owner requested administrator sign-in. An additional administrator login is open; its account-owner email field is empty and no saved administrator sign-in was available. No password/MFA was bypassed. An authenticated administrator is still required.
+AWS multi-session support was enabled to preserve that operator session while the owner requested administrator sign-in. The owner completed administrator authentication. CloudShell STS verified account 720232346199 with its root principal; IAM confirmed the existing /orio/orio-operator principal, and KMS returned no matching qualification alias. No password/MFA was bypassed. No key or permission was created.
 
 ## Exact first change
 
@@ -31,7 +31,7 @@ Before the action, show the authenticated administrator the exact template/polic
 
 ## Validation and execution
 
-Local security tests check disabled state, account/Region constraints, retention, lockout protection and absence of signing/deletion/key-import/grant permissions. AWS-native ValidateTemplate and principal/alias existence checks remain pending administrator access. The local cfn-lint executable was blocked by Windows Application Control; no bypass was attempted and no successful CloudFormation validation is claimed.
+Local security tests check disabled state, account/Region constraints, retention, lockout protection and absence of signing/deletion/key-import/grant permissions. AWS-native ValidateTemplate succeeded against commit ba7b484dcbd4b556a4146fe8e7a451f9e9f182bd; principal and alias checks also passed. The downloaded Git blob SHA256 is 007d0e99e242bd048a9473317bf54063e158bfb73e2c88b32bdde970b240e8fd. Validation is not resource creation or a policy authorization test. The local cfn-lint executable was blocked by Windows Application Control; no bypass was attempted and no successful CloudFormation validation is claimed.
 
 If approved, use the administrator only for the one-time named stack operation and read-only verification. Confirm key identity/spec/usage, disabled state, complete policy and alias; obtain the public key through the authorized operator and record the derived Ethereum address. Never print key material or credentials. Public-key metadata is not a signing qualification. Keep the key disabled until a separate concrete workload/signing-access plan is approved. The first key is for qualification and must not be quietly repurposed for production funds.
 
