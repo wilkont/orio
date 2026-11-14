@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
+import {mkdtempSync,writeFileSync,unlinkSync,rmdirSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {test} from 'node:test';
 import {TypedDataEncoder,id} from 'ethers';
 const t=JSON.parse(readFileSync(new URL('../../infrastructure/aws/protected-signing-qualification.json',import.meta.url)));
@@ -21,8 +25,22 @@ test('signing is restricted to a private service role and one existing key',()=>
  assert.deepEqual(sign.Resource,{'Fn::GetAtt':['QualificationGasKey','Arn']});
  assert.deepEqual(sign.Condition,{StringEquals:{'kms:MessageType':'DIGEST','kms:SigningAlgorithm':'ECDSA_SHA_256'}});
  assert.deepEqual(r.OperatorQualificationInvoke.Properties.PolicyDocument.Statement[0].Action,['lambda:InvokeFunction']);
- assert.equal(r.QualificationFunction.Properties.ReservedConcurrentExecutions,1);
+ assert.equal(r.QualificationFunction.Properties.ReservedConcurrentExecutions,0);
  assert.equal(r.QualificationFunction.Properties.Timeout,15);
  assert.ok(!Object.values(r).some(x=>['AWS::Lambda::Url','AWS::Lambda::Permission','AWS::ApiGateway::RestApi'].includes(x.Type)));
  for(const x of Object.values(r))assert.equal(x.Condition,'TargetAccountAndRegion');
+});
+test('real non-monetary AWS signature verifies and altered evidence rejects',()=>{
+ const fixture=JSON.parse(readFileSync(new URL('../../infrastructure/aws/KEY_QUALIFICATION_RESPONSE_2026-11-14.json',import.meta.url)));
+ const dir=mkdtempSync(join(tmpdir(),'orio-key-proof-')),file=join(dir,'proof.json');
+ try{
+  const script=fileURLToPath(new URL('../scripts/verify-key-qualification.mjs',import.meta.url));
+  writeFileSync(file,JSON.stringify(fixture));
+  const good=spawnSync(process.execPath,[script,file],{encoding:'utf8'});
+  assert.equal(good.status,0,good.stderr);assert.equal(JSON.parse(good.stdout).status,'VERIFIED');
+  for(const changed of [{...fixture,digest:'0x'+'00'.repeat(32)},{...fixture,signature:Buffer.from('bad').toString('base64')},{...fixture,financialExecutionEnabled:true}]){
+   writeFileSync(file,JSON.stringify(changed));
+   assert.notEqual(spawnSync(process.execPath,[script,file],{encoding:'utf8'}).status,0);
+  }
+ }finally{unlinkSync(file);rmdirSync(dir);}
 });

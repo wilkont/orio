@@ -234,3 +234,6 @@ Administrator STS verified account 720232346199, the existing operator principal
 
 
 November 14 approved bootstrap completed: owner approved the disabled qualification key, scoped operator administration and recurring cost. Stack orio-spc-3-protected-signing is CREATE_COMPLETE; key 479ae4e7-483e-4d17-8f46-232f08c5c6ee is Disabled (ECC_SECG_P256K1/SIGN_VERIFY/AWS_KMS). Policy and operator public-key inspection verified; derived public signer 0xB1E1d791a518931042Fed65778a2f8E11938eae1. No Sign grant, enablement, funding or financial activation. This evidence supersedes earlier pending-bootstrap statements. See infrastructure/aws/PROTECTED_KEY_DEPLOYMENT_2026-11-14.json.
+
+
+November 14 protected-key verification: owner approved restricted Lambda signing access and USD0.10 verification budget. AWS stack UPDATE_COMPLETE; private Lambda rejected a caller digest and signed the fixed non-monetary challenge using its exact-key service role. Public response independently verified against 0xB1E1d791a518931042Fed65778a2f8E11938eae1. Key subsequently Disabled and reserved concurrency zero, verified through AWS. No blockchain broadcast or monetary permit was produced. See infrastructure/aws/KEY_QUALIFICATION_RECEIPT_2026-11-14.json. Source now declares paused state; stack cleanup alignment follows.

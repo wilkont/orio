@@ -18,7 +18,7 @@
       "UpdateReplacePolicy": "Retain",
       "Properties": {
         "Description": "ORIO company-operated Base Sepolia gas qualification key - initially disabled",
-        "Enabled": true,
+        "Enabled": false,
         "BypassPolicyLockoutSafetyCheck": false,
         "KeySpec": "ECC_SECG_P256K1",
         "KeyUsage": "SIGN_VERIFY",
@@ -220,7 +220,7 @@
         },
         "Timeout": 15,
         "MemorySize": 128,
-        "ReservedConcurrentExecutions": 1,
+        "ReservedConcurrentExecutions": 0,
         "Code": {
           "ZipFile": "import base64\nimport boto3\nfrom botocore.config import Config\nKEY = \"arn:aws:kms:us-east-1:720232346199:key/479ae4e7-483e-4d17-8f46-232f08c5c6ee\"\nDIGEST = \"cdce4ceb5056824b8e445297e1b6edd710f5d8921aa72867985809521d5a2ddb\"\ndef handler(event, context):\n    if type(event) is not dict or event != {}:\n        raise ValueError(\"Only the fixed qualification challenge is authorized\")\n    client = boto3.client(\"kms\", region_name=\"us-east-1\", config=Config(connect_timeout=3, read_timeout=3, retries={\"total_max_attempts\":1}))\n    public = client.get_public_key(KeyId=KEY)\n    if public.get(\"KeyId\") != KEY or public.get(\"KeySpec\") != \"ECC_SECG_P256K1\" or public.get(\"KeyUsage\") != \"SIGN_VERIFY\" or \"ECDSA_SHA_256\" not in public.get(\"SigningAlgorithms\", []):\n        raise ValueError(\"Unexpected protected identity\")\n    signed = client.sign(KeyId=KEY, Message=bytes.fromhex(DIGEST), MessageType=\"DIGEST\", SigningAlgorithm=\"ECDSA_SHA_256\")\n    if signed.get(\"KeyId\") != KEY or signed.get(\"SigningAlgorithm\") != \"ECDSA_SHA_256\":\n        raise ValueError(\"Unexpected signing response\")\n    return {\"keyArn\":KEY, \"digest\":\"0x\"+DIGEST, \"publicKey\":base64.b64encode(public[\"PublicKey\"]).decode(), \"signature\":base64.b64encode(signed[\"Signature\"]).decode(), \"financialExecutionEnabled\":False}\n"
         }
@@ -265,7 +265,7 @@
       "Condition": "TargetAccountAndRegion"
     },
     "QualificationOnly": {
-      "Value": "Enabled qualification key; private fixed-challenge function only; no monetary permit or financial activation",
+      "Value": "Qualification verified; key disabled and private function paused; no financial activation",
       "Condition": "TargetAccountAndRegion"
     }
   },

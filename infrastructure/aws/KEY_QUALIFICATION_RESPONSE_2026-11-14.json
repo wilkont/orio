@@ -1,0 +1,7 @@
+{
+  "keyArn": "arn:aws:kms:us-east-1:720232346199:key/479ae4e7-483e-4d17-8f46-232f08c5c6ee",
+  "digest": "0xcdce4ceb5056824b8e445297e1b6edd710f5d8921aa72867985809521d5a2ddb",
+  "publicKey": "MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEfwLisc5dsTgYuom22679dw+boXu6di0b+1Ob4C2qxxcAfELk+XFdPZp1tMAHPb27/8dqqMcIKW9BIMsByKEsJg==",
+  "signature": "MEUCIFMIKKhfyHy49XyaNTQd/nnGIqQilZkdjKIPNvzsdkvOAiEA5CrgPKw5R5Ob/bF41ThzxfqGQROWQBLrOw0nIcBjen8=",
+  "financialExecutionEnabled": false
+}
