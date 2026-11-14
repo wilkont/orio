@@ -25,3 +25,12 @@ Discovery is not ledger import. A separate ordered dispatcher must interpret ret
 ## Validation
 
 Discovery tests cover complete enumeration, empty blocks, lagging finality, missing receipts, source disagreement, parent/hash/chain failures, changed history during reads, log gaps/removals, reverted logs and caller mutation. PostgreSQL tests cover restart, concurrent ingestion, injected cursor-write rollback, replay, immutable evidence and cursor-skip rejection. All fixtures are synthetic; tests establish no real reserve balances or public-network settlement.
+
+
+## Ordered consumer checkpoint (migration 017)
+
+HistoryDispatch provides a separate receipt-delivery cursor for each pinned handler revision. It serializes a consumer with a session advisory lock, calls the trusted handler outside a database transaction, then commits its acknowledgement and cursor together. A positive acknowledgement identifies IMPORTED or NO_FINANCIAL_EFFECT and durable evidence references; an unsupported required transition must throw. Empty observed blocks receive explicit immutable completion records. A missing predecessor completion or receipt acknowledgement rejects cursor advancement.
+
+A handler's financial side effects and the delivery acknowledgement are **not** one distributed transaction. If the process fails after a journal commits, the same deterministic delivery ID is retried. The actual financial handler must use the existing immutable settlement receipt ownership and semantic replay checks. A PostgreSQL integration test injects that exact failure and verifies one real synthetic journal after retry. Consumers cannot infer that a discovered block was financially processed. Block evidence, delivery acknowledgements and completion records are distinct.
+
+The handler digest is owner-configured release identity, not an automatic attestation of a JavaScript callback. Deploy only the corresponding pinned adapter; do not allow customer-defined handlers, revisions or acknowledgement data. The generic dispatcher is locally tested but is not yet connected to production event-specific monetary adapters. No supervisor, financial HTTP route or hosted migration is enabled by this module. Session loss permits replay; a stuck handler requires operational cancellation/restart and idempotent recovery. Restore, historical mapping, production throughput and actual deployment remain separate qualification work.

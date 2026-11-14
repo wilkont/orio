@@ -1,25 +1,10 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {randomUUID} from 'node:crypto';
-import {readFile} from 'node:fs/promises';
-import {Pool} from 'pg';
+import type {Pool} from 'pg';
+import {historyDatabase as fixture} from './history-database.ts';
 import {FinalizedHistory} from '../src/finalized-history.ts';
 import {hash,historyConfig,historyReader} from './history-fixture.ts';
 
-const rootURL=new URL(process.env.ORIO_TEST_DATABASE_URL??'about:blank');
-if(!['127.0.0.1','localhost'].includes(rootURL.hostname)||rootURL.pathname!=='/orio_test')
- throw new Error('Use the isolated local PostgreSQL test harness');
-async function fixture(run:(pool:Pool,role:string)=>Promise<void>){
- const root=new Pool({connectionString:rootURL.href}),name='orio_test_history_'+randomUUID().replaceAll('-',''),role=name+'_rt';
- const url=new URL(rootURL);url.pathname='/'+name;
- let pool:Pool|undefined,created=false;
- try{
-  await root.query('CREATE DATABASE '+name);created=true;pool=new Pool({connectionString:url.href});
-  for(const file of ['001_ledger.sql','016_finalized_history.sql'])
-   await pool.query((await readFile(new URL('../migrations/'+file,import.meta.url),'utf8')).replaceAll('orio_ledger_runtime',role));
-  await run(pool,role);
- }finally{if(pool)await pool.end();if(created){await root.query('DROP DATABASE '+name);await root.query('DROP ROLE IF EXISTS '+role);}await root.end();}
-}
 const worker=(pool:Pool)=>new FinalizedHistory(pool,historyReader('first'),historyReader('second'),historyConfig);
 
 test('commits complete evidence with cursor and resumes through an empty block',async()=>fixture(async pool=>{
