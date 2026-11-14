@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readFile } from 'node:fs/promises';
+import { readFile,readdir } from 'node:fs/promises';
 import { randomUUID, createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { recoverAddress, sha256 } from 'ethers';
 import { bytesToHex } from '@ethereumjs/util';
 import { paymasterFixture } from '../test/helpers/paymaster-fixture.mjs';
+import { monetaryFixture,hash } from '../test/helpers/monetary-fixture.mjs';
+import { MonetarySettlement } from '../../services/control-foundation/src/monetary-settlement.ts';
 import { prepareGasPermit, attachGasConsents } from '../sdk/gas-permit.mjs';
 import { ControlLedger } from '../../services/control-foundation/src/ledger.ts';
 import { GasControls, gasAccounts } from '../../services/control-foundation/src/gas-controls.ts';
@@ -16,24 +18,30 @@ const rootUrl = new URL(process.env.ORIO_TEST_DATABASE_URL ?? 'about:blank');
 if (!['127.0.0.1', 'localhost'].includes(rootUrl.hostname) || rootUrl.pathname !== '/orio_test')
   throw new Error('Use the isolated local PostgreSQL test harness');
 
-test('committed gas hold → signed permit → real EntryPoint → final user-operation debit → ledger refund reconciles', async () => {
+test('committed user gas → real EntryPoint monetary purchase → vault/mint journal → final gas debit/refund reconcile separately', async () => {
   const root = new Pool({ connectionString: rootUrl.href }), name = 'orio_test_aa_' + randomUUID().replaceAll('-', '');
   const runtime = name + '_rt', url = new URL(rootUrl); url.pathname = '/' + name;
   let pool, created = false;
   try {
     await root.query('CREATE DATABASE ' + name); created = true; pool = new Pool({ connectionString: url.href });
-    for (const migration of ['001_ledger.sql', '008_gas_controls.sql', '009_gas_execution_bindings.sql']) await pool.query(
-      (await readFile(new URL('../../services/control-foundation/migrations/' + migration, import.meta.url), 'utf8')).replaceAll('orio_ledger_runtime', runtime));
-    const f = await paymasterFixture(); f.setTime(Math.floor(Date.now() / 1000));
-    const { operation } = await f.signOperation();
+    const directory=new URL('../../services/control-foundation/migrations/',import.meta.url);
+    for (const migration of (await readdir(directory)).filter(name=>/^\d{3}_.*\.sql$/.test(name)).sort()) await pool.query(
+      (await readFile(new URL(migration,directory), 'utf8')).replaceAll('orio_ledger_runtime', runtime));
+    const f = await paymasterFixture(), monetary=await monetaryFixture(f); f.setTime(Math.floor(Date.now() / 1000));
+    assert.equal((await f.call(monetary.master,'mintFixture',[f.account.address,100000000n])).execResult.exceptionError,undefined);
+    const value=await monetary.valuation(),purchaseId=hash('aa-purchase');
+    const callData=f.account.api.encodeFunctionData('executeBatch',[[
+      {target:monetary.master.address,value:0,data:monetary.master.api.encodeFunctionData('approve',[monetary.vault.address,100000000n])},
+      {target:monetary.controller.address,value:0,data:monetary.controller.api.encodeFunctionData('purchase',[purchaseId,0,100000000n,1,value.value,value.signature])}]]);
+    const { operation } = await f.signOperation({callData,callGasLimit:800000n});
     operation.nonce = operation.nonce.toString(); operation.preVerificationGas = operation.preVerificationGas.toString();
     operation.paymasterAndData = operation.paymasterAndData.slice(0, 106);
     const now = new Date().toISOString(), evidence = 'a'.repeat(64);
-    const quote = quoteGas({ transactionId: 'ledger-aa', ownerRef: f.account.address, chainId: '84532', action: 'TRANSFER',
+    const quote = quoteGas({ transactionId: 'ledger-aa', ownerRef: f.account.address, chainId: '84532', action: 'PURCHASE',
       actionDigest: evidence, paymentAsset: 'USDC_SYNTHETIC', paymentKind: 'STABLECOIN', paymentMethod: 'PREPAID',
       rate: { unitsNumerator: '1', weiDenominator: '1000000000000', evidenceDigest: evidence },
       estimatedAt: now, expiresAt: new Date(Date.now() + 60_000).toISOString(), operations: [{ operationId: 'operation',
-        callDigest: sha256(operation.callData).slice(2), executionGasLimit: '2100000', maxFeePerGasWei: '1000000000',
+        callDigest: sha256(operation.callData).slice(2), executionGasLimit: '2600000', maxFeePerGasWei: '1000000000',
         l1DataFeeCapWei: '0', otherNetworkFeeCapWei: '0' }] }, now);
     const ledger = new ControlLedger(pool), controls = new GasControls(pool), accounts = gasAccounts(quote);
     for (const [id, asset, normalSide] of [[accounts.prepaid, quote.paymentAsset, 'credit'], ['gas_cash_fixture', quote.paymentAsset, 'debit'],
@@ -67,6 +75,8 @@ test('committed gas hold → signed permit → real EntryPoint → final user-op
     const result = await f.submit(operation); assert.equal(result.execResult.exceptionError, undefined);
     const completed = f.logs(result, f.entry).find(event => event?.name === 'UserOperationEvent');
     assert.equal(completed.args.userOpHash, userOpHash); assert.equal(completed.args.success, true);
+    assert.equal((await f.read(monetary.currency,'balanceOf',[f.account.address]))[0],99n*10n**18n);
+    assert.equal((await f.read(monetary.vault,'reserveUnits'))[0],99000000n);
     const transactionHash = '0x' + 'e'.repeat(64), blockHash = '0x' + 'd'.repeat(64);
     const rpcLogs = result.execResult.logs.map(([address, topics, logData], index) => ({
       address: bytesToHex(address), topics: topics.map(bytesToHex), data: bytesToHex(logData),
@@ -85,6 +95,12 @@ test('committed gas hold → signed permit → real EntryPoint → final user-op
       userOperationHash: userOpHash, nonce: operation.nonce, transactionHash, logIndex: BigInt(finalLog.logIndex).toString(),
     });
     assert.equal(observed.entryPointDebitWei, completed.args.actualGasCost.toString());
+    const importer=new MonetarySettlement(pool,localReader('vm-primary'),localReader('vm-secondary'),{
+      id:'aa_monetary',chainId:'84532',controller:monetary.controller.address,currency:monetary.currency.address,
+      vault:monetary.vault.address,master:monetary.master.address,masterDecimals:6,registryEpoch:'1'});
+    await importer.initialize();
+    const checkpoint=rpcLogs.find(log=>log.topics[0]===monetary.controller.api.getEvent('MonetaryCheckpoint').topicHash);
+    await importer.import({transactionHash,checkpointLogIndex:BigInt(checkpoint.logIndex).toString(),operationId:purchaseId,version:'1',kind:'PURCHASE'});
     // Offline VM has no Base L1 data publication. This is the exact final EntryPoint debit,
     // NOT a production proof of finality or complete Base/bundler network-cost allocation.
     const cost = { operationId: 'operation', executionRef, evidenceDigest: evidence, outcome: 'SUCCESS',
@@ -98,6 +114,7 @@ test('committed gas hold → signed permit → real EntryPoint → final user-op
     assert.equal(await f.balance(f.account.address), 0n);
     assert.equal(BigInt(settlement.chargeUnits) + BigInt(settlement.refundUnits), BigInt(quote.maximumPaymentUnits));
     assert.equal(balances.some(account => account.id.startsWith('reserve_')), false);
+    assert.equal(balances.some(account=>account.asset===`erc20:84532:${monetary.master.address}`&&account.units==='99000000'),true);
   } finally {
     if (pool) await pool.end();
     if (created) { await root.query('DROP DATABASE ' + name); await root.query('DROP ROLE IF EXISTS ' + runtime); }

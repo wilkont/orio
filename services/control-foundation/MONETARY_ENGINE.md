@@ -21,7 +21,7 @@ The reserve must cover both token liabilities and residual obligations. Master i
 
 The module is a pure deterministic planner, not an executed Monetary Controller. Caller-supplied states can be previewed repeatedly without consuming requests. Production must persist a versioned immutable snapshot, freeze epoch membership and platform inclusion order, verify user limits, bind actual converted master receipts, authenticate valuation/depeg rules, fence competing plans, consume requests once and atomically coordinate final mint/burn/payout evidence with the control ledger.
 
-No public monetary write API or native signing is added. Approval does not permit an unsigned client to set price, supply or risk flags. On-chain vault/controller implementation must reproduce these rounding rules and preserve segregated obligations; the existing gas/governance contracts do not execute monetary calculations.
+No public monetary write API or native signing is added. Approval does not permit an unsigned client to set price, supply or risk flags. On-chain vault/controller implementation must reproduce these rounding rules and preserve segregated obligations; the new qualification controller/vault reproduce the calculations and are covered by actual VM and PostgreSQL tests. See MONETARY_SETTLEMENT_INTEGRATION.md for implemented execution and remaining production/lifecycle work.
 
 ## Verification
 

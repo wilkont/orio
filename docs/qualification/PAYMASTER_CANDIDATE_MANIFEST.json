@@ -3,8 +3,8 @@
   "status": "BLOCKED",
   "financialExecutionEnabled": false,
   "scope": "Undeployed source/artifact inventory and readiness gaps; not an independent audit or approval",
-  "releaseDigest": "45e22633ce4abede59ad88ac2fd4a8285ad5462523714fc5c2bc043871b3342a",
-  "contractSetDigest": "da2d1550abab92efc2e8d9462730398883d3f49aa74cbe78c3a1ccab60ccdc47",
+  "releaseDigest": "896c91334b0b62dfdac04b3b8eb980b304d703c1866eac624615916b24bd9f6f",
+  "contractSetDigest": "c81169fe39551e40b6fed7cabbb2117951b10f2775f8e7d675f0a550ef1641bb",
   "sourceDigests": [
     {
       "path": "contracts/package.json",
@@ -16,11 +16,11 @@
     },
     {
       "path": "contracts/scripts/compile.mjs",
-      "sha256": "5021834deba6fcd1c689f01e252f859efc86e3aa745a320d18003f63fbd5dfd1"
+      "sha256": "a24b9195ffeb34df197ec3dbc57affdb9f475b0b93a32ebf48c3e47a8049ed5e"
     },
     {
       "path": "contracts/scripts/qualification-report.mjs",
-      "sha256": "e06cbe4df6189d67a8e94716241f234927e491eb6e84776b18c5ac0962695090"
+      "sha256": "bc161303b80bddd0010ae6266013f519ae8ba9a4cc69436cebee2bdb814daefb"
     },
     {
       "path": "contracts/sdk/gas-permit.mjs",
@@ -32,7 +32,7 @@
     },
     {
       "path": "contracts/src/MasterAssetRegistry.sol",
-      "sha256": "a25691e32c8588d45408067ceab779858b2a551979805c82b501e77d99d6f6d7"
+      "sha256": "92d838ffff84d89afc74c8cb3fa3b94386961f458d4a10e13a9ec76b82535c45"
     },
     {
       "path": "contracts/src/ORIOTreasuryPaymaster.sol",
@@ -45,6 +45,22 @@
     {
       "path": "contracts/src/ORIOGasAccountFactory.sol",
       "sha256": "d70e9859d2e8504addda548597717b48bf1d92f10ff5c999feb30678dfb9cc87"
+    },
+    {
+      "path": "contracts/src/ORIOCurrency.sol",
+      "sha256": "af95ee85063fe7f2a126c040861ef9782cafc38893208006efabf254d1c960ac"
+    },
+    {
+      "path": "contracts/src/ORIOReserveVault.sol",
+      "sha256": "61c3f8cbe15dd476768f5dc56b9779e04d28af702c47383b4658098222d7631d"
+    },
+    {
+      "path": "contracts/src/ORIOMonetaryController.sol",
+      "sha256": "58e78cfe70a0ca4fd63ed20ca536c2799c7cd234ff94a1e652b1bf233c2a8eed"
+    },
+    {
+      "path": "contracts/src/ORIORedemptionLocks.sol",
+      "sha256": "a840581c93f5803059d6ab5ca5e49d7e42f821f42238d8afc7c3ac568aec1d37"
     },
     {
       "path": "services/control-foundation/src/gas-policy.ts",
@@ -77,6 +93,14 @@
     {
       "path": "services/control-foundation/src/monetary-engine.ts",
       "sha256": "399d28f1274c39fcd8f2a4ef96da5afe53ae0fd99ad74a26564b9fe5a5778c73"
+    },
+    {
+      "path": "services/control-foundation/src/finalized-monetary.ts",
+      "sha256": "7e2c1f5acff8eddcd61d02582e78b86bf5e7fed8f54c0a2d23ad4a5c6e038cc0"
+    },
+    {
+      "path": "services/control-foundation/src/monetary-settlement.ts",
+      "sha256": "70692b01b312eee1d326151e3263819c47ce3015f16e52cc3e620f47a2d9c99c"
     },
     {
       "path": "services/control-foundation/config/approved-monetary-policy.json",
@@ -113,6 +137,10 @@
     {
       "path": "services/control-foundation/migrations/011_gas_prepayment_refunds.sql",
       "sha256": "7f9eb3dc1d1f0e7de0d4b30065703a76a39f8c90782e2d751ec3bed5c6968650"
+    },
+    {
+      "path": "services/control-foundation/migrations/012_monetary_execution.sql",
+      "sha256": "c7b11ddd6b4a03fd6c196d3517f9fbab04f217819706ebd8c4b77a12a0ab195a"
     }
   ],
   "artifacts": [
@@ -129,10 +157,10 @@
     {
       "contractName": "MasterAssetRegistry",
       "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
-      "creationSha256": "8778cbbaad8b1a38eac14376797923263336e73d2e44b324145d279abeba3809",
-      "runtimeTemplateSha256": "c1db5c9cc6141761021cbb38586a561f5ad6073e8c641c7c62840a2a08ef3313",
-      "runtimeTemplateBytes": 4761,
-      "metadataSha256": "542da24fb035c048dc1532fa158601026c381859c44e33e8233e6f77a1654e73",
+      "creationSha256": "7ebcf68bb48121851f072908a85729ce944249c3401779f6eb7d0672a933c3ea",
+      "runtimeTemplateSha256": "c1431fcfbe7d6ce06a36b20ea42f3b3703b323ed882ff49dafc71f73f42b3226",
+      "runtimeTemplateBytes": 5688,
+      "metadataSha256": "17375aaad7adfd899f0aed2382ebac95e65193c2e180bf01371fd774113653b0",
       "deployedAddress": null,
       "deployedRuntimeSha256": null
     },
@@ -165,6 +193,46 @@
       "metadataSha256": "a00e7d2869e4d2caa093bbb3eca87c4f340c2b9b7d8934cde468c6e968bc0b52",
       "deployedAddress": null,
       "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIOCurrency",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "6ee1c22e0535a27941d73a1bfc56f11907a90287f91158b5b0675be39311f507",
+      "runtimeTemplateSha256": "9f61f0816f8bbefb5d562066a541427a18a73b4b422522368ba55191bc8d17f4",
+      "runtimeTemplateBytes": 2955,
+      "metadataSha256": "0e0471b62fa55f643ca52b62c0c1f737d084187860f04658063785e46b1a961d",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIOReserveVault",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "9c0e4406f924f4bd05302936ff391bd60a5b6de43cba33790855605b27b75209",
+      "runtimeTemplateSha256": "193c19b7d25c689f7ded40ee6f2acb180522cf42b3341c4767ad5c4af9faadb2",
+      "runtimeTemplateBytes": 4296,
+      "metadataSha256": "db25a9b61fad64b6992123ec29f8f0058d21e0ab87f71d250b1e942ccf4ba70f",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIOMonetaryController",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "a69a666bbacc8aa2cf9a02aef3c18cc1677672df48b772e835a63ccdd310acda",
+      "runtimeTemplateSha256": "db34583f291ff6562d0b8327d47306fde0814f82ffe9b4d1fa8c7107194cfccc",
+      "runtimeTemplateBytes": 24062,
+      "metadataSha256": "02993dde16adb7e070c8489b4d8760818c8e4dc2657288bacc3df6f417d71ea7",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIORedemptionLocks",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "fad0bd5bbab30828578381bca049c318514e1e05aa951a4a091adfb912919dea",
+      "runtimeTemplateSha256": "77c1b51fba2e514635b7435d6715dcd80a1a312f2eb680ddd0dcdc4794da9aa9",
+      "runtimeTemplateBytes": 3468,
+      "metadataSha256": "cb3a5526d9bcf1c6a47864bd2bba7391a769f7f1f110ce61132e5a08965fc64e",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
     }
   ],
   "candidateNetworks": [
@@ -175,10 +243,10 @@
   "mainnetBlocker": "Qualification account, factory and paymaster constructors reject Base mainnet; a tested, approved production candidate is required",
   "prospectiveRelease": {
     "mode": "public-live",
-    "releaseDigest": "45e22633ce4abede59ad88ac2fd4a8285ad5462523714fc5c2bc043871b3342a",
+    "releaseDigest": "896c91334b0b62dfdac04b3b8eb980b304d703c1866eac624615916b24bd9f6f",
     "projectId": "orio-spc-3-prod",
     "chainId": "8453",
-    "contractSetDigest": "da2d1550abab92efc2e8d9462730398883d3f49aa74cbe78c3a1ccab60ccdc47"
+    "contractSetDigest": "c81169fe39551e40b6fed7cabbb2117951b10f2775f8e7d675f0a550ef1641bb"
   },
   "releasePolicy": {
     "version": "owner-accountable-v2",

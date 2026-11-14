@@ -21,13 +21,13 @@ export async function paymasterFixture(options = {}) {
   if (!options.counterfactual) assert.equal((await f.call(factory, 'createAccount', [owner.address, salt])).execResult.exceptionError, undefined);
   let sequence = 0;
   async function signOperation({ nonce, method = 'record', maximumNetworkWei = 10n ** 16n,
-    expiry = f.time() + 60n, reservationId, wrongUser = false, wrongOperator = false } = {}) {
+    expiry = f.time() + 60n, reservationId, wrongUser = false, wrongOperator = false, callData, callGasLimit = 300000n } = {}) {
     const header = concat([paymaster.address, toBeHex(800000n, 16), toBeHex(100000n, 16)]);
     const operation = { sender: address, nonce: nonce ?? (await f.read(entry, 'getNonce', [address, 0]))[0],
       initCode: options.counterfactual ? concat([factory.address, factory.api.encodeFunctionData('createAccount', [owner.address, salt])]) : '0x',
-      callData: account.api.encodeFunctionData('execute', [target.address, 0,
+      callData: callData ?? account.api.encodeFunctionData('execute', [target.address, 0,
         target.api.encodeFunctionData(method, method === 'record' ? [42] : [])]),
-      accountGasLimits: concat([toBeHex(800000n, 16), toBeHex(300000n, 16)]), preVerificationGas: 100000n,
+      accountGasLimits: concat([toBeHex(800000n, 16), toBeHex(callGasLimit, 16)]), preVerificationGas: 100000n,
       gasFees: concat([toBeHex(1000000000n, 16), toBeHex(1000000000n, 16)]), paymasterAndData: header, signature: '0x' };
     const permit = { reservationId: reservationId ?? hash('reservation-' + sequence++), quoteDigest: hash('synthetic-quote'),
       paymentAsset: hash('synthetic-prepaid-USDC'), maximumPaymentUnits: 1000000n, maximumNetworkWei,

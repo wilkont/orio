@@ -3,6 +3,10 @@ pragma solidity 0.8.38;
 
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {ORIOGovernanceTimelock} from "./ORIOGovernanceTimelock.sol";
+interface MonetaryVaultIdentity {
+    function masterAsset() external view returns (address);
+    function controller() external view returns (address);
+}
 
 /// @notice Master designation and evidence registry. Reserve execution is a separate integration.
 contract MasterAssetRegistry {
@@ -20,6 +24,17 @@ contract MasterAssetRegistry {
     bytes32 public pendingMaster;
     uint256 public epoch;
     uint256 public revision;
+    address public monetaryVault;
+    address public monetaryController;
+    event MonetarySettlementBound(address indexed controller, address indexed vault);
+
+    function bindMonetarySettlement(address controller, address vault) external onlyGovernance {
+        if (monetaryController != address(0) || controller.code.length == 0 || vault.code.length == 0 ||
+            MonetaryVaultIdentity(vault).controller() != controller ||
+            assetId(MonetaryVaultIdentity(vault).masterAsset()) != currentMaster) revert InvalidTransition();
+        monetaryController = controller; monetaryVault = vault; advanceRevision();
+        emit MonetarySettlementBound(controller, vault);
+    }
 
     error Unauthorized();
     error InvalidAsset();
@@ -123,12 +138,14 @@ contract MasterAssetRegistry {
     }
 
     /// @dev Evidence must independently establish settled custody, valuation and liabilities.
-    function completeMigration(uint256 expectedEpoch, uint256 expectedRevision, bytes32 replacement, bytes32 settlementDigest) external onlyGovernance {
+    function completeMigration(uint256 expectedEpoch, uint256 expectedRevision, bytes32 replacement, bytes32 settlementDigest) external {
+        if (msg.sender != address(governance) && msg.sender != monetaryController) revert Unauthorized();
         requireEpoch(expectedEpoch);
         if (revision != expectedRevision) revert StaleRevision();
         requireEvidence(settlementDigest);
         if (pendingMaster == bytes32(0) || replacement != pendingMaster ||
-            assets[currentMaster].state != State.MIGRATING) revert InvalidTransition();
+            assets[currentMaster].state != State.MIGRATING || (monetaryVault != address(0) &&
+            assetId(MonetaryVaultIdentity(monetaryVault).masterAsset()) != replacement)) revert InvalidTransition();
         bytes32 previous = currentMaster;
         assets[previous].state = State.RETIRED;
         assets[replacement].state = State.ACTIVE_MASTER;
@@ -143,7 +160,8 @@ contract MasterAssetRegistry {
         requireEpoch(expectedEpoch);
         if (revision != expectedRevision) revert StaleRevision();
         requireEvidence(evidenceDigest);
-        if (pendingMaster == bytes32(0) || assets[currentMaster].state != State.MIGRATING)
+        if (pendingMaster == bytes32(0) || assets[currentMaster].state != State.MIGRATING ||
+            (monetaryVault != address(0) && assetId(MonetaryVaultIdentity(monetaryVault).masterAsset()) != currentMaster))
             revert InvalidTransition();
         bytes32 abandoned = pendingMaster;
         pendingMaster = bytes32(0);

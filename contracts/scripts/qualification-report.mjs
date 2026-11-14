@@ -5,17 +5,17 @@ import { compileContracts } from './compile.mjs';
 import { evaluateRelease, releasePolicy } from '../../services/control-foundation/src/release.ts';
 
 const digest = value => createHash('sha256').update(value).digest('hex');
-const names = ['ORIOGovernanceTimelock', 'MasterAssetRegistry', 'ORIOTreasuryPaymaster', 'ORIOGasAccount', 'ORIOGasAccountFactory'];
+const names = ['ORIOGovernanceTimelock', 'MasterAssetRegistry', 'ORIOTreasuryPaymaster', 'ORIOGasAccount', 'ORIOGasAccountFactory', 'ORIOCurrency', 'ORIOReserveVault', 'ORIOMonetaryController', 'ORIORedemptionLocks'];
 const files = ['package.json', 'package-lock.json', 'scripts/compile.mjs', 'scripts/qualification-report.mjs',
   'sdk/gas-permit.mjs', ...names.map(name => 'src/' + name + '.sol')];
 const sourceDigests = await Promise.all(files.map(async path => ({ path: 'contracts/' + path,
   sha256: digest(await readFile(new URL('../' + path, import.meta.url))) })));
 for (const path of ['src/gas-policy.ts', 'src/gas-controls.ts', 'src/ledger.ts', 'src/release.ts', 'src/monetary-policy.ts',
   'src/gas-funding.ts', 'src/gas-refunds.ts',
-  'src/monetary-engine.ts', 'config/approved-monetary-policy.json',
+  'src/monetary-engine.ts', 'src/finalized-monetary.ts', 'src/monetary-settlement.ts', 'config/approved-monetary-policy.json',
   'src/chain-evidence.ts', 'src/finalized-user-operation.ts', 'src/finalized-transfer.ts',
   'migrations/001_ledger.sql', 'migrations/008_gas_controls.sql', 'migrations/009_gas_execution_bindings.sql',
-  'migrations/010_gas_prepayment_funding.sql', 'migrations/011_gas_prepayment_refunds.sql'])
+  'migrations/010_gas_prepayment_funding.sql', 'migrations/011_gas_prepayment_refunds.sql', 'migrations/012_monetary_execution.sql'])
   sourceDigests.push({ path: 'services/control-foundation/' + path,
     sha256: digest(await readFile(new URL('../../services/control-foundation/' + path, import.meta.url))) });
 const compiled = compileContracts();

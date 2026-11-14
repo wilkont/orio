@@ -1,4 +1,4 @@
-# ORIO governance and gas qualification contracts
+# ORIO monetary, governance and gas qualification contracts
 
 These contracts implement the Ledger B master designation component in the existing ORIO repository. They compile with pinned Solidity 0.8.38 and OpenZeppelin Contracts 5.6.1, targeting Cancun bytecode. This is a local implementation awaiting Base qualification and accountable release evidence; external audit is advisory.
 
@@ -8,7 +8,7 @@ Run npm ci, npm run build and npm test in this directory with Node 24 or later. 
 
 ORIOGovernanceTimelock uses the OpenZeppelin timelock with self-administration, a nonzero immutable delay floor and no external bootstrap administrator. Proposer and executor arrays are deployment inputs. Production qualification must verify the actual authority bytecode, expected delay and role assignments, independently controlled multisig/DAO proposers and their thresholds. Contract addresses and nonzero delays alone do not prove independent governance. Tests use synthetic fixture accounts and five seconds solely to exercise the delay mechanism.
 
-MasterAssetRegistry accepts only its configured governance contract for mutation. Constructor checks are interface sanity checks, not proof of authentic governance code. The deployment manifest and accountable release process must bind the authority artifact and approved configuration. No company withdrawal, reserve transfer, token mint, token burn or arbitrary-call function exists in this registry.
+MasterAssetRegistry accepts its configured governance contract for mutation; a permanently bound monetary controller can also atomically complete its own verified vault migration. Constructor checks are interface sanity checks, not proof of authentic governance code. The deployment manifest and accountable release process must bind the authority artifact and approved configuration. No company withdrawal, reserve transfer, token mint, token burn or arbitrary-call function exists in this registry.
 
 ## Asset identity and transitions
 
@@ -16,13 +16,13 @@ Asset IDs are keccak256 of ABI-encoded chain ID and token address. The backend m
 
 A migration freezes issuance eligibility, retains one current designation and records one pending replacement. Completion atomically retires the old asset, activates the replacement and advances the election epoch. Aborting preserves the outgoing designation in DEPOSIT_PAUSED, requiring a separately authorized resume. Every master state transition advances a revision. Governance calls bind the expected epoch and revision, preventing an old queued completion or resume from applying to a later attempt with the same asset and epoch.
 
-The policy/evidence digests identify independently reviewed issuer, eligibility, pricing, liquidity, custody, migration and liability evidence. The contract does not validate that off-chain evidence or execute a reserve migration. The monetary engine must enforce issuanceAllowed at the actual execution boundary. Complete settlement/custody/valuation verification, dual-ledger reconciliation and atomic accounting integration remain open. The registry currently covers candidate, approval, secondary, active, migrating, retired and deposit-paused states. Quarantine, exit-only/removal workflows and independent emergency-guardian wiring remain future work.
+The policy/evidence digests identify independently reviewed issuer, eligibility, pricing, liquidity, custody, migration and liability evidence. The registry does not validate that off-chain evidence. Its bound controller/vault execute the reserve replacement and registry activation atomically. The monetary engine must enforce issuanceAllowed at the actual execution boundary. Complete settlement/custody/valuation verification, dual-ledger reconciliation and atomic accounting integration remain open. The registry currently covers candidate, approval, secondary, active, migrating, retired and deposit-paused states. Quarantine, exit-only/removal workflows and independent emergency-guardian wiring remain future work.
 
 ## Verification and release
 
 Local tests cover unauthorized callers, token metadata mismatch, one initial election, competing/stale migration actions, issuance freeze, atomic designation replacement, abort/pause recovery, timelock waiting and minimum-delay enforcement. A regression queues a completion, aborts its attempt and starts another migration to the same asset, then proves that the old completion is rejected.
 
-These are component tests, with synthetic metadata contracts and no monetary token or reserve vault. Supply conservation across the complete platform, actual swap settlement, custody proof, loss valuation, emergency response, migrations during pending redemptions, adversarial qualification and accountable legal/security/reserve/financial acceptance remains necessary; external review is advisory. No deployment script, public financial activation or live signer is included.
+The suite now includes the qualification monetary controller, actual ERC-20 ORIO token, reserve vault, signed redemption locks, synthetic master assets and actual mint/burn/payout execution. Supply conservation across the complete platform, actual swap settlement, custody proof, loss valuation, emergency response, migrations during pending redemptions, adversarial qualification and accountable legal/security/reserve/financial acceptance remains necessary; external review is advisory. No deployment script, public financial activation or live signer is included.
 
 Source references
 
@@ -34,8 +34,10 @@ The compiler's transitive tmp dependency is overridden to exact version 0.2.7 to
 
 ## Account-abstraction candidate
 
-ORIOTreasuryPaymaster, ORIOGasAccount and ORIOGasAccountFactory integrate the pinned ERC-4337 reference package 0.8.0. All three reject Base mainnet deployment. They implement qualification-network company ETH payment, dual-signed maximum-cost permits, deterministic account deployment, EntryPoint-only wallet execution, reservation replay protection and governed pause/signer revision checks. PostOp emits cost-so-far observations, not final bills. Token collection and monetary execution are absent.
+ORIOTreasuryPaymaster, ORIOGasAccount and ORIOGasAccountFactory integrate the pinned ERC-4337 reference package 0.8.0. All three reject Base mainnet deployment. They implement qualification-network company ETH payment, dual-signed maximum-cost permits, deterministic account deployment, EntryPoint-only wallet execution, reservation replay protection and governed pause/signer revision checks. PostOp emits cost-so-far observations, not final bills. The account can execute the qualification monetary purchase through an authorized batch; finalized monetary and gas accounting remain separately reconciled. Production collection/provider qualification is outstanding.
 
 The repo-internal sdk/gas-permit.mjs binds committed journal evidence and an exact owned sending account to contract-compatible EIP-712 signing material. The actual PostgreSQL-to-EntryPoint integration runs through the control service's test:local harness; install locked dependencies in both packages. It prepares a non-cancellable reservation before treasury signing and binds the final operation hash before broadcast.
 
 Run npm run qualification:report for the source/artifact inventory and explicit BLOCKED release report. See docs/qualification/PAYMASTER_QUALIFICATION.md for results, network-cost/finality limitations, required readiness evidence and production work. No live keys, funded network accounts, provider subscriptions, stake/deposit transactions or public deployments are included.
+
+See ../services/control-foundation/MONETARY_SETTLEMENT_INTEGRATION.md for monetary authorization boundaries, rollback behavior, journal integration, actual verification and remaining lifecycle/production work. Monetary contracts use a separate IR optimizer path (runs=1); existing components retain their original non-IR runs=200 path. Compilation rejects EVM deployment-size violations.
