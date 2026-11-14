@@ -1,0 +1,28 @@
+{
+  "status": "VERIFIED_FIXED_CHALLENGE",
+  "account": "720232346199",
+  "region": "us-east-1",
+  "stackStatusObserved": "UPDATE_COMPLETE",
+  "function": "orio-spc-3-key-qualification",
+  "role": "arn:aws:iam::720232346199:role/orio-spc-3-key-qualification",
+  "codeSha256": "EWn7ZKdC7YDmwc9h+K+UOyGyt26WMVd5+wfcrm4pvi4=",
+  "runtime": "python3.13",
+  "handler": "index.handler",
+  "unauthorizedInputRejected": true,
+  "rejectionRequestId": "18617aef-7e4e-41fe-8a4c-7a49840df2ed",
+  "fixedChallengeReturned": true,
+  "signatureVerifiedLocally": true,
+  "responseFile": "KEY_QUALIFICATION_RESPONSE_2026-11-14.json",
+  "keyDisabledAfterTest": true,
+  "reservedConcurrencyAfterTest": 0,
+  "invocations": 2,
+  "approvedVerificationBudgetUsd": "0.10",
+  "actualBillingVerified": false,
+  "blockchainBroadcast": false,
+  "financialExecutionEnabled": false,
+  "limits": [
+    "Fixed non-monetary challenge only; not a ledger-backed Gas Permit or live UserOperation",
+    "Operator invoke policy deployed but test invocation used administrator session; runtime KMS access used the Lambda role",
+    "Production signing, reserve funding, full Base cost reconciliation and hosted upgrades remain unfinished"
+  ]
+}

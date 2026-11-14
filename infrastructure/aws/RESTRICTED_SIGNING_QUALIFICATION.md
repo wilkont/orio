@@ -13,3 +13,8 @@ Approval is required immediately before this update because it enables cryptogra
 Remaining: deploy actual Base Sepolia contracts, obtain test ETH, configure ledger-backed signer runtime, install unapplied hosted database migrations, execute and reconcile complete testnet operations, then qualify production reserve/customer/recovery/operational arrangements. External review remains advisory.
 
 Sources: https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html ; https://aws.amazon.com/lambda/pricing/ ; https://docs.aws.amazon.com/lambda/latest/dg/lambda-concurrency.html
+
+
+## Verification completed
+
+The owner approved this exact change and USD0.10 verification budget. AWS completed the update; the deployed Lambda used its restricted service role to sign the fixed challenge. An unauthorized caller digest was rejected before KMS access. The public response in KEY_QUALIFICATION_RESPONSE_2026-11-14.json independently verifies against the recorded signer using contracts/scripts/verify-key-qualification.mjs. No private key is included. The key was subsequently disabled and reserved function concurrency set to zero. The template now declares that paused state; the enabled execution template remains in Git commit a130f0b. No blockchain transaction or production monetary signing occurred.
