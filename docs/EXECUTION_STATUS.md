@@ -1,5 +1,11 @@
 # Current local readiness update - November 13, 2026
 
+## November14 live informational website deployment
+
+ORIO.IO and www.orio.io now serve the26-page website using the original white/blue Dot preview design. A verified59-file backup and the untouched original build support rollback. All32 static files matched the pinned source on each domain:64 local-origin HTTPS checks and64 independent public HTTPS checks passed. Browser tests confirmed design and fee behavior. The deployment helper passed six guard/rollback tests, and existing API/TLS configuration was preserved. Core and website source were pushed and merged after GitHub checks passed. Details: infrastructure/aws/WEBSITE_DEPLOYMENT_2026-11-14.md.
+
+This does not deploy the financial workload, migrate the database beyond its historical001/002 state, create custody/reserves or enable real-money operations. No IAM, DNS, database, system-upgrade or reboot change was made. External review remains advisory; actual implementation and release acceptance still remain.
+
 ## November 14 account onboarding continuation
 
 Alchemy, Infura and Pimlico authenticated dashboards are verified. Free/Core Free onboarding completed without cards. Alchemy app is named orio-spc-3-qualification; Pimlico key creation, Alchemy Base Sepolia enabling and memory-only local credential transfer were confirmed. Both account-owned chain readers agreed on finalized block58794597 and its hash; Pimlico advertised pinned EntryPoint v0.8. See docs/qualification/OWNED_PROVIDER_DIAGNOSTIC_2026-11-14.json. No signing, sponsorship or broadcast occurred. Vendor default networks still require narrowing and deployed workload credentials are unconfigured. The local form's Chromium POST-origin issue was corrected using same-origin referrer policy; strict origin checks, null-origin rejection and no external referrer remain. Four focused security tests pass. See infrastructure/providers/ACCOUNT_SETUP_STATUS.md for exact state. Financial execution remains disabled; external review is advisory.
