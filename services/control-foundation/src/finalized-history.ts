@@ -89,7 +89,7 @@ export async function discoverHistoryBlock(first: ChainReader, second: ChainRead
       throw new Error('History predecessor is no longer canonical');
   }
   const retained: Record<string,unknown>[] = [], seenLogs = new Set<string>();
-  let previousLog = -1n;
+  let previousLog = -1n, retainedBytes = 0;
   for (const [index,tx] of a.transactionHashes.entries()) {
     const x = receipt(await first.request('eth_getTransactionReceipt',[tx]),a,tx,index);
     const y = receipt(await second.request('eth_getTransactionReceipt',[tx]),a,tx,index);
@@ -98,8 +98,13 @@ export async function discoverHistoryBlock(first: ChainReader, second: ChainRead
       const n = BigInt(log.logIndex);
       if (seenLogs.has(log.logIndex) || n !== previousLog+1n) throw new Error('Missing, duplicate or unordered history log');
       seenLogs.add(log.logIndex); previousLog = n;
+      if (seenLogs.size>100000) throw new Error('History block log budget exceeded');
     }
-    if (x.logs.some(log => c.watchedAddresses.includes(log.address))) retained.push(x);
+    if (x.logs.some(log => c.watchedAddresses.includes(log.address))) {
+      retainedBytes+=Buffer.byteLength(JSON.stringify(x),'utf8');
+      if (retainedBytes>8*1024*1024) throw new Error('History block evidence budget exceeded');
+      retained.push(x);
+    }
   }
   // Network calls can span a long block: recheck canonical identity before persistence.
   if (!same(a,await header(first,height)) || !same(a,await header(second,height))) throw new Error('History changed during discovery');

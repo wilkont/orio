@@ -55,3 +55,12 @@ test('pins caller configuration before asynchronous provider work and rejects ma
  await assert.rejects(discoverHistoryBlock(historyReader('first'),historyReader('second'),{...historyConfig,chainId:'8453'},'10',hash(9)));
  await assert.rejects(discoverHistoryBlock(historyReader('same'),historyReader('same'),historyConfig,'10',hash(9)));
 });
+
+
+test('bounds retained block evidence before persistence',async()=>{
+ const oversized=(id:string)=>historyReader(id,(m,_p,v)=>{
+  if(m!=='eth_getTransactionReceipt')return v;
+  const r=chainObject(v);return {...r,logs:[{...chainObject((r.logs as unknown[])[0]),data:'0x'+'a'.repeat(8*1024*1024)}]};
+ });
+ await assert.rejects(discoverHistoryBlock(oversized('first'),oversized('second'),historyConfig,'10',hash(9)),/evidence budget exceeded/);
+});
