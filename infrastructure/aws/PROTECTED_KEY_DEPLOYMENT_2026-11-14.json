@@ -1,0 +1,18 @@
+{
+  "status": "CREATE_COMPLETE",
+  "account": "720232346199",
+  "region": "us-east-1",
+  "stackArn": "arn:aws:cloudformation:us-east-1:720232346199:stack/orio-spc-3-protected-signing/6d1017d0-e076-11f1-9abb-0ec1f3bb1873",
+  "keyArn": "arn:aws:kms:us-east-1:720232346199:key/479ae4e7-483e-4d17-8f46-232f08c5c6ee",
+  "alias": "alias/orio-spc-3-gas-qualification",
+  "keyState": "Disabled",
+  "enabled": false,
+  "keySpec": "ECC_SECG_P256K1",
+  "keyUsage": "SIGN_VERIFY",
+  "origin": "AWS_KMS",
+  "operator": "arn:aws:iam::720232346199:user/orio/orio-operator",
+  "publicSigner": "0xB1E1d791a518931042Fed65778a2f8E11938eae1",
+  "signPermissionGranted": false,
+  "financialOperationsEnabled": false,
+  "verification": "Owner approved recurring key cost and scoped administration at action time. CloudShell verified stack completion, alias resolution, metadata and complete policy; operator console independently read policy and public key. No live Sign request, key enablement or blockchain broadcast occurred. Operator console ListAliases/GetKeyLastUsage remain denied; no extra permissions were added."
+}

@@ -9,6 +9,8 @@ import { paymasterFixture } from '../test/helpers/paymaster-fixture.mjs';
 import { monetaryFixture,hash } from '../test/helpers/monetary-fixture.mjs';
 import { MonetarySettlement } from '../../services/control-foundation/src/monetary-settlement.ts';
 import { attachGasConsents } from '../sdk/gas-permit.mjs';
+import { createAwsKmsGasSigner } from '../sdk/aws-kms-client.mjs';
+import { kmsFixtureClient,fixtureKeyArn } from '../test/helpers/kms-signing-fixture.mjs';
 import { signCompanyGasPermit } from '../sdk/protected-gas-signing.mjs';
 import { ControlLedger } from '../../services/control-foundation/src/ledger.ts';
 import { GasControls, gasAccounts } from '../../services/control-foundation/src/gas-controls.ts';
@@ -58,13 +60,16 @@ test('committed user gas → real EntryPoint monetary purchase → vault/mint jo
       authorizationDigest: createHash('sha256').update(quoteConsent).digest('hex') });
     assert.ok(BigInt(reserveSequence)>0n);
     let protectedCalls=0;
-    const {material,preparedRef,operatorConsent}=await signCompanyGasPermit(controls,{
-      signTypedData:async(...args)=>{
-        protectedCalls++;
-        assert.equal((await pool.query('SELECT count(*) FROM orio_gas.signing_preparations')).rows[0].count,'1');
-        return f.operator.signTypedData(...args);
-      }}, {chainId:'84532',revision:'1',signer:f.operator.address,entryPoint:f.entry.address,paymaster:f.paymaster.address},
-      {transactionId:quote.transactionId,operationId:'operation',userOperation:operation},now);
+    const policy={keyArn:fixtureKeyArn,chainId:'84532',revision:'1',signer:f.operator.address,entryPoint:f.entry.address,paymaster:f.paymaster.address};
+    const backend=await createAwsKmsGasSigner(policy,()=>kmsFixtureClient(f.operator,async()=>{
+      protectedCalls++;
+      assert.equal((await pool.query('SELECT count(*) FROM orio_gas.signing_preparations')).rows[0].count,'1');
+    }));
+    let signed;
+    try{signed=await signCompanyGasPermit(controls,backend,policy,
+      {transactionId:quote.transactionId,operationId:'operation',userOperation:operation},now);}
+    finally{backend.close();}
+    const {material,preparedRef,operatorConsent}=signed;
     assert.equal(protectedCalls,1);
     assert.equal((await f.read(f.paymaster,'permitHash',[operation,material.permit]))[0],material.digest);
     await assert.rejects(controls.cancelUnsubmitted(quote.transactionId),/reconciliation/);
