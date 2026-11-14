@@ -5,7 +5,7 @@ import solc from 'solc';
 
 export function compileContracts(includeFixtures = false) {
   const names = ['ORIOGovernanceTimelock', 'MasterAssetRegistry', 'ORIOTreasuryPaymaster', 'ORIOGasAccount', 'ORIOGasAccountFactory',
-    'ORIOCurrency', 'ORIOReserveVault', 'ORIOMonetaryController', 'ORIORedemptionLocks'];
+    'ORIOCurrency', 'ORIOReserveVault', 'ORIOMonetaryController', 'ORIORedemptionLocks', 'ORIORecoverableGasAccount', 'ORIORecoverableGasAccountFactory'];
   const files = names.map(name => 'src/' + name + '.sol');
   if (includeFixtures) files.push('test/MockTokenMetadata.sol', 'test/GasExecutionTarget.sol', 'test/MonetaryFixtures.sol',
     '@account-abstraction/contracts/core/EntryPoint.sol');
@@ -41,7 +41,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const directory = new URL('../artifacts/', import.meta.url);
   await mkdir(directory, { recursive: true });
   for (const name of ['ORIOGovernanceTimelock', 'MasterAssetRegistry', 'ORIOTreasuryPaymaster', 'ORIOGasAccount', 'ORIOGasAccountFactory',
-    'ORIOCurrency', 'ORIOReserveVault', 'ORIOMonetaryController', 'ORIORedemptionLocks']) {
+    'ORIOCurrency', 'ORIOReserveVault', 'ORIOMonetaryController', 'ORIORedemptionLocks', 'ORIORecoverableGasAccount', 'ORIORecoverableGasAccountFactory']) {
     await writeFile(new URL(name + '.json', directory), JSON.stringify({
       compiler: solc.version(), contractName: name, ...artifacts['src/' + name + '.sol'][name],
     }, null, 2) + '\n');

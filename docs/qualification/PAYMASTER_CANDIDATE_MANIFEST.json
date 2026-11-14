@@ -3,8 +3,8 @@
   "status": "BLOCKED",
   "financialExecutionEnabled": false,
   "scope": "Undeployed source/artifact inventory and readiness gaps; not an independent audit or approval",
-  "releaseDigest": "70d12b73aaa8305a882426b46a4932c7a9f45afa0ad93eff58d8db9016008dae",
-  "contractSetDigest": "60b79cc30d90f53af28f434b819300477a3835e8701453ea378592ed1ba06c81",
+  "releaseDigest": "780bdac41a8146c519176b5bfb04bb3f47e955d84de23219e74b7c1638eb120e",
+  "contractSetDigest": "8ee1d0b9ef2ad61b80ebe103e7712fa6495e839b24a501defb6542f996a75516",
   "sourceDigests": [
     {
       "path": "contracts/package.json",
@@ -16,15 +16,19 @@
     },
     {
       "path": "contracts/scripts/compile.mjs",
-      "sha256": "a24b9195ffeb34df197ec3dbc57affdb9f475b0b93a32ebf48c3e47a8049ed5e"
+      "sha256": "2e684e9e7a34f97633ed55c1a541a589af232f7bb8a35781bc0f1da9ea0aba7e"
     },
     {
       "path": "contracts/scripts/qualification-report.mjs",
-      "sha256": "441ae77ad8087dc8224a322ea7c53169b6be98e99019d881fdca3fea65b1697b"
+      "sha256": "81c55abe5c1c8d0b9799c17be26d6bf4be5fd4aff0213cc39c1759c3c669ff73"
     },
     {
       "path": "contracts/sdk/gas-permit.mjs",
       "sha256": "23b9fdf4dd61630e3f1c932b56ac2844cb62c20cdfa94ed2ace90ff9bfb8df4e"
+    },
+    {
+      "path": "contracts/sdk/recovery.mjs",
+      "sha256": "131aace19145e5630a1b21e6b126993c1263ca12e90749e4c5dab6e24eef0da9"
     },
     {
       "path": "contracts/src/ORIOGovernanceTimelock.sol",
@@ -56,11 +60,19 @@
     },
     {
       "path": "contracts/src/ORIOMonetaryController.sol",
-      "sha256": "58e78cfe70a0ca4fd63ed20ca536c2799c7cd234ff94a1e652b1bf233c2a8eed"
+      "sha256": "48e8c22174ebcef51181ed903b4cada150fa10c43991df75f7d4f076b22f539b"
     },
     {
       "path": "contracts/src/ORIORedemptionLocks.sol",
       "sha256": "a840581c93f5803059d6ab5ca5e49d7e42f821f42238d8afc7c3ac568aec1d37"
+    },
+    {
+      "path": "contracts/src/ORIORecoverableGasAccount.sol",
+      "sha256": "d6e4f8bb03f273be6413dc12ce6bcc3a28bef158a704aca5faa7083348521e1d"
+    },
+    {
+      "path": "contracts/src/ORIORecoverableGasAccountFactory.sol",
+      "sha256": "6041fb2bdcc49c74ce279f799021864ef97b9127d126e047b594f883db3aac65"
     },
     {
       "path": "services/control-foundation/src/gas-policy.ts",
@@ -96,7 +108,7 @@
     },
     {
       "path": "services/control-foundation/src/finalized-monetary.ts",
-      "sha256": "7c297f0a3843d3c1ba48d8474be74e15eb112fcb87223247aa20a2b9e1183093"
+      "sha256": "3a3e0304ef39019f3c6055f141ec225302b40a59e9e1439a3552f71bfd59567f"
     },
     {
       "path": "services/control-foundation/src/finalized-company-withdrawal.ts",
@@ -104,7 +116,7 @@
     },
     {
       "path": "services/control-foundation/src/monetary-settlement.ts",
-      "sha256": "02734230d707ad1ff905b3bbf74bf8a4aae785f1b88bd960e7b7abfd8df2451d"
+      "sha256": "93335ccb0cdd3ce251b3bee8e1c7a00eb97bd491a6cb675c544ec47cd6039d5f"
     },
     {
       "path": "services/control-foundation/config/approved-monetary-policy.json",
@@ -121,6 +133,10 @@
     {
       "path": "services/control-foundation/src/finalized-transfer.ts",
       "sha256": "6e393fed7a50bb4b7e49ae485d81a06d7cc087051e009c5217cb02bf6b9d91c3"
+    },
+    {
+      "path": "services/control-foundation/src/provider-qualification.ts",
+      "sha256": "9e3b9937484da95ad62c3004fb21f095b67640d6db6a0e4ccb90d474b69fa993"
     },
     {
       "path": "services/control-foundation/migrations/001_ledger.sql",
@@ -153,6 +169,10 @@
     {
       "path": "services/control-foundation/migrations/014_company_withdrawal_execution.sql",
       "sha256": "811ddb03ac8b5a7a85d6290621c6d242a7527be67e7cb71f2848137140037ad8"
+    },
+    {
+      "path": "services/control-foundation/migrations/015_reserve_migration_execution.sql",
+      "sha256": "fdc4668c2dcaf24be5004bf09f0a4cacef0a08349c7d7d9a9b6524d3f9bbc875"
     }
   ],
   "artifacts": [
@@ -229,10 +249,10 @@
     {
       "contractName": "ORIOMonetaryController",
       "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
-      "creationSha256": "ff61193b6755b2b3a576df79c8374da58e6e96d72db093ff56c42f48aae11cbf",
-      "runtimeTemplateSha256": "088e2d1cdc95ef82a03193df76eec8fc5bc9d3dd82f6960fb22ca6889c1aa33c",
-      "runtimeTemplateBytes": 24062,
-      "metadataSha256": "5fb58c232443716fc3f92edac802a7e27d08e16dac02f0dabdf6a6fa7e00ef6c",
+      "creationSha256": "7935267b39e280f289eb9a8bb0d71c4ba8775167a52fd5e0f79412d905aaa635",
+      "runtimeTemplateSha256": "d4b05004a147283269ecef3a487362a0b15a2e5ba301c3caa2db05451c29ef2f",
+      "runtimeTemplateBytes": 24337,
+      "metadataSha256": "6b6378000d455ee21f2017c0811a72b155f4840e6fe14580a6eb9de0805c0e20",
       "deployedAddress": null,
       "deployedRuntimeSha256": null
     },
@@ -245,6 +265,26 @@
       "metadataSha256": "cb3a5526d9bcf1c6a47864bd2bba7391a769f7f1f110ce61132e5a08965fc64e",
       "deployedAddress": null,
       "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIORecoverableGasAccount",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "9c72ab1f56d04131ed8aa7152b09e7d2249685cf0e6c36d7eb99c7216eb28154",
+      "runtimeTemplateSha256": "8a53b0770a08f3e0fb4a78b9701648e8ec54576ed5257ad491c0abfddc66a31b",
+      "runtimeTemplateBytes": 7059,
+      "metadataSha256": "29bd8bb38af484efa4d6bc205093e2aee8361aa63549d738dc7b09f802e1f828",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
+    },
+    {
+      "contractName": "ORIORecoverableGasAccountFactory",
+      "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "creationSha256": "3beeebd9988a25f8b75d8c8442ce63c87d9f0fc604d4da175bee8fd1983fe8d0",
+      "runtimeTemplateSha256": "88dfb8088ef6f9c1bbff6380500587f81aee0f99e2850e31f863d7f1d4477b40",
+      "runtimeTemplateBytes": 10147,
+      "metadataSha256": "4106c66f868b3fbd23d0c05010a0e8491dd3b73e1fe3b6c8ed0691beec0a7583",
+      "deployedAddress": null,
+      "deployedRuntimeSha256": null
     }
   ],
   "candidateNetworks": [
@@ -255,10 +295,10 @@
   "mainnetBlocker": "Qualification account, factory and paymaster constructors reject Base mainnet; a tested, approved production candidate is required",
   "prospectiveRelease": {
     "mode": "public-live",
-    "releaseDigest": "70d12b73aaa8305a882426b46a4932c7a9f45afa0ad93eff58d8db9016008dae",
+    "releaseDigest": "780bdac41a8146c519176b5bfb04bb3f47e955d84de23219e74b7c1638eb120e",
     "projectId": "orio-spc-3-prod",
     "chainId": "8453",
-    "contractSetDigest": "60b79cc30d90f53af28f434b819300477a3835e8701453ea378592ed1ba06c81"
+    "contractSetDigest": "8ee1d0b9ef2ad61b80ebe103e7712fa6495e839b24a501defb6542f996a75516"
   },
   "releasePolicy": {
     "version": "owner-accountable-v2",

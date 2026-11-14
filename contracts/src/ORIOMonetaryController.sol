@@ -91,7 +91,8 @@ contract ORIOMonetaryController is ReentrancyGuard {
     event SettlementStarted(bytes32 indexed operationId, uint8 indexed kind, uint256 previousVersion);
     event PurchaseSettled(bytes32 indexed operationId, address indexed owner, uint256 gross, uint256 fee, uint256 company, uint256 minted);
     event RedemptionSettled(bytes32 indexed epochId, bytes32 indexed requestId, address indexed owner, address recipient, uint256 nonce, uint256 burned, uint256 payout, uint256 fee, uint256 company);
-    event ReserveMasterReplaced(address indexed previous, address indexed current, uint256 previousUnits, uint256 receivedUnits, uint256 previousValueUsd54, uint256 currentValueUsd54);
+    event ReserveMasterReplaced(address indexed previous, address indexed current, uint256 previousUnits, uint256 receivedUnits,
+        uint256 previousValueUsd54, uint256 currentValueUsd54, uint256 previousCompanyUnits, bytes32 previousMasterHash);
     event CompanyFeesWithdrawn(address indexed asset, address indexed recipient, uint256 units);
     modifier onlyGovernance() { require(msg.sender == address(governance), OnlyGovernance()); _; }
     modifier onlyOperator() { require(msg.sender == settlementOperator, OnlySettlementOperator()); _; }
@@ -230,7 +231,8 @@ contract ORIOMonetaryController is ReentrancyGuard {
         (uint256 oldUnits,uint256 received) = vault.migrate(IERC20(newValue.asset), adapter, data, minimumReceived);
         require(phase != Phase.GENESIS || received == 0, OriginalGenesisCannotAcquireUnassignedBacking());
         _solvent(newUnitValue); usedOperations[operationId] = true; stateVersion++;
-        emit ReserveMasterReplaced(previous, newValue.asset, oldUnits, received, oldUnits * oldUnitValue, received * newUnitValue);
+        emit ReserveMasterReplaced(previous, newValue.asset, oldUnits, received, oldUnits * oldUnitValue, received * newUnitValue,
+            vault.companyFees(previous), registry.assetId(previous));
         registry.completeMigration(registry.epoch(), registry.revision(), registry.assetId(newValue.asset), newValue.evidenceDigest);
         _checkpoint(operationId, 3, newValue.evidenceDigest, newValue.usd36PerToken);
     }

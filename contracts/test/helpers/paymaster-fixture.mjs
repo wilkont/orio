@@ -4,7 +4,8 @@ import { bytesToHex } from '@ethereumjs/util';
 import { compileContracts } from '../../scripts/compile.mjs';
 import { createFixture } from './vm.mjs';
 
-const artifacts = compileContracts(true), coder = AbiCoder.defaultAbiCoder();
+export const artifacts = compileContracts(true);
+const coder = AbiCoder.defaultAbiCoder();
 const permitType = 'tuple(bytes32 reservationId,bytes32 quoteDigest,bytes32 paymentAsset,uint256 maximumPaymentUnits,uint256 maximumNetworkWei,uint48 validAfter,uint48 validUntil,uint64 revision)';
 const hash = value => keccak256(toUtf8Bytes(value));
 export async function paymasterFixture(options = {}) {

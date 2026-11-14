@@ -1,0 +1,13 @@
+# Next AWS deployment preparation
+
+Target remains account 720232346199, us-east-1, with the dedicated non-root ORIO operator. This document does not grant or execute IAM changes, spending, migration or deployment. The existing USD2 approval covered the earlier temporary migration access work, not an ongoing application workload. No new AWS resources or charges were initiated in this increment.
+
+Verified historical boundary: the receipt records initial SQL migrations 001/002 only. The operator is inspection-scoped; it has no deployment or secret retrieval permission. No current CLI authentication or database connectivity is established here. Do not rerun initial migrations, assume missing console visibility means deleted infrastructure, or use an administrator database secret as an application login.
+
+Before any deployment execution, prepare and validate an exact image digest, workload template/change set, resource-specific deployment role, separate migration identity, TLS database connection and least-privilege workload login. Incremental migration must verify the installed migration checksums and take/verify a recoverable backup before applying unapplied changes. Migrations 003–015 currently remain local. Migration 015 adds immutable master-election configuration history; the new settlement configuration explicitly pins the registry address. No live checkpoint/configuration upgrade has been performed.
+
+The first hosted candidate should retain read-only financial behavior and disabled signing/money routes. It must demonstrate deployed TLS/hostname verification, private database connectivity, immutable journal checks, backups/restoration, outbox retry and canonical observers before any financial release. Isolated local container checks do not establish a hosted application. Legacy EC2 and ORIO.IO DNS remain untouched until an accepted staged deployment and rollback/cutover plan exist.
+
+New application infrastructure and any temporary migration access require a concrete reviewed change set and its spending scope; do not reuse the expired temporary access plan. The final permission step must identify exact resources, scoped role changes, estimated recurring/temporary costs and rollback/removal. No permission request is being made on this incomplete plan.
+
+Financial production also remains technically unready: the current contracts reject Base mainnet. Provider accounts/configuration, real signer and reserve/custody arrangements, consumer authorization/recovery, complete gas accounting, operational drills and release-specific accountable legal/security/custody/reserve/operations evidence remain outstanding. External independent review is advisory and is not the reason deployment is disabled.

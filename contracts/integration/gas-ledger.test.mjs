@@ -99,7 +99,7 @@ test('committed user gas → real EntryPoint monetary purchase → vault/mint jo
     assert.equal(observed.entryPointDebitWei, completed.args.actualGasCost.toString());
     const importer=new MonetarySettlement(pool,localReader('vm-primary'),localReader('vm-secondary'),{
       id:'aa_monetary',chainId:'84532',controller:monetary.controller.address,currency:monetary.currency.address,
-      vault:monetary.vault.address,master:monetary.master.address,masterDecimals:6,registryEpoch:'1'});
+      vault:monetary.vault.address,master:monetary.master.address,masterDecimals:6,registryEpoch:'1',registry:monetary.registry.address});
     await importer.initialize();
     const checkpoint=rpcLogs.find(log=>log.topics[0]===monetary.controller.api.getEvent('MonetaryCheckpoint').topicHash);
     await importer.import({transactionHash,checkpointLogIndex:BigInt(checkpoint.logIndex).toString(),operationId:purchaseId,version:'1',kind:'PURCHASE'});

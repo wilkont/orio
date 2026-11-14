@@ -1,0 +1,14 @@
+{
+  "status": "SINGLE_PUBLIC_SOURCE_DIAGNOSTIC",
+  "financialExecutionEnabled": false,
+  "productionQualified": false,
+  "observedAt": "2026-11-14T02:44:00.534Z",
+  "evidence": {
+    "sourceId": "base-official-public-sepolia",
+    "chainId": "84532",
+    "finalizedNumber": "58506126",
+    "finalizedHash": "0x8d375682f9b59a8124c7cf609936171a45207549886681b71346feecf530c391",
+    "finalizedTimestamp": "1794623094"
+  },
+  "documentation": "https://docs.base.org/get-started/connect-to-base"
+}

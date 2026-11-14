@@ -9,19 +9,20 @@ import { initialMonetaryState, planPurchaseEpoch, planRedemptionEpoch, reconcile
 import type { MonetaryState, Ratio, ZeroSupplyReconciliation } from './monetary-engine.ts';
 import { gasDigest } from './gas-policy.ts';
 import type { Account, Posting } from './ledger.ts';
+import { assessReserveMigration } from './reserve-migration.ts';
 
 export interface MonetaryDeployment {
   id: string; chainId: string; controller: string; currency: string; vault: string; master: string;
-  masterDecimals: number; registryEpoch: string;
+  masterDecimals: number; registryEpoch: string; registry:string;
 }
 function configuration(input: MonetaryDeployment): MonetaryDeployment {
   const c = structuredClone(input);
   if (!/^[a-z][a-z0-9_-]{0,63}$/.test(c.id) || !['84532','31337'].includes(c.chainId) ||
       !Number.isInteger(c.masterDecimals) || c.masterDecimals < 0 || c.masterDecimals > 18 ||
       typeof c.registryEpoch !== 'string' || !/^[1-9][0-9]{0,77}$/.test(c.registryEpoch)) throw new Error('Invalid qualification deployment');
-  for (const key of ['controller','currency','vault','master'] as const) c[key] = chainAddress(c[key]);
-  if (new Set([c.controller,c.currency,c.vault,c.master]).size !== 4 ||
-      [c.controller,c.currency,c.vault,c.master].some(a => a === '0x'+'0'.repeat(40))) throw new Error('Invalid deployment identities');
+  for (const key of ['controller','currency','vault','master','registry'] as const) c[key] = chainAddress(c[key]);
+  if (new Set([c.controller,c.currency,c.vault,c.master,c.registry]).size !== 5 ||
+      [c.controller,c.currency,c.vault,c.master,c.registry].some(a => a === '0x'+'0'.repeat(40))) throw new Error('Invalid deployment identities');
   return c;
 }
 function ratio(numerator: bigint, denominator: bigint): Ratio {
@@ -49,21 +50,91 @@ export class MonetarySettlement {
       [c.id,JSON.stringify(c),JSON.stringify(state)]);
     const result=await this.pool.query<{configuration: MonetaryDeployment}>('SELECT configuration FROM orio_monetary.deployments WHERE id=$1',[c.id]);
     if (!same(result.rows[0]?.configuration,c)) throw new Error('Deployment configuration conflict');
+    await this.pool.query('INSERT INTO orio_monetary.master_history VALUES($1,$2,$3::jsonb) ON CONFLICT DO NOTHING',[c.id,c.registryEpoch,JSON.stringify(c)]);
   }
-  async importCompanyWithdrawal(input:{transactionHash:string;startLogIndex:string;completionLogIndex:string}){
-    const c=this.deployment,proof=await verifyFinalizedCompanyWithdrawal(this.first,this.second,{...structuredClone(input),...c});
+  async importMigration(input:{transactionHash:string;checkpointLogIndex:string;operationId:string;version:string;nextDeployment:MonetaryDeployment}){
+    const request=structuredClone(input),c=this.deployment,next=configuration(request.nextDeployment);
+    if(!same({...next,master:c.master,masterDecimals:c.masterDecimals,registryEpoch:c.registryEpoch},c)||next.master===c.master||
+      BigInt(next.registryEpoch)!==BigInt(c.registryEpoch)+1n)throw new Error('Invalid master migration configuration');
+    if(typeof request.version!=='string'||!/^[1-9][0-9]{0,77}$/.test(request.version))throw new Error('Invalid migration version');
+    const previous=(await this.pool.query<{evidence:{masterAssetHash:string}}>(
+      'SELECT evidence FROM orio_monetary.executions WHERE deployment_id=$1 AND version=$2',
+      [c.id,(BigInt(request.version)-1n).toString()])).rows[0];
+    if(!previous&&request.version!=='1')throw new Error('Previous monetary checkpoint is required');
+    const proof=await verifyFinalizedMonetaryExecution(this.first,this.second,{...request,...next,kind:'MASTER_MIGRATION',
+      previousMaster:c.master,...(previous?{previousMasterHash:previous.evidence.masterAssetHash}:{})});
+    if(proof.registryEpoch!==next.registryEpoch||!proof.migration)throw new Error('Migration election mismatch');
+    const migration=proof.migration,client=await this.pool.connect();
+    try{
+      await client.query('BEGIN');
+      const row=(await client.query<{configuration:MonetaryDeployment;version:string;state:MonetaryState}>(
+        'SELECT configuration,version::text,state FROM orio_monetary.deployments WHERE id=$1 FOR UPDATE',[c.id])).rows[0];
+      const prior=(await client.query<{evidence:unknown;journal_sequence:string|null}>(
+        'SELECT evidence,journal_sequence FROM orio_monetary.executions WHERE deployment_id=$1 AND version=$2',[c.id,proof.version])).rows[0];
+      if(prior){if(!same(prior.evidence,proof))throw new Error('Migration idempotency conflict');
+        await client.query('COMMIT');return {journalSequence:prior.journal_sequence,configuration:next};}
+      if(!row||!same(row.configuration,c)||row.version!==proof.previousVersion||migration.previousUnits!==row.state.reserveMasterUnits)
+        throw new Error('Missing or out-of-order reserve migration');
+      if(!previous&&(row.state.phase!=='GENESIS'||migration.previousUnits!=='0'||migration.receivedUnits!=='0'))
+        throw new Error('Original genesis migration must remain empty');
+      const phases=['GENESIS','ACTIVE','ZERO_SUPPLY_PENDING','ZERO_SUPPLY_RECONCILED'];
+      const oldResidual=BigInt(row.state.roundingUsd36.numerator)*10n**18n/BigInt(row.state.roundingUsd36.denominator);
+      if(proof.supplyAtoms!==row.state.supplyAtoms||proof.referencePriceUsd36!==row.state.priceUsd36.numerator||
+        proof.roundingUsd54!==oldResidual.toString()||proof.cycle!==row.state.cycle||phases[Number(proof.phase)]!==row.state.phase||
+        BigInt(proof.reserveMasterUnits)*BigInt(proof.masterUsd36PerToken)*10n**BigInt(18-next.masterDecimals)!==BigInt(migration.currentValueUsd54))
+        throw new Error('Migration changes monetary liabilities or misvalues received reserves');
+      const invariant={orioSupplyUnits:row.state.supplyAtoms,ownershipCommitment:gasDigest([c.currency,row.state.supplyAtoms]),companyFeeUnits:'0',holderAllocationUnits:'0'};
+      const result=assessReserveMigration(invariant,invariant,
+        {assetId:c.master,units:migration.previousUnits,usdValueUnits:migration.previousValueUsd54,evidenceDigest:proof.evidenceDigest.slice(2)},
+        {assetId:next.master,units:migration.receivedUnits,usdValueUnits:migration.currentValueUsd54,evidenceDigest:proof.evidenceDigest.slice(2)},
+        (BigInt(row.state.supplyAtoms)*BigInt(proof.referencePriceUsd36)+oldResidual).toString());
+      if(result.requiresDeficiencyProcedure)throw new Error('Replacement cannot support outstanding obligations');
+      const postings:Posting[]=[],oldAsset=`erc20:${c.chainId}:${c.master}`,newAsset=`erc20:${c.chainId}:${next.master}`;
+      const post=async(label:string,asset:string,normal:'debit'|'credit',side:'debit'|'credit',units:string)=>{
+        if(units==='0')return;const id='mon_'+gasDigest([c.id,asset,label]);
+        await client.query('SELECT orio_ledger.create_account($1,$2,$3,$4)',[id,asset,normal,label==='migration_valuation']);postings.push({accountId:id,side,units});
+      };
+      await post('reserve_cash',oldAsset,'debit','credit',migration.previousUnits);await post('backing',oldAsset,'credit','debit',migration.previousUnits);
+      await post('reserve_cash',newAsset,'debit','debit',migration.receivedUnits);await post('backing',newAsset,'credit','credit',migration.receivedUnits);
+      const loss=BigInt(migration.previousValueUsd54)-BigInt(migration.currentValueUsd54);
+      if(loss!==0n){const units=(loss>0n?loss:-loss).toString();
+        await post('migration_valuation','USD54_MIGRATION_MEMO','debit',loss>0n?'credit':'debit',units);
+        await post(loss>0n?'migration_loss':'migration_gain','USD54_MIGRATION_MEMO',loss>0n?'debit':'credit',loss>0n?'debit':'credit',units);}
+      const ref=(index:string)=>`eip155:${c.chainId}/tx:${proof.transactionHash}/log:${index}`;
+      for(const index of [proof.checkpointLogIndex,migration.electionLogIndex,migration.replacementLogIndex,migration.outgoingLogIndex,migration.incomingLogIndex])
+        if(index!==null)await client.query('INSERT INTO orio_settlement.receipt_claims VALUES($1,$2,$3)',[ref(index),'monetary',c.id+':'+proof.version]);
+      const sequence=postings.length?(await client.query<{sequence:string}>('SELECT sequence::text FROM orio_ledger.post_journal($1,$2,$3,$4::jsonb)',
+        ['monetary:'+c.id+':'+proof.version,ref(proof.checkpointLogIndex),'Finalized master reserve replacement; loss/gain disclosed, no mint or conversion fee',JSON.stringify(postings)])).rows[0]!.sequence:null;
+      for(const [asset,label,units] of [[oldAsset,'reserve_cash','0'],[oldAsset,'company_cash',migration.previousCompanyUnits],
+        [newAsset,'reserve_cash',proof.reserveMasterUnits],[newAsset,'company_cash',proof.companyMasterUnits]]){
+        const actual=(await client.query<{units:string}>('SELECT units::text FROM orio_ledger.balances WHERE id=$1',['mon_'+gasDigest([c.id,asset,label])])).rows[0]?.units??'0';
+        if(actual!==units)throw new Error('Reserve migration cash does not reconcile');
+      }
+      const state={...row.state,masterAssetId:newAsset,electionId:`onchain-epoch:${next.registryEpoch}`,masterDecimals:next.masterDecimals,reserveMasterUnits:proof.reserveMasterUnits};
+      await client.query('INSERT INTO orio_monetary.executions VALUES($1,$2,$3,$4::jsonb,$5::jsonb,$6)',[c.id,proof.version,proof.operationId,JSON.stringify(proof),JSON.stringify(state),sequence]);
+      await client.query('INSERT INTO orio_monetary.master_history VALUES($1,$2,$3::jsonb)',[c.id,next.registryEpoch,JSON.stringify(next)]);
+      await client.query('UPDATE orio_monetary.deployments SET version=$2,configuration=$3::jsonb,state=$4::jsonb WHERE id=$1',
+        [c.id,proof.version,JSON.stringify(next),JSON.stringify(state)]);
+      await client.query('COMMIT');return {journalSequence:sequence,configuration:next};
+    }catch(error){await client.query('ROLLBACK');throw error;}finally{client.release();}
+  }
+  async importCompanyWithdrawal(input:{transactionHash:string;startLogIndex:string;completionLogIndex:string;asset?:string}){
+    const c=this.deployment,request=structuredClone(input),assetAddress=request.asset===undefined?c.master:chainAddress(request.asset);
+    const proof=await verifyFinalizedCompanyWithdrawal(this.first,this.second,{...request,...c,master:assetAddress});
     const client=await this.pool.connect();
     try{
       await client.query('BEGIN');
       const row=(await client.query<{configuration:MonetaryDeployment}>('SELECT configuration FROM orio_monetary.deployments WHERE id=$1 FOR UPDATE',[c.id])).rows[0];
       if(!row||!same(row.configuration,c))throw new Error('Deployment is not initialized');
+      const history=await client.query('SELECT 1 FROM orio_monetary.master_history WHERE deployment_id=$1 AND configuration->>\'master\'=$2',[c.id,assetAddress]);
+      if(!history.rowCount)throw new Error('Withdrawal asset was never a master of this deployment');
       const prior=(await client.query<{evidence:unknown;journal_sequence:string}>(
         'SELECT evidence,journal_sequence FROM orio_monetary.company_withdrawals WHERE external_ref=$1',[proof.settlementRef])).rows[0];
       if(prior){if(!same(prior.evidence,proof))throw new Error('Company withdrawal idempotency conflict');
         await client.query('COMMIT');return prior.journal_sequence;}
       for(const ref of [proof.startRef,proof.cashRef,proof.settlementRef])await client.query(
         'INSERT INTO orio_settlement.receipt_claims VALUES($1,$2,$3)',[ref,'monetary',c.id+':company-withdrawal']);
-      const asset=`erc20:${c.chainId}:${c.master}`,cash='mon_'+gasDigest([c.id,asset,'company_cash']),
+      const asset=`erc20:${c.chainId}:${assetAddress}`,cash='mon_'+gasDigest([c.id,asset,'company_cash']),
         distribution='mon_'+gasDigest([c.id,asset,'company_distributions']);
       await client.query('SELECT orio_ledger.create_account($1,$2,$3,$4)',[cash,asset,'debit',false]);
       await client.query('SELECT orio_ledger.create_account($1,$2,$3,$4)',[distribution,asset,'debit',false]);
