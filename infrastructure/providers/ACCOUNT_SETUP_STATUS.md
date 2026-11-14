@@ -1,4 +1,26 @@
-# Approved provider signup status
+# Approved provider account status
+
+## Verified onboarding update
+
+November 14, 2026: owner completed authentication and reported all three signed in. Authenticated dashboards and subsequent non-binding onboarding were observed. Alchemy email verification was completed using the owner's AWS WorkMail. No password was entered or inspected by the agent.
+
+| Provider | Current observed state | Remaining configuration |
+|---|---|---|
+| Alchemy | Free selected; vendor-created app renamed `orio-spc-3-qualification`; saved name observed | Base Sepolia remains disabled. Vendor defaults enabled Ethereum endpoints; none were used by ORIO. Base mainnet remains disabled. |
+| Infura | Core Free selected: 3 million credits/day, 500 credits/second; initial vendor-created key exists | Name field has `orio-spc-3-qualification`, but selector still says My First Key; persisted rename is not verified. Vendor default selections include mainnets. |
+| Pimlico | Free, no payment method, $0 balance/overdraft; card enrollment skipped | Owner confirmed key creation at action time. Table shows `orio-spc-3-qualification`, masked secret, Bundler/Paymaster features, 0 requests; notification says API Key generated. |
+
+Vendor default endpoint availability is not completed testnet isolation or financial activation. Alchemy network narrowing and Infura restrictions remain. No ORIO mainnet request, sponsorship policy, paid service or financial operation was activated. Do not record private keys here or in tracked templates.
+
+`npm run check:provider-session` now prepares a ten-minute, single-use loopback form with masked key inputs. Credentials stay in browser/process memory and never go to files, process arguments, environment variables or reports. Fixed destinations are Alchemy/Infura Base Sepolia and Pimlico chain84532. Existing bounded read-only adapters check finality and bundler capability; no signing, sponsorship or broadcast is possible. This does not protect against a compromised local account, browser extension or memory capture.
+
+The local form requires a random session path, exact loopback Host and POST Origin, rejects cross-site submissions, caps body size, rejects duplicate fields/replay and sets no-store/CSP/no-referrer headers. Generic errors avoid credential exposure. Four passing tests cover fixed destinations, origin/replay/body controls, failure reporting and overlapping request bodies. Strict service typecheck passes. No long-lived workload secret store is provisioned.
+
+The actual local page is prepared. Credential transfer to this tool and enabling Alchemy Base Sepolia await narrow browser action-time confirmation. No account-owned endpoint probe has run. Earlier public diagnostics remain separate evidence; they do not establish private provider readiness or custom contract admission.
+
+Remaining: two-provider canonical-finality evidence, account-owned bundler capability probe, method/network restrictions, deployed workload secret handling, runtime EntryPoint verification, custom contract admission, recovery operations and production deployment. No card, paid upgrade, AWS deployment or live-money activation occurred.
+
+## Historical signup handoff (superseded by update above)
 
 November 14, 2026. Owner approved creating Alchemy Free, Infura Core Free and Pimlico Free test-network accounts, with no card enrollment, paid upgrade or mainnet activation. This supersedes the proposal's earlier pending-approval status; no new approval of the same free account scope is needed.
 

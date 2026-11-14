@@ -12,12 +12,14 @@
     "check:providers": "node scripts/check-providers.mjs",
     "check:bundler": "node scripts/check-bundler.mjs",
     "check:base-public": "node scripts/check-base-public.mjs",
+    "check:provider-session": "node scripts/provider-session.mjs",
+    "test:provider-session": "node --test test/provider-session.test.mjs",
     "test:container": "node scripts/test-container.mjs",
     "typecheck": "tsc --noEmit",
     "test:local": "node scripts/test-local.mjs",
     "test:unit": "node --test test/release.test.ts",
     "test:integration": "node --test test/ledger.test.ts",
-    "test": "node --test test/*.test.ts"
+    "test": "node --test test/*.test.ts test/*.test.mjs"
   },
   "dependencies": {
     "pg": "8.23.1"

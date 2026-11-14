@@ -1,5 +1,9 @@
 # Current local readiness update - November 13, 2026
 
+## November 14 account onboarding continuation
+
+Alchemy, Infura and Pimlico authenticated dashboards are verified. Free/Core Free onboarding was completed without card enrollment. Alchemy existing app is named orio-spc-3-qualification; Pimlico qualification key creation was confirmed and its success observed. Vendor default networks still require narrowing; account-owned endpoint checks have not run. A memory-only, single-use local qualification form is implemented with fixed testnet destinations, origin/body/replay controls and generic error output. Four focused security tests and strict service typecheck pass. Credential transfer and Alchemy Base Sepolia access await narrow browser confirmation. See infrastructure/providers/ACCOUNT_SETUP_STATUS.md for exact state. Financial execution remains disabled; external review is advisory.
+
 Latest policy: external independent review is advisory, not a blocker, under owner-approved ADR 0002. One authorized owner/key may cover all release acceptance roles. Final monetary economics are founder-approved under ADR 0003. ORIO remains incomplete and not live because execution integrations and actual readiness evidence are outstanding. The final continuation below supersedes older test counts and policy requirements while preserving their historical context.
 
 - Initial AWS migrations 001 (ledger) and 002 (master registry) were applied under a separately approved maintenance plan. Empty/paused, privilege, TLS and rollback-only synthetic checks passed; temporary access resources were removed by 04:06:53 UTC. See infrastructure/aws/MIGRATION_RECEIPT_2026-11-12.md for exact evidence and limits. No funds or master activation occurred. This does not establish later operator RDS visibility or a hosted application.

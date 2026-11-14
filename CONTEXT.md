@@ -1,5 +1,7 @@
 # ORIO SPC 3 context
 
+November 14 provider onboarding continuation: authenticated Alchemy/Infura/Pimlico dashboards verified; Free/Core Free selected without cards. Alchemy existing app saved as orio-spc-3-qualification. Pimlico key creation explicitly confirmed and vendor success observed. Infura rename persistence remains unverified. Vendor-default network selections are not testnet isolation. No private endpoint probe ran yet. A tested memory-only loopback credential/check tool is prepared; local transfer and Alchemy Base Sepolia enabling await narrow browser action-time confirmation. No paid service, AWS change or financial activation. See infrastructure/providers/ACCOUNT_SETUP_STATUS.md.
+
 Ledger A is the internal financial control ledger. It records journal entries and application entitlements. Ledger B is finalized on-chain ownership and execution. Neither a database edit nor a local test creates blockchain ownership.
 
 A journal is an immutable, balanced set of debits and credits in explicitly named asset units. Account normal balance determines whether debits or credits increase the account. A settlement reference identifies one external economic event. Retrying the same event must not create a second journal.
