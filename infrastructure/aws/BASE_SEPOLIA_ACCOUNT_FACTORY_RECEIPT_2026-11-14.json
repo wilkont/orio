@@ -1,0 +1,25 @@
+{
+  "status": "VERIFIED_PAUSED_TESTNET_DEPLOYMENT",
+  "operationId": "accountFactory",
+  "contract": "ORIOGasAccountFactory",
+  "address": "0x5b6a0572a550899FF0468b59BDdA8FCD554cD014",
+  "children": [],
+  "chainId": "84532",
+  "transactionHash": "0x1be2290e74bfff6b23f79b22e01ec6e680009ce667000028114608dddcabc699",
+  "blockNumber": "0x383102e",
+  "blockHash": "0x79839ed0f39bcb9370a94ade305ef50f21ebada22e426122b338895b7117dc67",
+  "runtimeCodeHash": "0x7ec7420d03067faf73a9623874afa435d377f64e2f0e969f28251346da92c45e",
+  "creationInputMatchesPinnedPlan": true,
+  "pausedConfigurationVerified": true,
+  "executionFeeWei": "6058416000000",
+  "l1FeeWei": "1600179022845",
+  "operatorFeeAtReceiptBlockWei": "0",
+  "observedNetworkFeeWei": "7658595022845",
+  "finalizedAtObservation": false,
+  "observedAt": "2026-11-15T01:28:02.100Z",
+  "financialExecutionEnabled": false,
+  "limits": [
+    "Single public source diagnostic; no independent state proof verification",
+    "No asset election, customer issuance, paymaster operation or wallet creation is implied"
+  ]
+}

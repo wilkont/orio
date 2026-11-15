@@ -1,0 +1,25 @@
+{
+  "status": "VERIFIED_PAUSED_TESTNET_DEPLOYMENT",
+  "operationId": "registry",
+  "contract": "MasterAssetRegistry",
+  "address": "0x539aEb6B7Be6eD8B1BC154809864e71C6835CA6B",
+  "children": [],
+  "chainId": "84532",
+  "transactionHash": "0x63b5bb1e03123048eea083ece78a5f075c37f908eac777350585077041aa4f04",
+  "blockNumber": "0x3830e22",
+  "blockHash": "0x59b0233dd0752e7e67d2ffe755f17fe384d39433a2ac6c169f3536a0a499b5a8",
+  "runtimeCodeHash": "0x1f3c2b0531d345a2d8045a9dbb9751f5de1b1a7e4a66151a86ba5a205b83094f",
+  "creationInputMatchesPinnedPlan": true,
+  "pausedConfigurationVerified": true,
+  "executionFeeWei": "7731894000000",
+  "l1FeeWei": "1870598273317",
+  "operatorFeeAtReceiptBlockWei": "0",
+  "observedNetworkFeeWei": "9602492273317",
+  "finalizedAtObservation": false,
+  "observedAt": "2026-11-15T01:26:19.270Z",
+  "financialExecutionEnabled": false,
+  "limits": [
+    "Single public source diagnostic; no independent state proof verification",
+    "No asset election, customer issuance, paymaster operation or wallet creation is implied"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "accountId": "720232346199",
+  "region": "us-east-1",
+  "stack": "orio-spc-3-protected-signing",
+  "stackStatus": "UPDATE_COMPLETE",
+  "keyArn": "arn:aws:kms:us-east-1:720232346199:key/479ae4e7-483e-4d17-8f46-232f08c5c6ee",
+  "keyState": "Disabled",
+  "functionName": "orio-spc-3-key-qualification",
+  "reservedConcurrentExecutions": 0,
+  "lastUpdateStatus": "Successful",
+  "codeSha256": "HF+3gE2H+PqQjvokyxfPlRoi7gmn1gpPBscz8kMnd2Y=",
+  "installedTemplateKeyEnabled": false,
+  "installedTemplateConcurrency": 0,
+  "installedTemplateBatchSelectorAbsent": true,
+  "restoredTemplateSourceCommit": "3364ac1975a79034fb2d1290f640a6fe2d27bbf8",
+  "observedNetworkFeeWei": "106569217549280",
+  "reconciledClosingBalanceWei": "1483174318641448",
+  "pendingNonce": "6",
+  "financialExecutionEnabled": false,
+  "actualAwsSessionBillingVerified": false
+}
