@@ -18,6 +18,10 @@ test('read-only catalog audit detects definition and privilege drift without ins
   const before=await observe();assert.equal(before.identity.read_only,'on');assert.equal(before.installedMigrationVersions,null);assert.equal(before.baselineStatus,'REQUIRES_VERIFIED_BASELINE');
   const privateRow='private-application-row-'+suffix;await pool.query('INSERT INTO orio_ledger.audit_fixture VALUES($1)',[privateRow]);
   const afterRow=await observe();assert.equal(afterRow.catalogFingerprint,before.catalogFingerprint);assert.ok(!JSON.stringify(afterRow).includes(privateRow));
+  await pool.query('GRANT USAGE ON SCHEMA orio_master TO '+role);
+  assert.notEqual((await observe()).catalogFingerprint,afterRow.catalogFingerprint);
+  await pool.query('REVOKE USAGE ON SCHEMA orio_master FROM '+role);
+  assert.equal((await observe()).catalogFingerprint,afterRow.catalogFingerprint);
   await pool.query('ALTER ROLE '+role+' LOGIN');const afterRole=await observe();assert.notEqual(afterRole.catalogFingerprint,afterRow.catalogFingerprint);
   await pool.query('ALTER TABLE orio_ledger.audit_fixture ADD COLUMN flag boolean NOT NULL DEFAULT false');
   const afterColumn=await observe();assert.notEqual(afterColumn.catalogFingerprint,afterRole.catalogFingerprint);

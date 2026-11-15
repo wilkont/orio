@@ -1,6 +1,15 @@
 import {createHash} from 'node:crypto';
 import type {PoolClient} from 'pg';
 
+// Only fixed source-owned SQL fragments enter this helper. Expand defaults and
+// sort named grants so an equivalent pg_dump restore has the same ACL digest.
+function aclDigest(acl:string,kind:string,owner:string):string{
+ return `encode(sha256(convert_to((SELECT coalesce(string_agg(
+  concat_ws(':',pg_get_userbyid(a.grantor),CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END,a.privilege_type,a.is_grantable::text),
+  ',' ORDER BY pg_get_userbyid(a.grantor),CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END,a.privilege_type,a.is_grantable),'')
+  FROM aclexplode(coalesce(${acl},acldefault(${kind},${owner}))) a),'UTF8')),'hex')`;
+}
+
 /** Read-only prerequisite to a separately authorized upgrade. Catalog hashes do
  * not establish which migration ran, authenticate a hostile DBA, or authorize DDL.
  * No application rows, credentials or raw stored-function bodies are returned.
@@ -17,11 +26,11 @@ export async function auditHostedSchema(client:PoolClient,expectedDatabase:strin
   if(!identity||identity.database!==expectedDatabase||identity.read_only!=='on')throw new Error('Wrong database or read-only boundary');
   const catalog:Record<string,unknown[]>={};
   catalog.schemas=(await client.query(`SELECT nspname AS name,pg_get_userbyid(nspowner) AS owner,
-   encode(sha256(convert_to(coalesce(nspacl::text,''),'UTF8')),'hex') AS acl_digest
+   ${aclDigest('nspacl',"'n'",'nspowner')} AS acl_digest
    FROM pg_catalog.pg_namespace WHERE left(nspname,5)='orio_' ORDER BY nspname`)).rows;
   catalog.relations=(await client.query(`SELECT n.nspname AS schema,c.relname AS name,c.relkind AS kind,
    c.relrowsecurity AS row_security,c.relforcerowsecurity AS force_row_security,pg_get_userbyid(c.relowner) AS owner,
-   encode(sha256(convert_to(coalesce(c.relacl::text,''),'UTF8')),'hex') AS acl_digest,
+   ${aclDigest('c.relacl',"CASE WHEN c.relkind='S' THEN 's'::\"char\" ELSE 'r'::\"char\" END",'c.relowner')} AS acl_digest,
    CASE WHEN c.relkind IN ('v','m') THEN encode(sha256(convert_to(pg_get_viewdef(c.oid,true),'UTF8')),'hex') ELSE NULL END AS view_digest,
    CASE WHEN c.relkind IN ('i','I') THEN encode(sha256(convert_to(pg_get_indexdef(c.oid),'UTF8')),'hex') ELSE NULL END AS index_digest
    FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
@@ -43,7 +52,7 @@ export async function auditHostedSchema(client:PoolClient,expectedDatabase:strin
   catalog.functions=(await client.query(`SELECT n.nspname AS schema,p.proname AS name,pg_get_function_identity_arguments(p.oid) AS arguments,
    p.prosecdef AS security_definer,pg_get_userbyid(p.proowner) AS owner,
    encode(sha256(convert_to(pg_get_functiondef(p.oid),'UTF8')),'hex') AS definition_digest,
-   encode(sha256(convert_to(coalesce(p.proacl::text,''),'UTF8')),'hex') AS acl_digest
+   ${aclDigest('p.proacl',"'f'",'p.proowner')} AS acl_digest
    FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
    WHERE left(n.nspname,5)='orio_' AND p.prokind IN ('f','p') ORDER BY n.nspname,p.proname,pg_get_function_identity_arguments(p.oid)`)).rows;
   catalog.roles=(await client.query(`SELECT rolname AS name,rolsuper AS superuser,rolinherit AS inherits,rolcreaterole AS create_role,
@@ -60,7 +69,7 @@ export async function auditHostedSchema(client:PoolClient,expectedDatabase:strin
    WHERE left(n.nspname,5)='orio_' ORDER BY n.nspname,c.relname,p.polname`)).rows;
   catalog.extensions=(await client.query("SELECT extname AS name,extversion AS version FROM pg_catalog.pg_extension WHERE extname='pgcrypto' ORDER BY extname")).rows;
   const fingerprint=createHash('sha256').update(JSON.stringify(catalog)).digest('hex');
-  return {status:'READ_ONLY_SCHEMA_OBSERVATION',identity,catalogFingerprint:fingerprint,catalog,observedAt:new Date().toISOString(),
+  return {status:'READ_ONLY_SCHEMA_OBSERVATION',catalogFormatVersion:2,identity,catalogFingerprint:fingerprint,catalog,observedAt:new Date().toISOString(),
    baselineStatus:'REQUIRES_VERIFIED_BASELINE',installedMigrationVersions:null,financialExecutionEnabled:false,
    limits:['Catalog evidence only; no migration history or restore validation is inferred','Does not authenticate against a privileged database administrator','No application table rows or raw function bodies were read into this report']};
  }finally{if(started)await client.query('ROLLBACK');}
