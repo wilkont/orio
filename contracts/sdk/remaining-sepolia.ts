@@ -4,7 +4,7 @@ import {setTimeout as pause} from 'node:timers/promises';
 import {Transaction,Signature,recoverAddress,Interface,keccak256} from 'ethers';
 import {publicAddress,derSignature} from './aws-kms-gas-signer.mjs';
 
-export const manifestDigest='b2f2578395ac575732fe95d67ad1c5bee2f81921829a5f508ba76cc6327d1246';
+export const manifestDigest='1c49fbbdb36e527e8a40fc74aa005bc75afe34afd790f32c2ee02eb83d593d12';
 export const operationIds=['registry','paymaster','accountFactory','recoveryFactory','controller'] as const;
 export type OperationId=typeof operationIds[number];
 export interface DeploymentPlan{
@@ -78,6 +78,11 @@ export async function preflight(id:string,tx:Transaction):Promise<{planningFeeWe
   const previous=m.plans.find(other=>other.predictedAddress.toLowerCase()===address.toLowerCase());
   const expected=dependency?.codeHash??previous?.expectedRuntimeCodeHash;if(!expected)throw new Error('Unknown constructor dependency');
   const code=await readRpc('eth_getCode',[address,block.number]);if(typeof code!=='string'||keccak256(code)!==expected)throw new Error('Dependency runtime changed or missing');
+ }
+ if(p.constructorArguments.some(a=>a.toLowerCase()===m.testUsdc.toLowerCase())){
+  const metadata=new Interface(['function decimals() view returns(uint8)']);
+  const raw=await readRpc('eth_call',[{to:m.testUsdc,data:metadata.encodeFunctionData('decimals')},block.number]);
+  if(typeof raw!=='string'||metadata.decodeFunctionResult('decimals',raw)[0]!==6n)throw new Error('Test USDC metadata changed');
  }
  if(quantity(await readRpc('eth_estimateGas',[{from:m.sender,data:tx.data,value:'0x0'},'latest']))>tx.gasLimit)throw new Error('Approved gas limit insufficient');
  const fees=new Interface(['function getL1Fee(bytes) view returns(uint256)','function getOperatorFee(uint256) view returns(uint256)']);

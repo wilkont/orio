@@ -68,8 +68,8 @@ try{
  const specs=[['registry','MasterAssetRegistry',[governance]],['paymaster','ORIOTreasuryPaymaster',[entryPoint,governance]],
   ['accountFactory','ORIOGasAccountFactory',[entryPoint,addresses.paymaster]],['recoveryFactory','ORIORecoverableGasAccountFactory',[entryPoint,addresses.paymaster]],
   ['controller','ORIOMonetaryController',[governance,addresses.registry,usdc]]] as const;
- const priority=quantity(await rpc('eth_maxPriorityFeePerGas',[]));
- const price=quantity(block.baseFeePerGas)*2n+priority;
+ const priority=1000000n,price=50000000n;
+ if(quantity(block.baseFeePerGas)+priority>price)throw new Error('Fixed qualification fee cap is currently insufficient');
  const feeApi=new Interface(['function getL1FeeUpperBound(uint256) view returns(uint256)','function getOperatorFee(uint256) view returns(uint256)']);
  async function fee(name:string,arg:bigint):Promise<bigint>{
   const result=await rpc('eth_call',[{to:'0x420000000000000000000000000000000000000F',data:feeApi.encodeFunctionData(name,[arg])},block.number]);

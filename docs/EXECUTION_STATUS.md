@@ -246,3 +246,6 @@ November 14 approved testnet deployment: ORIOGovernanceTimelock deployed on Base
 
 
 November 14 remaining deployment preparation: successful paced read-only EVM fork of all five remaining constructor transactions; child identities/runtime hashes recorded. Three extra free test ETH claims mined and aggregate balance reconciled. Strict TypeScript, three targeted authorization/source tests and zero-vulnerability dependency audit pass. Proposed private selector allowlist and submission/receipt verification tools remain unapplied/unapproved; no mainnet or batch transaction occurred. Hosted financial platform completion remains outstanding.
+
+
+Batch reproducibility correction: CI detected Windows/Linux Solidity metadata differences. Compiler source inputs now normalize line endings and an LF-versus-CRLF regression passes. No signing/deployment occurred before the correction. Canonical batch data and the private selector allowlist were regenerated; a fixed 0.05 gwei execution cap and 0.0015 test ETH aggregate planning ceiling are proposed. Twelve additional free claims reconcile to a 1589743536190728 wei wallet balance. Old unapplied AWS previews are obsolete.

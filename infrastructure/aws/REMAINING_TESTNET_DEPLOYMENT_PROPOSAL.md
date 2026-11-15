@@ -12,7 +12,7 @@ Five zero-value creation transactions from the existing qualification signer 0xB
 4. ORIORecoverableGasAccountFactory, pointing to the same EntryPoint and paymaster.
 5. ORIOMonetaryController, pointing to governance, registry and Circle's Base Sepolia USDC. Its constructor creates ORIOCurrency, ORIOReserveVault and ORIORedemptionLocks.
 
-Exact creation data, transaction hashes to be signed, predicted addresses, runtime hashes, child identities and fee parameters are in REMAINING_SEPOLIA_PLAN_2026-11-14.json. The normalized-LF SHA256 is b2f2578395ac575732fe95d67ad1c5bee2f81921829a5f508ba76cc6327d1246. The client refuses any changed manifest. All contracts remain unconfigured/paused: no asset election, valuation signer, settlement operator, issuance, paymaster activation, gas prepayment or wallet creation is included. The existing 60-second governance delay is unchanged.
+Exact creation data, transaction hashes to be signed, predicted addresses, runtime hashes, child identities and fee parameters are in REMAINING_SEPOLIA_PLAN_2026-11-14.json. The normalized-LF SHA256 is 1c49fbbdb36e527e8a40fc74aa005bc75afe34afd790f32c2ee02eb83d593d12. The client refuses any changed manifest. All contracts remain unconfigured/paused: no asset election, valuation signer, settlement operator, issuance, paymaster activation, gas prepayment or wallet creation is included. The existing 60-second governance delay is unchanged.
 
 ## Simulation and meaningful checks
 
@@ -26,9 +26,9 @@ protected-remaining-deployment.json reuses the existing key, private Lambda, Lam
 
 ## Test funding and cost proposal
 
-The conservative whole-batch planning estimate at the captured block is 0.000240508884040408 test ETH. The proposed aggregate planning ceiling is 0.00035 test ETH; each operation is additionally limited to 125% of its recorded planning budget, whose ceilings sum below that aggregate ceiling. The execution client rechecks nonce, balance, dependency code hashes, gas estimate, L2 fee cap, L1 fee and operator fee before each submission. L1/operator fees can change after submission and are not hard-capped by the EIP-1559 execution cap. Stop the batch if actual receipt costs or configuration checks exceed authorization; do not silently alter payloads or budgets.
+The conservative whole-batch planning allowance at the recorded fee block is 0.001079303521454044 test ETH. The proposed aggregate planning ceiling is 0.0015 test ETH; each operation is additionally limited to 125% of its recorded planning budget, whose ceilings sum below that aggregate ceiling. The execution client rechecks nonce, balance, dependency code hashes, gas estimate, L2 fee cap, L1 fee and operator fee before each submission. L1/operator fees can change after submission and are not hard-capped by the EIP-1559 execution cap. Stop the batch if actual receipt costs or configuration checks exceed authorization; do not silently alter payloads or budgets.
 
-Three free CDP top-ups of 0.0001 test ETH each were claimed for the same qualification address. Successful distributor receipts and the aggregate balance change were observed; see BATCH_FAUCET_TOPUPS_2026-11-14.json. The balance is now 0.000389743536190728 test ETH, and the sender nonce remains one. These are valueless test tokens, not company reserves or customer backing. No card, new API key, wallet or paid upgrade was created.
+Three free CDP top-ups of 0.0001 test ETH each were claimed for the same qualification address. Successful distributor receipts and the aggregate balance change were observed; see BATCH_FAUCET_TOPUPS_2026-11-14.json. Twelve further free claims funded the wider fixed test-only fee allowance. The balance is now 0.001589743536190728 test ETH, and the sender nonce remains one. These are valueless test tokens, not company reserves or customer backing. No card, new API key, wallet or paid upgrade was created.
 
 Propose up to USD0.25 additional metered AWS Lambda/KMS verification costs for the five-operation session and cleanup. No new recurring workload or storage subscription is added; the existing key's previously approved storage charge continues. Actual billing is not yet available. The earlier first-contract approval does not authorize this new signing allowlist.
 
@@ -41,3 +41,9 @@ After each receipt, run verify-remaining-sepolia.ts. It checks creation input, a
 This batch does not deploy mainnet contracts or complete the hosted financial platform. Hosted upgrades 003-018, ledger-backed runtime signing, operational providers, recovery qualification, reserve/funding arrangements and accountable production acceptance remain separate work.
 
 Sources checked: https://developers.circle.com/stablecoins/usdc-contract-addresses ; https://docs.base.org/specifications/transactions/network-fees ; https://docs.cdp.coinbase.com/faucets/introduction/quickstart . Test USDC has no financial value or real-dollar backing.
+
+
+Cross-platform verification initially exposed CRLF/LF Solidity metadata differences. Compiler inputs now normalize line endings, and a regression compiles both forms to byte-identical creation/runtime outputs. This batch was regenerated after that correction. Previously deployed governance metadata is preserved as observed; its contract is not replaced. Earlier unapplied change previews are obsolete and must not be executed.
+
+
+Fee policy: each transaction uses a fixed 0.05 gwei maximum execution price and 0.001 gwei priority cap to avoid expiring a reviewed payload on small network fluctuations. The actual fee uses the network price, not necessarily that maximum. Fork observations and refreshed fee observations are identified separately in the manifest. Both constructor payloads and caps remain immutable after approval; a cap or nonce failure must stop submission rather than silently regenerate authorization.

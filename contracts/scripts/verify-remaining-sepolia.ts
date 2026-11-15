@@ -54,6 +54,7 @@ try{
   await check(vault.address,'reserveUnits() view returns(uint256)',[],0n);
   await check(vault.address,'companyFees(address) view returns(uint256)',[m.testUsdc],0n);
   await check(m.testUsdc,'balanceOf(address) view returns(uint256)',[vault.address],0n);
+  await check(m.testUsdc,'decimals() view returns(uint8)',[],6n);
   await check(locks.address,'currency() view returns(address)',[],currency.address);
  }
  const gasUsed=quantity(receipt.gasUsed),execution=gasUsed*quantity(receipt.effectiveGasPrice),l1=quantity(receipt.l1Fee);
