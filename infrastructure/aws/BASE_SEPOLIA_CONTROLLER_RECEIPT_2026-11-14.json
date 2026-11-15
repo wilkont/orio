@@ -1,0 +1,41 @@
+{
+  "status": "VERIFIED_PAUSED_TESTNET_DEPLOYMENT",
+  "operationId": "controller",
+  "contract": "ORIOMonetaryController",
+  "address": "0x7ebF7ca8Ea3058DfCebEd89742BcA82Dcf4dC971",
+  "children": [
+    {
+      "name": "currency",
+      "address": "0x8Fc29F6E452238645b4eBaa934ACf9891b0d5fB5",
+      "expectedRuntimeCodeHash": "0x92bcbc512e7560782348953224f2474d558afd7cf9d500247889ad705f8852a0"
+    },
+    {
+      "name": "vault",
+      "address": "0x7a5b5e46DD14cE3bA8240961a092320F4CA32575",
+      "expectedRuntimeCodeHash": "0xfd7dc5af0417ddac579ff4d2949dc8b2c157a2410c15f980a280091d6eb626fd"
+    },
+    {
+      "name": "redemptionLocks",
+      "address": "0xCC0349CC356D17695D61C606b06E37e62Ea8B2E9",
+      "expectedRuntimeCodeHash": "0x9ffd3bd7063fcaf8e9939a70e73944e82c8d36101dbd8f010c651b1806128818"
+    }
+  ],
+  "chainId": "84532",
+  "transactionHash": "0xa8e846951832a94af59d68e6ddd867d29219d9d98110dce860926a4367a3bd5e",
+  "blockNumber": "0x3831237",
+  "blockHash": "0x7875749adfd6108e872e0f85c344d21f4039803ed35a10b520f7eda025214491",
+  "runtimeCodeHash": "0x37aba82619abf63d01d4915d2c87ebbd748eb1f15d2a6322aca3b28da95219be",
+  "creationInputMatchesPinnedPlan": true,
+  "pausedConfigurationVerified": true,
+  "executionFeeWei": "47863044000000",
+  "l1FeeWei": "11074049054650",
+  "operatorFeeAtReceiptBlockWei": "0",
+  "observedNetworkFeeWei": "58937093054650",
+  "finalizedAtObservation": false,
+  "observedAt": "2026-11-15T01:30:08.690Z",
+  "financialExecutionEnabled": false,
+  "limits": [
+    "Single public source diagnostic; no independent state proof verification",
+    "No asset election, customer issuance, paymaster operation or wallet creation is implied"
+  ]
+}

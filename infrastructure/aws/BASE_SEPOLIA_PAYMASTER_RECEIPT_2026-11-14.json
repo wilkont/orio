@@ -1,0 +1,25 @@
+{
+  "status": "VERIFIED_PAUSED_TESTNET_DEPLOYMENT",
+  "operationId": "paymaster",
+  "contract": "ORIOTreasuryPaymaster",
+  "address": "0x3c2E4Eb628Ad18f452546B6347A1751020C26857",
+  "children": [],
+  "chainId": "84532",
+  "transactionHash": "0xcea3cf71e5b72489015e376ea53afc262a6c342cdf1e61edd4899c7f77c91936",
+  "blockNumber": "0x3830f28",
+  "blockHash": "0x1d1828750c5baf906de6024477fea7dc69096eb44bf1f4bc145e4ee26a460037",
+  "runtimeCodeHash": "0x4296b96a60e270dde0ffaa874ed27ea5bed9203db94ad00d2f21d2b848647a2f",
+  "creationInputMatchesPinnedPlan": true,
+  "pausedConfigurationVerified": true,
+  "executionFeeWei": "10226082000000",
+  "l1FeeWei": "3341466915698",
+  "operatorFeeAtReceiptBlockWei": "0",
+  "observedNetworkFeeWei": "13567548915698",
+  "finalizedAtObservation": false,
+  "observedAt": "2026-11-15T01:27:11.769Z",
+  "financialExecutionEnabled": false,
+  "limits": [
+    "Single public source diagnostic; no independent state proof verification",
+    "No asset election, customer issuance, paymaster operation or wallet creation is implied"
+  ]
+}
