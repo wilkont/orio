@@ -3,14 +3,17 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import solc from 'solc';
 
-export function compileContracts(includeFixtures = false) {
+// readSource is a trusted build/test seam, never a financial request parameter.
+// Canonical line endings make metadata and bytecode identical across checkouts.
+export function compileContracts(includeFixtures = false, readSource = url => readFileSync(url, 'utf8')) {
+  const sourceText = url => readSource(url).replace(/\r\n?/g, '\n');
   const names = ['ORIOGovernanceTimelock', 'MasterAssetRegistry', 'ORIOTreasuryPaymaster', 'ORIOGasAccount', 'ORIOGasAccountFactory',
     'ORIOCurrency', 'ORIOReserveVault', 'ORIOMonetaryController', 'ORIORedemptionLocks', 'ORIORecoverableGasAccount', 'ORIORecoverableGasAccountFactory'];
   const files = names.map(name => 'src/' + name + '.sol');
   if (includeFixtures) files.push('test/MockTokenMetadata.sol', 'test/GasExecutionTarget.sol', 'test/MonetaryFixtures.sol',
     '@account-abstraction/contracts/core/EntryPoint.sol');
   const sources = Object.fromEntries(files.map(file => [file, {
-    content: readFileSync(new URL('../' + (file.startsWith('@') ? 'node_modules/' : '') + file, import.meta.url), 'utf8'),
+    content: sourceText(new URL('../' + (file.startsWith('@') ? 'node_modules/' : '') + file, import.meta.url)),
   }]));
   const monetary = new Set(['src/ORIOCurrency.sol', 'src/ORIOReserveVault.sol', 'src/ORIOMonetaryController.sol', 'src/ORIORedemptionLocks.sol']);
   const compile = (selected, viaIR) => {
@@ -19,7 +22,7 @@ export function compileContracts(includeFixtures = false) {
       settings: { optimizer: { enabled: true, runs: viaIR ? 1 : 200 }, evmVersion: 'cancun', viaIR, outputSelection },
     }), { import: path => {
       if (!path.startsWith('@openzeppelin/contracts/') && !path.startsWith('@account-abstraction/contracts/')) return { error: 'Unexpected import' };
-      return { contents: readFileSync(new URL('../node_modules/' + path, import.meta.url), 'utf8') };
+      return { contents: sourceText(new URL('../node_modules/' + path, import.meta.url)) };
     } }));
     const errors = (result.errors ?? []).filter(error => error.severity === 'error');
     if (errors.length) throw new Error(errors.map(error => error.formattedMessage).join('\n'));

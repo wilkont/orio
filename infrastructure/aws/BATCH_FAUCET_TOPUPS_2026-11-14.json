@@ -1,0 +1,85 @@
+{
+  "chainId": "84532",
+  "address": "0xB1E1d791a518931042Fed65778a2f8E11938eae1",
+  "provider": "Coinbase Developer Platform faucet",
+  "transactions": [
+    "0x2afaa984580a2c6c675eab68e06ff225e7a00b6e929d3302c7d69b4aba1581ea",
+    "0x1e6b011aaeff26f0f838e625bda6ccc8dccbf3d190dd39c2b1e92ea6b0cc49a1",
+    "0x3e9e68237e1d4a894f4975f4b9f35ca6be96b7bd4b0003d1fbc18ba469df6251"
+  ],
+  "allDistributorReceiptsStatus": "0x1",
+  "aggregateTestWeiAdded": "300000000000000",
+  "previousBalanceWei": "89743536190728",
+  "observedBalanceWei": "389743536190728",
+  "pendingSenderNonce": "1",
+  "financialExecutionEnabled": false,
+  "paidUpgrade": false,
+  "newApiKey": false,
+  "newWallet": false,
+  "limits": "Receipts execute the faucet distributor, not direct recipient transactions. Aggregate balance gain separately matches the three claims. Finality is not claimed.",
+  "additionalAllowanceTopups": [
+    {
+      "transactionHash": "0x5022a10bcd9da1f4d6f14fa4f8e9debdf18326a8ec1f5246e308427903d0bbe7",
+      "status": "0x1",
+      "blockNumber": "0x382b41b"
+    },
+    {
+      "transactionHash": "0x7188fac60a6400fa6c88b1be261b0485f1ff351c2086fc12be609156b684a4e5",
+      "status": "0x1",
+      "blockNumber": "0x382b430"
+    },
+    {
+      "transactionHash": "0x6f8554318374402d6ad146808d67a096d069be97c6dcd0dc708a2f9b27b7bcd9",
+      "status": "0x1",
+      "blockNumber": "0x382b443"
+    },
+    {
+      "transactionHash": "0xc379b511ddf4870da40d3935d0a521ca50922b9a28359bde3efe4435be7328a5",
+      "status": "0x1",
+      "blockNumber": "0x382b482"
+    },
+    {
+      "transactionHash": "0xc5ef92292e1a90f167b378fa04c3e9c63ea50de8c7354c3ec4dcc949aae3d9f4",
+      "status": "0x1",
+      "blockNumber": "0x382b491"
+    },
+    {
+      "transactionHash": "0xf866678809a3a9d841d622f20123d6a739afe6e5c829370e657492a5a5847b47",
+      "status": "0x1",
+      "blockNumber": "0x382b4a0"
+    },
+    {
+      "transactionHash": "0xbbe6992752fe524d7ac167b0a6b446e7bfba0f0387340184685e17ee7452f99d",
+      "status": "0x1",
+      "blockNumber": "0x382b4d7"
+    },
+    {
+      "transactionHash": "0xb9b77273e23cac801d006ebc73515bf610442286b0132d8115d301cf8458f621",
+      "status": "0x1",
+      "blockNumber": "0x382b4e7"
+    },
+    {
+      "transactionHash": "0xb1af3040b5dfe5659ed5c7d7eef70a896ffb860c9c6c5218dd2c810c318d3f8f",
+      "status": "0x1",
+      "blockNumber": "0x382b4f8"
+    },
+    {
+      "transactionHash": "0x638d435e9bd9028ca2c004c8095b62e89083624380bc9bf8f135da7a59ad0b16",
+      "status": "0x1",
+      "blockNumber": "0x382b52b"
+    },
+    {
+      "transactionHash": "0x0aaf0041439fb7a8a35f5916bae942dc640029c3c588b16155b440ef336e79c1",
+      "status": "0x1",
+      "blockNumber": "0x382b53f"
+    },
+    {
+      "transactionHash": "0x737628e5f983ccf2f0ff905fd529906722dd2d33889893194e180a52048abea2",
+      "status": "0x1",
+      "blockNumber": "0x382b54f"
+    }
+  ],
+  "additionalAllowanceWei": "1200000000000000",
+  "observedBalanceAfterAllowanceWei": "1589743536190728",
+  "pendingNonceAfterAllowance": "1"
+}
