@@ -1,0 +1,20 @@
+{
+  "001_ledger.sql": "45e26c543c22a476c1d8365128028bb428b9ec2cce4dd0537ae3c48e382aa6a7",
+  "002_master_registry.sql": "f50b186e4ffc60b5545fef8d007493e1709d7aeac95b8ef31452d482b28f9df0",
+  "003_conversion_entries.sql": "61bbb34b02e0346c351b0a2d01540c609d992cc2b649a1063c33a0a6496336bc",
+  "004_conversion_route_start.sql": "d5c400d713664b016f326e57bf376803f0a28dd689e21cdf576d385f0075733d",
+  "005_redemption_claims.sql": "5941786a488b5807243e88b5361865112fa2352ea1ac786e04345ffa42263105",
+  "006_shared_receipt_claims.sql": "cd95cdd2a4db5c862d4e29f0e20a2da98f30a7c58f103a51c3c0910cc9d50743",
+  "007_master_receipt_accounting.sql": "83842545448eccf58ececc19c42907fa2f2b2528f711aaed89984635c4c425c3",
+  "008_gas_controls.sql": "20a1fdea41a1e92823b096b4d5d4b60940b1d83012297368ab1486b33528c78f",
+  "009_gas_execution_bindings.sql": "11cd9afc50e9fe19f2a6689c98afed6c6c211dee5a805ee7e4d0ae25b6b4e68e",
+  "010_gas_prepayment_funding.sql": "0add8e61ed7749b16fcb3387847600c659df3eb4795f186979b3e2f8d139f999",
+  "011_gas_prepayment_refunds.sql": "7f9eb3dc1d1f0e7de0d4b30065703a76a39f8c90782e2d751ec3bed5c6968650",
+  "012_monetary_execution.sql": "c7b11ddd6b4a03fd6c196d3517f9fbab04f217819706ebd8c4b77a12a0ab195a",
+  "013_zero_supply_execution.sql": "d11e584e5f7922129f79a9e495d30585a112205fc55b26ae576cf0762722f697",
+  "014_company_withdrawal_execution.sql": "811ddb03ac8b5a7a85d6290621c6d242a7527be67e7cb71f2848137140037ad8",
+  "015_reserve_migration_execution.sql": "fdc4668c2dcaf24be5004bf09f0a4cacef0a08349c7d7d9a9b6524d3f9bbc875",
+  "016_finalized_history.sql": "18381d16bd45bcc267d19d85b87921a7b64e181cdb0a81ec27ec1a3a6cacf6a1",
+  "017_history_consumers.sql": "f5cf66da61a8df269d875c331f4f82a1f6df2e8fd4d28f346a1dc566fa1c354b",
+  "018_protected_gas_signing.sql": "d4aa748aed937c188b5b6203a59a93c03c5bd87709bf57ffb85b73255d2dc666"
+}
