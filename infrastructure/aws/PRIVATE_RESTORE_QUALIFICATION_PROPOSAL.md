@@ -2,6 +2,8 @@
 
 Prepared 2026-11-16. Awaiting specific owner approval. No snapshot or clone has been created.
 
+Subsequent execution note, 2026-11-16: the owner approved the named restore and USD5 additional ceiling. PR18 merged at `8e3f5935b444c0a720ae37e167f9549caae5b297`. The original proposal text below records its scope; completed verification and cleanup must be recorded separately rather than inferred from approval.
+
 ## Concrete next action
 
 In AWS account 720232346199, us-east-1, create one encrypted manual snapshot named `orio-spc-3-restore-checkpoint-20261116` from the existing database `orio-spc-3-ledger-ledgerdatabase-sdrgecp35snc`. Restore it through a new stack `orio-spc-3-restore-qualification`, using `restore-qualification.json` at the reviewed commit. The clone is `orio-spc-3-restore-qualification-20261116`: private, Single-AZ, db.t4g.medium, with a new security group having no client ingress. AWS manages a separate clone administrator password; do not retrieve it in this phase.
@@ -27,3 +29,5 @@ After verification or failure, delete only the new qualification stack and the e
 The actual read-only hosted inspection and cleanup are documented in `HOSTED_SCHEMA_AUDIT_REPORT_2026-11-16.md`. PR17 merged migration019 and a managed-extension regression; 205 local tests and typechecking pass. No hosted migration has run. The current hosted catalog matches the 001–002 structural reference after accounting for provider-owned pgcrypto permissions, but historical migration002 file provenance remains unresolved. Do not fabricate applied-version history or rerun initial migrations.
 
 AWS restore properties follow the [official DBInstance reference](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-rds-dbinstance.html): encryption and database identity are inherited from the snapshot; the template omits conflicting restore-time creation properties. This is a recovery qualification step, not production financial launch approval.
+
+The side-effect-free `qualificationTarget` helper validates authenticated pre-access metadata for the fixed clone, source snapshot and isolated security group. It rejects the original database/secret, other accounts, public or unencrypted copies, different engine/storage/backup settings and unexpected ingress. Its synthetic tests do not establish actual restore lineage; the reviewed CloudFormation snapshot property and execution evidence remain required. It retrieves no credential and makes no connection or permission change. All 207 local tests pass; strict typechecking passes. A later SQL access procedure must preserve and verify this pre-access observation before separately approved network changes.
