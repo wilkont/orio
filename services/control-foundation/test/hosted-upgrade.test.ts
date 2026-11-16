@@ -17,7 +17,7 @@ test('complete ordered upgrade preserves historical journals and restores a loca
  try{
   await root.query('CREATE DATABASE '+database);const url=new URL(rootUrl);url.pathname='/'+database;pool=new Pool({connectionString:url.href});
   const directory=new URL('../migrations/',import.meta.url),files=(await readdir(directory)).filter(f=>/^\d{3}_[a-z_]+\.sql$/.test(f)).sort();
-  assert.equal(files.length,18);
+  assert.equal(files.length,19);
   const manifest:Record<string,string>=JSON.parse(await readFile(new URL('../config/hosted-upgrade-checksums.json',import.meta.url),'utf8'));
   assert.deepEqual(Object.keys(manifest),files);
   const sql: string[]=[];
