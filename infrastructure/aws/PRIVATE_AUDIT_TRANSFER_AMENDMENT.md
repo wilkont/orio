@@ -1,0 +1,24 @@
+# Private audit file-transfer amendment
+
+Prepared 2026-11-15. Not approved or applied. The original private inspection and USD2 session budget were approved. Original network stack creation completed, rules were verified, and the isolated CloudShell environment was created. AWS disables Upload file and Download file in VPC CloudShell environments. No secret was retrieved and no database audit or migration was run before discovering this restriction.
+
+## Concrete amendment
+
+`hosted-audit-transfer-access.json` preserves all six original network resources unchanged and adds four resources: one private S3 bucket, its owner-only/TLS-only policy, one S3 gateway endpoint attached to the verified VPC main route table, and audit-group HTTPS egress solely to the AWS-managed regional S3 prefix list. There is no internet default route, public bucket access, new identity, IAM grant or change to the database/secret permissions.
+
+- Bucket: `orio-audit-720232346199-20261115`; block all four public-access categories, enforce bucket ownership and AES256 server-side encryption.
+- Route table: `rtb-0f98faf9d3a62865e`; VPC `vpc-05613af21236d6911` currently has only its local route.
+- S3 prefix list: `pl-63a5400a`, verified for com.amazonaws.us-east-1.s3.
+- Gateway endpoint permits the existing root maintenance principal only: GetObject for `inputs/audit-inputs.tar`, PutObject for `reports/schema-audit.json`. It permits no other bucket/object or action. The bucket denies non-owner-session principals and insecure transport.
+- Upload the credential-free audit/runtime/CA archive through ordinary public CloudShell file upload, then copy it into that exact input object. The isolated session downloads it privately and verifies the outer archive and every constituent checksum before execution.
+- After the read-only audit, write the private catalog report to the exact encrypted report object, download it to the owner's computer through the public maintenance terminal, and verify its SHA256. No database password, customer rows or raw function bodies may enter either S3 object.
+
+The credential-free outer archive is `ORIO_PRIVATE_AUDIT_INPUTS_2026-11-15.tar`, SHA256 `67b3c28ca89b6267728eb7e9f7c1616e744a001c240f0a203678c3252f4ff9fd`. It contains the previously verified audit bundle, official Node 24.22.1 Linux x64 runtime, official RDS us-east-1 CA bundle, and their checksums. The current CloudShell Node version is v20.20.2; do not downgrade the audit to that older runtime to bypass the transfer restriction.
+
+## Cost, duration and cleanup
+
+The existing approved USD2 maintenance ceiling still applies; this is not a second USD2 request. S3 storage/request charges are incremental and must stay within it. No NAT gateway, compute workload, public service or recurring application subscription is proposed. Check current official AWS gateway-endpoint pricing before execution; gateway endpoints have no separate endpoint-hour/data-processing charge, while S3 charges still apply.
+
+Approval must explicitly cover temporary storage of the private catalog report in this owner-only AWS bucket and deletion of the two temporary objects after the verified local copy is retained. Delete the isolated environment, the temporary objects, then the entire audit stack; verify database ingress, gateway route, both endpoints, bucket and groups are removed. Do not delete permanent infrastructure or any pre-existing object. A conflicting bucket name or unexpected object stops execution rather than adopting it.
+
+The original one-hour working window and 24-hour maximum cleanup window remain. If amendment approval does not arrive during the working window, remove the already-created temporary access and prepare a fresh reviewed session instead of leaving it active indefinitely. No schema migration, signing, monetary operation or financial activation is included.
