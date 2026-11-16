@@ -16,5 +16,6 @@
   "015_reserve_migration_execution.sql": "fdc4668c2dcaf24be5004bf09f0a4cacef0a08349c7d7d9a9b6524d3f9bbc875",
   "016_finalized_history.sql": "18381d16bd45bcc267d19d85b87921a7b64e181cdb0a81ec27ec1a3a6cacf6a1",
   "017_history_consumers.sql": "f5cf66da61a8df269d875c331f4f82a1f6df2e8fd4d28f346a1dc566fa1c354b",
-  "018_protected_gas_signing.sql": "d4aa748aed937c188b5b6203a59a93c03c5bd87709bf57ffb85b73255d2dc666"
+  "018_protected_gas_signing.sql": "d4aa748aed937c188b5b6203a59a93c03c5bd87709bf57ffb85b73255d2dc666",
+  "019_managed_digest_permissions.sql": "1ca8ee33cd8313bc71ce166f3e576cad08d0ee95999eeb9715ef8a0d81171d00"
 }
