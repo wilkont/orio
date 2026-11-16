@@ -1,0 +1,49 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Disposable ORIO snapshot restore; no client access or original database changes",
+  "Conditions": {
+    "Target": {"Fn::And": [
+      {"Fn::Equals": [{"Ref": "AWS::AccountId"}, "720232346199"]},
+      {"Fn::Equals": [{"Ref": "AWS::Region"}, "us-east-1"]}
+    ]}
+  },
+  "Resources": {
+    "CloneSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Condition": "Target",
+      "Properties": {
+        "GroupDescription": "Disposable ORIO restore with no client ingress",
+        "VpcId": "vpc-05613af21236d6911",
+        "SecurityGroupIngress": [],
+        "SecurityGroupEgress": [{"IpProtocol": "tcp", "FromPort": 1, "ToPort": 1, "CidrIp": "127.0.0.1/32"}],
+        "Tags": [{"Key": "Project", "Value": "ORIO-SPC-3"}, {"Key": "Purpose", "Value": "disposable-restore-qualification"}]
+      }
+    },
+    "QualificationClone": {
+      "Type": "AWS::RDS::DBInstance",
+      "Condition": "Target",
+      "DeletionPolicy": "Delete",
+      "UpdateReplacePolicy": "Delete",
+      "Properties": {
+        "DBInstanceIdentifier": "orio-spc-3-restore-qualification-20261116",
+        "DBSnapshotIdentifier": "orio-spc-3-restore-checkpoint-20261116",
+        "DBInstanceClass": "db.t4g.medium",
+        "DBSubnetGroupName": "orio-spc-3-ledger-databasesubnets-sydsyf5mdayu",
+        "DBParameterGroupName": "orio-spc-3-ledger-databaseparameters-tduugdetb77x",
+        "VPCSecurityGroups": [{"Fn::GetAtt": ["CloneSecurityGroup", "GroupId"]}],
+        "PubliclyAccessible": false,
+        "MultiAZ": false,
+        "BackupRetentionPeriod": 0,
+        "AutoMinorVersionUpgrade": false,
+        "DeletionProtection": false,
+        "ManageMasterUserPassword": true,
+        "Tags": [{"Key": "Project", "Value": "ORIO-SPC-3"}, {"Key": "Purpose", "Value": "disposable-restore-qualification"}]
+      }
+    }
+  },
+  "Outputs": {
+    "CloneIdentifier": {"Condition": "Target", "Value": {"Ref": "QualificationClone"}},
+    "CloneEndpoint": {"Condition": "Target", "Value": {"Fn::GetAtt": ["QualificationClone", "Endpoint.Address"]}},
+    "CloneSecurityGroup": {"Condition": "Target", "Value": {"Fn::GetAtt": ["CloneSecurityGroup", "GroupId"]}}
+  }
+}
