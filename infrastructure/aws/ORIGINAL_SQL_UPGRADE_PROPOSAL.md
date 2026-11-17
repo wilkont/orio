@@ -1,6 +1,6 @@
 # Original hosted SQL maintenance proposal
 
-Prepared after the actual disposable RDS rehearsal passed at 2026-11-17T01:38:28.233Z. **Not executed or authorized by the earlier clone-only approval.** The original ledger remains at the observed 001/002 catalog baseline. External review remains advisory.
+Executed once under separate explicit owner approval on November 17, 2026. Migrations 003-019 committed on the original database and cleanup was verified; see [the actual upgrade report](ORIGINAL_SQL_UPGRADE_REPORT_2026-11-17.md). The procedure below is the historical approved plan, not permission to replay it. Its pinned old baseline intentionally rejects the upgraded database. External review remains advisory.
 
 ## Exact change
 
