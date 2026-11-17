@@ -1,0 +1,244 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "PREPARED ONLY: separately approved public GET protocol metadata; no financial routes or database permission changes",
+  "Conditions": {
+    "Target": {
+      "Fn::And": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::AccountId"
+            },
+            "720232346199"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::Region"
+            },
+            "us-east-1"
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "MetadataApi": {
+      "Type": "AWS::ApiGatewayV2::Api",
+      "Properties": {
+        "Name": "orio-spc-3-public-protocol-metadata",
+        "ProtocolType": "HTTP",
+        "IpAddressType": "ipv4",
+        "DisableExecuteApiEndpoint": false,
+        "CorsConfiguration": {
+          "AllowOrigins": [
+            "https://orio.io",
+            "https://www.orio.io"
+          ],
+          "AllowMethods": [
+            "GET"
+          ],
+          "AllowCredentials": false,
+          "MaxAge": 300
+        },
+        "Tags": {
+          "Project": "ORIO-SPC-3",
+          "Purpose": "public-metadata-only"
+        }
+      },
+      "Condition": "Target"
+    },
+    "MetadataIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "MetadataApi"
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationMethod": "POST",
+        "IntegrationUri": "arn:aws:lambda:us-east-1:720232346199:function:orio-spc-3-protocol-metadata",
+        "PayloadFormatVersion": "2.0",
+        "TimeoutInMillis": 10000
+      },
+      "Condition": "Target"
+    },
+    "HealthRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "MetadataApi"
+        },
+        "RouteKey": "GET /health",
+        "AuthorizationType": "NONE",
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "MetadataIntegration"
+              }
+            ]
+          ]
+        }
+      },
+      "Condition": "Target"
+    },
+    "HealthPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": "arn:aws:lambda:us-east-1:720232346199:function:orio-spc-3-protocol-metadata",
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceAccount": "720232346199",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MetadataApi}/*/GET/health"
+        }
+      },
+      "Condition": "Target"
+    },
+    "ReadyRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "MetadataApi"
+        },
+        "RouteKey": "GET /ready",
+        "AuthorizationType": "NONE",
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "MetadataIntegration"
+              }
+            ]
+          ]
+        }
+      },
+      "Condition": "Target"
+    },
+    "ReadyPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": "arn:aws:lambda:us-east-1:720232346199:function:orio-spc-3-protocol-metadata",
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceAccount": "720232346199",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MetadataApi}/*/GET/ready"
+        }
+      },
+      "Condition": "Target"
+    },
+    "PolicyRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "MetadataApi"
+        },
+        "RouteKey": "GET /v1/protocol/policy",
+        "AuthorizationType": "NONE",
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "MetadataIntegration"
+              }
+            ]
+          ]
+        }
+      },
+      "Condition": "Target"
+    },
+    "PolicyPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": "arn:aws:lambda:us-east-1:720232346199:function:orio-spc-3-protocol-metadata",
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceAccount": "720232346199",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MetadataApi}/*/GET/v1/protocol/policy"
+        }
+      },
+      "Condition": "Target"
+    },
+    "MasterRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "MetadataApi"
+        },
+        "RouteKey": "GET /v1/protocol/master",
+        "AuthorizationType": "NONE",
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "MetadataIntegration"
+              }
+            ]
+          ]
+        }
+      },
+      "Condition": "Target"
+    },
+    "MasterPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": "arn:aws:lambda:us-east-1:720232346199:function:orio-spc-3-protocol-metadata",
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceAccount": "720232346199",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MetadataApi}/*/GET/v1/protocol/master"
+        }
+      },
+      "Condition": "Target"
+    },
+    "MetadataStage": {
+      "Type": "AWS::ApiGatewayV2::Stage",
+      "DependsOn": [
+        "HealthRoute",
+        "HealthPermission",
+        "ReadyRoute",
+        "ReadyPermission",
+        "PolicyRoute",
+        "PolicyPermission",
+        "MasterRoute",
+        "MasterPermission"
+      ],
+      "Properties": {
+        "ApiId": {
+          "Ref": "MetadataApi"
+        },
+        "StageName": "$default",
+        "AutoDeploy": true,
+        "DefaultRouteSettings": {
+          "ThrottlingBurstLimit": 2,
+          "ThrottlingRateLimit": 1,
+          "DetailedMetricsEnabled": false
+        }
+      },
+      "Condition": "Target"
+    }
+  },
+  "Outputs": {
+    "MetadataBaseUrl": {
+      "Condition": "Target",
+      "Value": {
+        "Fn::GetAtt": [
+          "MetadataApi",
+          "ApiEndpoint"
+        ]
+      }
+    }
+  }
+}
