@@ -109,6 +109,8 @@ The finalized-chain adapter, issuer/network eligibility checks, independent quot
 
 ## Protocol metadata service
 
+Runtime identity checks now qualify the dedicated metadata-only database login before listening and on every registry read. Administrator URLs, excess ORIO permissions, latent privileged membership and masked owner sessions are rejected. Initial TLS/identity failure stops startup; later unavailable or overprivileged reads return a generic503. See `PROTOCOL_READER_AUTHORITY.md` for the authorization boundary, actual isolated verification and remaining hosted provisioning work.
+
 `npm start` runs the HTTP metadata service on 127.0.0.1 and port 8080 by default. Configure `ORIO_DATABASE_URL` with a PostgreSQL URL containing no query parameters, `ORIO_PG_CA_FILE` with the trusted CA bundle path and optionally `PORT`. Workload networking, database login, secret distribution, proxy/TLS ingress and hosted deployment require separate integration. Use a dedicated metadata reader granted SELECT on the master registry only. The application additionally enables read-only PostgreSQL transactions and bounded connection/query timeouts.
 
 GET /health reports process health. GET /ready requires a successful master registry read and reports metadata-service readiness. GET /v1/protocol/master returns the persisted master election and asset metadata, with financialExecutionEnabled false. A paused or empty registry remains visible as paused or empty. The initial USDC selection is never substituted for a persisted election. Registry read failures return a generic 503 response and client responses are not cached. This service exposes no customer accounts or settlement writes.

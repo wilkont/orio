@@ -55,13 +55,14 @@ try {
     'GRANT SELECT ON orio_master.current_election,orio_master.elections,orio_master.assets TO orio_metadata_test',
   ].join(';')]);
   docker(['cp', database + ':/tmp/server.crt', caFile]); certCopied = true;
-  function startApplication(name, databaseHost) {
+  function startApplication(name, databaseHost, databaseUser='orio_metadata_test',needsPort=true) {
     docker(['run', '--detach', '--name', name, '--network', network, '--read-only',
       '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
       '--publish', '127.0.0.1::8080', '--mount', 'type=bind,source=' + caFile + ',target=/run/rds-ca.pem,readonly',
-      '-e', 'ORIO_DATABASE_URL=postgresql://orio_metadata_test:orio-local-test-only@' + databaseHost + ':5432/orio_test',
+      '-e', 'ORIO_DATABASE_URL=postgresql://'+databaseUser+':orio-local-test-only@' + databaseHost + ':5432/orio_test',
       '-e', 'ORIO_PG_CA_FILE=/run/rds-ca.pem', image]);
     containers.push(name);
+    if(!needsPort)return;
     const port = docker(['port', name, '8080']).trim().split(':').at(-1);
     if (!port || !/^[0-9]+$/.test(port)) throw new Error('Invalid loopback test port');
     return port;
@@ -103,10 +104,22 @@ try {
     '-U', 'postgres', '-d', 'orio_test', '-c',
     'SET ROLE orio_metadata_test; SELECT * FROM orio_ledger.journals'], { stdio: 'pipe' });
   assert.notEqual(restricted.status, 0);
-  const incorrectHostPort = startApplication(application + '-bad-host', database);
-  const rejected = await waitForStatus(incorrectHostPort, 503);
-  assert.deepEqual(await rejected.json(), { error: 'protocol_state_unavailable' });
-  console.log('Verified container startup, TLS/hostname enforcement, non-root execution, paused state and restricted reader');
+  async function waitForRejectedStartup(name,message){
+    let exited=false;
+    for(let i=0;i<80;i++){
+      const state=JSON.parse(docker(['inspect','--format','{{json .State}}',name]));
+      if(!state.Running){assert.equal(state.ExitCode,1);exited=true;break;}
+      await setTimeout(250);
+    }
+    assert.equal(exited,true);
+    const logs=spawnSync('docker',['logs',name],{encoding:'utf8'});
+    assert.match(logs.stdout+logs.stderr,message);assert.equal((logs.stdout+logs.stderr).includes('orio-local-test-only'),false);
+  }
+  const badHost=application+'-bad-host';startApplication(badHost,database,'orio_metadata_test',false);
+  await waitForRejectedStartup(badHost,/Protocol database identity or TLS qualification failed/);
+  const privileged=application+'-privileged';startApplication(privileged,'orio-db','postgres',false);
+  await waitForRejectedStartup(privileged,/Privileged database identities/);
+  console.log('Verified container startup, TLS/hostname enforcement, non-root execution, paused state, restricted reader and rejected administrator credentials');
 } finally {
   for (const name of containers.reverse()) docker(['rm', '--force', name]);
   if (networkCreated) docker(['network', 'rm', network]);

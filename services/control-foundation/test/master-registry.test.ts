@@ -10,6 +10,8 @@ if (!['127.0.0.1', 'localhost'].includes(url.hostname) || url.pathname !== '/ori
   throw new Error('Use the isolated local PostgreSQL test database');
 
 const admin = new Pool({ connectionString: url.href });
+const publicUrl=new URL(url);publicUrl.username='orio_master_public_reader';publicUrl.password='orio-local-reader-only';
+const publicPool=new Pool({connectionString:publicUrl.href});
 const initialAsset = initialMasterAsset(84532);
 const evidence = 'a'.repeat(64);
 const activate = (expected: string | null, election: string, asset: string) =>
@@ -22,6 +24,7 @@ before(async () => {
   const migration = await readFile(new URL('../migrations/002_master_registry.sql', import.meta.url), 'utf8');
   await admin.query(migration);
   await admin.query('CREATE ROLE orio_master_test_unprivileged NOLOGIN');
+  await admin.query("CREATE ROLE orio_master_public_reader LOGIN PASSWORD 'orio-local-reader-only';GRANT USAGE ON SCHEMA orio_master TO orio_master_public_reader;GRANT SELECT ON orio_master.assets,orio_master.elections,orio_master.current_election TO orio_master_public_reader");
   for (const asset of [initialAsset, ...['2', '3'].map(suffix => ({
     assetId: `asset-${suffix}`, issuer: 'Test issuer', tokenAddress: `0x${suffix.repeat(40)}`,
   }))]) {
@@ -33,11 +36,13 @@ before(async () => {
   }
 });
 
-after(async () => { await admin.end(); });
+after(async () => {
+ await publicPool.end();await admin.query('REVOKE ALL ON ALL TABLES IN SCHEMA orio_master FROM orio_master_public_reader;REVOKE ALL ON SCHEMA orio_master FROM orio_master_public_reader;DROP ROLE orio_master_public_reader');await admin.end();
+});
 
 test('serializes competing elections and preserves the predecessor on replacement', async () => {
   assert.deepEqual(await current(), [{ election_id: null, state: 'DEPOSIT_PAUSED' }]);
-  assert.deepEqual(await new ProtocolReader(admin).master(), {
+  assert.deepEqual(await new ProtocolReader(publicPool).master(), {
     electionId: null, state: 'DEPOSIT_PAUSED', asset: null,
   });
   const initial = await Promise.allSettled([activate(null, 'initial-a', initialAsset.assetId), activate(null, 'initial-b', initialAsset.assetId)]);
@@ -56,7 +61,7 @@ test('serializes competing elections and preserves the predecessor on replacemen
   assert.equal(replacements.filter(result => result.status === 'fulfilled').length, 1);
   const [active] = await current();
   assert.equal(active.state, 'ACTIVE_MASTER');
-  const publicMaster = await new ProtocolReader(admin).master();
+  const publicMaster = await new ProtocolReader(publicPool).master();
   assert.equal(publicMaster.electionId, active.election_id);
   assert.equal(publicMaster.state, 'ACTIVE_MASTER');
   assert.equal(publicMaster.asset?.chainId, '84532');

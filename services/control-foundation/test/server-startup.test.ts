@@ -14,3 +14,10 @@ test('service startup rejects unsafe connection configuration without echoing cr
     assert.equal((result.stdout + result.stderr).includes('fictional-private-value'), false);
   }
 });
+test('service rejects administrator URLs before opening the CA or database, without exposing the password',()=>{
+ const script=fileURLToPath(new URL('../src/server.ts',import.meta.url));
+ for(const user of ['postgres','orio_ledger_admin','%70ostgres']){
+  const result=spawnSync(process.execPath,[script],{env:{...process.env,ORIO_DATABASE_URL:'postgresql://'+user+':fictional-private-value@localhost/orio',ORIO_PG_CA_FILE:'unused-test-ca'},encoding:'utf8',timeout:5000});
+  assert.equal(result.status,1);assert.match(result.stderr,/Privileged database identities/);assert.equal((result.stdout+result.stderr).includes('fictional-private-value'),false);
+ }
+});

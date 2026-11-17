@@ -2,6 +2,8 @@
 
 ## Current hosted SQL upgrade preparation
 
+While private SQL access approval is pending, the metadata service was hardened independently: it checks the actual login and reachable roles before listening and on each registry read, rejecting owners, financial/ledger access and masked privileged sessions. Local verification passes223 tests plus the real non-root TLS container smoke test. No hosted application identity or permission was created. See `services/control-foundation/PROTOCOL_READER_AUTHORITY.md`.
+
 The owner requested hosted SQL upgrades and continued full-platform engineering. A clone-only private qualification package is now implemented: exact003–019 sources execute in one transaction, existing history is validated inside PostgreSQL without exporting customer records, before/after hashes preserve existing data, and a synthetic runtime journal is rolled back. Lost commit acknowledgement and post-commit reporting failure do not trigger blind replay. All219 local tests and strict typechecking pass. AWS root account720232346199/us-east-1 and conditional receipt-write client support were verified read-only; no new snapshot, access, secret read or hosted SQL operation has occurred. The additional private clone administrator access, report transfer and up toUSD5 cost require action-time approval under `infrastructure/aws/SQL_QUALIFICATION_PROPOSAL.md`; the prior completed restore excluded SQL. Original-database upgrade follows actual successful clone qualification, not local tests. Financial activation remains disabled and external review remains advisory.
 
 ## Latest hosted audit continuation
