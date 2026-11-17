@@ -1,0 +1,11 @@
+{
+  "kind": "ORIO_METADATA_LAMBDA_BUILD",
+  "sha256": "5972f438981fd1c119a6d45740f4e415e1f2d63aaf9e3ad1a0d82e384f641542",
+  "codeSha256Base64": "WXL0OJgf0cEZptRXQPTkFeHy1jqvnjrRoNguOE9kFUI=",
+  "bytes": 2365166,
+  "handler": "src/metadata-lambda-entry.handler",
+  "runtime": "nodejs24.x",
+  "databaseAuthority": "THREE_REGISTRY_TABLES_ONLY",
+  "financialExecutionEnabled": false,
+  "lockSha256": "74cd14d119f3ed7fb1160f19dcbdd0c9788f8ab395806646d626e0d008a36f01"
+}

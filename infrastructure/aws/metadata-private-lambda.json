@@ -1,0 +1,224 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "ORIO private read-only protocol qualification. No public endpoint or financial execution.",
+  "Parameters": {
+    "CodeBucket": {
+      "Type": "String",
+      "AllowedValues": [
+        "orio-metadata-artifacts-720232346199-us-east-1"
+      ]
+    },
+    "CodeKey": {
+      "Type": "String",
+      "AllowedPattern": "metadata/[a-f0-9]{64}\\.zip"
+    },
+    "CodeVersion": {
+      "Type": "String",
+      "MinLength": 1,
+      "MaxLength": 1024
+    }
+  },
+  "Resources": {
+    "ReaderSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "ORIO metadata Lambda to original private ledger TLS PostgreSQL only",
+        "VpcId": "vpc-05613af21236d6911",
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 5432,
+            "ToPort": 5432,
+            "DestinationSecurityGroupId": "sg-030c057c133762083"
+          }
+        ]
+      },
+      "Condition": "Target"
+    },
+    "DatabaseIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": "sg-030c057c133762083",
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432,
+        "SourceSecurityGroupId": {
+          "Ref": "ReaderSecurityGroup"
+        }
+      },
+      "Condition": "Target"
+    },
+    "MetadataLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/orio-spc-3-protocol-metadata",
+        "RetentionInDays": 7
+      },
+      "Condition": "Target"
+    },
+    "MetadataRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "orio-spc-3-protocol-metadata",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "PinnedReadOnlyMetadata",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "rds-db:connect",
+                  "Resource": "arn:aws:rds-db:us-east-1:720232346199:dbuser:db-GDKQSO4LQYHC4WACUEYAGRFZNA/orio_protocol_reader"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "arn:aws:logs:us-east-1:720232346199:log-group:/aws/lambda/orio-spc-3-protocol-metadata:*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeSubnets",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:AssignPrivateIpAddresses",
+                    "ec2:UnassignPrivateIpAddresses"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Deny",
+                  "Action": [
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeSubnets",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:AssignPrivateIpAddresses",
+                    "ec2:UnassignPrivateIpAddresses"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "ArnEquals": {
+                      "lambda:SourceFunctionArn": "arn:aws:lambda:us-east-1:720232346199:function:orio-spc-3-protocol-metadata"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "Condition": "Target"
+    },
+    "MetadataFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": [
+        "MetadataLogs",
+        "DatabaseIngress"
+      ],
+      "Properties": {
+        "FunctionName": "orio-spc-3-protocol-metadata",
+        "Runtime": "nodejs24.x",
+        "Architectures": [
+          "x86_64"
+        ],
+        "Handler": "src/metadata-lambda-entry.handler",
+        "MemorySize": 256,
+        "Timeout": 10,
+        "ReservedConcurrentExecutions": 1,
+        "Role": {
+          "Fn::GetAtt": [
+            "MetadataRole",
+            "Arn"
+          ]
+        },
+        "Code": {
+          "S3Bucket": {
+            "Ref": "CodeBucket"
+          },
+          "S3Key": {
+            "Ref": "CodeKey"
+          },
+          "S3ObjectVersion": {
+            "Ref": "CodeVersion"
+          }
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "ReaderSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-074b44d8936032ab9",
+            "subnet-01c4eea25a938e901"
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "ORIO_METADATA_MODE": "READ_ONLY_IAM",
+            "ORIO_DATABASE_HOST": "orio-spc-3-ledger-ledgerdatabase-sdrgecp35snc.cpa8oeo62tiq.us-east-1.rds.amazonaws.com",
+            "ORIO_DATABASE_NAME": "orio_control",
+            "ORIO_DATABASE_USER": "orio_protocol_reader",
+            "NODE_ENV": "production"
+          }
+        }
+      },
+      "Condition": "Target"
+    }
+  },
+  "Outputs": {
+    "FunctionArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "MetadataFunction",
+          "Arn"
+        ]
+      }
+    },
+    "SecurityGroupId": {
+      "Value": {
+        "Ref": "ReaderSecurityGroup"
+      }
+    }
+  },
+  "Conditions": {
+    "Target": {
+      "Fn::And": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::AccountId"
+            },
+            "720232346199"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::Region"
+            },
+            "us-east-1"
+          ]
+        }
+      ]
+    }
+  }
+}
