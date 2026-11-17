@@ -1,0 +1,11 @@
+# Original upgrade recovery coverage
+
+`originalRecoveryCoverage` is read-only decision support for the approved original SQL maintenance procedure. It creates no AWS access, retrieves no password and performs no snapshot deletion or restore. Its caller must obtain fresh authenticated AWS metadata, checksum-verify the private SQL receipt, enforce the approved account/resource scope and record any subsequent cleanup action.
+
+The guard pins the original database ARN and physical resource identity, available encrypted manual checkpoint, matching encryption keys, 14-day protected backup configuration and successful original-only SQL acceptance. Clone receipts, ambiguous commits, failed record preservation, activated finance or a persisted secret fail validation. It requires one matching active automated-backup record and UTC timestamps; stale, future or inconsistent evidence fails closed.
+
+Only a recovery window beginning at or before the checkpoint and ending at or after the accepted upgrade produces `mayDeleteCheckpoint: true`. A recent valid window that has not caught up returns `RETAIN_MANUAL_CHECKPOINT`. The caller must keep the checkpoint and recheck; elapsed time alone never permits deletion. The private maintenance receipt and actual deletion/absence checks remain separate evidence.
+
+AWS exposes the earliest and latest restore times through the automated backup's [RestoreWindow](https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_RestoreWindow.html), not an `EarliestRestorableTime` property on the DB instance. The advertised window is provider metadata, not proof that a new point-in-time restore has actually been exercised. The earlier physical-restore rehearsal provides its own recorded evidence; this function does not replace it or authenticate a hostile privileged administrator.
+
+Six focused tests cover accepted coverage, backup lag, exclusion of the earlier checkpoint, identity substitution/duplicates, ambiguous or clone SQL receipts, reduced protection and invalid timelines. Strict typechecking passes. This module does not grant original database upgrade authority or financial activation, and it does not remove the requirement to finish temporary-resource cleanup. External review remains advisory.
