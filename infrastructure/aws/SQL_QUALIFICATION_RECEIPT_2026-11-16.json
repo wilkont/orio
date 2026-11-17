@@ -1,0 +1,129 @@
+{
+  "status": "ATOMIC_UPGRADE_COMMITTED",
+  "baselineFingerprint": "8374196a216470ba79eb63c908ed801d8b0b04ba9a19859ae08919ca58a4f09d",
+  "resultingCatalogFingerprint": "c4d12f3655980558f8e87bc526b2e6ea630ae06cc937b6fba7efce70278c67db",
+  "committedMigrations": [
+    {
+      "file": "003_conversion_entries.sql",
+      "sha256": "61bbb34b02e0346c351b0a2d01540c609d992cc2b649a1063c33a0a6496336bc"
+    },
+    {
+      "file": "004_conversion_route_start.sql",
+      "sha256": "d5c400d713664b016f326e57bf376803f0a28dd689e21cdf576d385f0075733d"
+    },
+    {
+      "file": "005_redemption_claims.sql",
+      "sha256": "5941786a488b5807243e88b5361865112fa2352ea1ac786e04345ffa42263105"
+    },
+    {
+      "file": "006_shared_receipt_claims.sql",
+      "sha256": "cd95cdd2a4db5c862d4e29f0e20a2da98f30a7c58f103a51c3c0910cc9d50743"
+    },
+    {
+      "file": "007_master_receipt_accounting.sql",
+      "sha256": "83842545448eccf58ececc19c42907fa2f2b2528f711aaed89984635c4c425c3"
+    },
+    {
+      "file": "008_gas_controls.sql",
+      "sha256": "20a1fdea41a1e92823b096b4d5d4b60940b1d83012297368ab1486b33528c78f"
+    },
+    {
+      "file": "009_gas_execution_bindings.sql",
+      "sha256": "11cd9afc50e9fe19f2a6689c98afed6c6c211dee5a805ee7e4d0ae25b6b4e68e"
+    },
+    {
+      "file": "010_gas_prepayment_funding.sql",
+      "sha256": "0add8e61ed7749b16fcb3387847600c659df3eb4795f186979b3e2f8d139f999"
+    },
+    {
+      "file": "011_gas_prepayment_refunds.sql",
+      "sha256": "7f9eb3dc1d1f0e7de0d4b30065703a76a39f8c90782e2d751ec3bed5c6968650"
+    },
+    {
+      "file": "012_monetary_execution.sql",
+      "sha256": "c7b11ddd6b4a03fd6c196d3517f9fbab04f217819706ebd8c4b77a12a0ab195a"
+    },
+    {
+      "file": "013_zero_supply_execution.sql",
+      "sha256": "d11e584e5f7922129f79a9e495d30585a112205fc55b26ae576cf0762722f697"
+    },
+    {
+      "file": "014_company_withdrawal_execution.sql",
+      "sha256": "811ddb03ac8b5a7a85d6290621c6d242a7527be67e7cb71f2848137140037ad8"
+    },
+    {
+      "file": "015_reserve_migration_execution.sql",
+      "sha256": "fdc4668c2dcaf24be5004bf09f0a4cacef0a08349c7d7d9a9b6524d3f9bbc875"
+    },
+    {
+      "file": "016_finalized_history.sql",
+      "sha256": "18381d16bd45bcc267d19d85b87921a7b64e181cdb0a81ec27ec1a3a6cacf6a1"
+    },
+    {
+      "file": "017_history_consumers.sql",
+      "sha256": "f5cf66da61a8df269d875c331f4f82a1f6df2e8fd4d28f346a1dc566fa1c354b"
+    },
+    {
+      "file": "018_protected_gas_signing.sql",
+      "sha256": "d4aa748aed937c188b5b6203a59a93c03c5bd87709bf57ffb85b73255d2dc666"
+    },
+    {
+      "file": "019_managed_digest_permissions.sql",
+      "sha256": "1ca8ee33cd8313bc71ce166f3e576cad08d0ee95999eeb9715ef8a0d81171d00"
+    }
+  ],
+  "syntheticProbeRolledBack": true,
+  "existingHistoryVerified": true,
+  "historical001002VersionsInferred": false,
+  "financialActivationPerformed": false,
+  "contextSha256": "9b619d9afd7c9d5bcdd9607b63724f142dc721dcfec0ad3b83ec5b9dc19645f8",
+  "completedAt": "2026-11-17T01:38:28.233Z",
+  "target": "DISPOSABLE_PRIVATE_CLONE",
+  "secretPrintedOrPersisted": false,
+  "sourceCommit": "8eb2dab5471795f0afc9efb3450f749aa5a61a2a",
+  "privateReportSha256": "91e47bdf44367d7fcd90d5720980a35dfd52004a2596796d50d996534e571fe5",
+  "privateArchiveSha256": "fe017ec6cf2bed140685c40333adaa8b443441b4633a745c8b1740650fa5175d",
+  "originalDatabaseModified": false,
+  "externalReview": "ADVISORY",
+  "cleanup": {
+    "status": "SQL_QUALIFICATION_CLEANUP_VERIFIED",
+    "verifiedAt": "2026-11-17T01:48:33.511652+00:00",
+    "account": "720232346199",
+    "region": "us-east-1",
+    "stackArn": "arn:aws:cloudformation:us-east-1:720232346199:stack/orio-spc-3-sql-qualification/1040ac90-e224-11f1-b322-0eb1fe843431",
+    "stackDeleteComplete": true,
+    "cloneAbsent": true,
+    "cloneSecretAbsent": true,
+    "temporarySnapshotAbsent": true,
+    "temporaryGroupsInterfacesEndpointsBucketAbsent": true,
+    "temporaryGatewayRouteAbsent": true,
+    "privateEnvironmentInterfaceAbsent": true,
+    "originalDatabaseAvailablePrivateEncryptedMultiAzProtected": true,
+    "originalBackupRetentionDays": 14,
+    "originalAutomatedSnapshotsPreserved": 6,
+    "originalIngressEmpty": true,
+    "originalSecretIdentityPreserved": true,
+    "originalTlsRequired": true,
+    "financialActivationPerformed": false
+  },
+  "firstAttempt": {
+    "outcome": "BOOTSTRAP_OR_REPORTING_FAILURE",
+    "stage": "CLONE_SECRET",
+    "cause": "PRIVATE_ENDPOINT_CONNECTION_TIMEOUT",
+    "secretRetrieved": false,
+    "sqlTransactionStarted": false,
+    "receiptsRetained": true,
+    "resolvedBy": "Restarted the same approved private CloudShell environment after endpoint readiness"
+  },
+  "cleanupReportSha256": "f5df5a78c64e17edf32765f4067f3bdf60c9798ed7b9818e1704293444fc2654",
+  "originalMaintenancePreparation": {
+    "executed": false,
+    "localTestsPassed": 229,
+    "strictTypecheckingPassed": true,
+    "templateSha256": "4ebb302ea1679b9f721b8a0ce2d68144adaffe73fed2f262667b8731512bc61c",
+    "awsTemplateValidationPassed": true,
+    "credentialFreeLinuxPreparationPassed": true,
+    "verifiedUpgradeCount": 17,
+    "preparedSourceCommit": "52ed00fc72b0bd14b499d2c35c598085a85ea564"
+  }
+}
