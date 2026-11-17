@@ -1,3 +1,5 @@
+> November 17 update: the separately owner-approved five disabled production-purpose keys were created and verified. See [actual key deployment report](PRODUCTION_DISABLED_KEYS_REPORT_2026-11-17.md) and receipt. Earlier pending-creation descriptions below are historical; do not replay creation. Signing and financial operations remain disabled.
+
 > Current-state update: public read-only deployment completed November 17, 2026; concurrency is now one. Earlier private-phase pause or pending-approval descriptions below are historical. See [actual public report](PUBLIC_METADATA_DEPLOYMENT_REPORT_2026-11-17.md). Do not replay completed bootstrap steps.
 
 # AWS deployment for ORIO Ledger A

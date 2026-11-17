@@ -1,3 +1,5 @@
+> November 17 protected-key update: five distinct production-purpose keys now exist, all disabled with signing denied. See ../../infrastructure/aws/PRODUCTION_DISABLED_KEYS_REPORT_2026-11-17.md. Actual signing workloads, reserve arrangements and financial activation remain unfinished.
+
 > November 17 current-state update: hosted SQL 003–019 is installed and verified; private IAM metadata qualification and public read-only HTTPS deployment are complete. Financial operations, production signing and reserve arrangements remain unfinished. See ../../infrastructure/aws/PUBLIC_METADATA_DEPLOYMENT_REPORT_2026-11-17.md. Earlier preparation descriptions below do not override these actual receipts.
 
 # Reserve and treasury activation runbook
