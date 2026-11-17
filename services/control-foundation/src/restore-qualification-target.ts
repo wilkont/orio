@@ -12,7 +12,7 @@ function object(value:unknown):Record<string,unknown>{
  return Object.fromEntries(Object.entries(value));
 }
 export interface QualificationTarget {host:string;secretArn:string;database:'orio_control';username:'orio_ledger_admin'}
-export function qualificationTarget(instance:unknown,snapshot:unknown,securityGroup:unknown):QualificationTarget{
+export function qualificationTarget(instance:unknown,snapshot:unknown,securityGroup:unknown,authorizedMaintenanceGroup?:string):QualificationTarget{
  const d=object(instance),s=object(snapshot),g=object(securityGroup),endpoint=object(d.Endpoint),subnets=object(d.DBSubnetGroup),secret=object(d.MasterUserSecret);
  const prefix=`arn:aws:rds:${region}:${account}:`;
  if(d.DBInstanceIdentifier!==cloneId||d.DBInstanceArn!==prefix+'db:'+cloneId||d.DBInstanceStatus!=='available'||
@@ -25,7 +25,18 @@ export function qualificationTarget(instance:unknown,snapshot:unknown,securityGr
  if(!Array.isArray(parameters)||parameters.length!==1||object(parameters[0]).DBParameterGroupName!=='orio-spc-3-ledger-databaseparameters-tduugdetb77x'||object(parameters[0]).ParameterApplyStatus!=='in-sync'||
   !Array.isArray(groups)||groups.length!==1||object(groups[0]).VpcSecurityGroupId!==g.GroupId||object(groups[0]).Status!=='active'||
   typeof g.GroupId!=='string'||!/^sg-[a-f0-9]{17}$/.test(g.GroupId)||g.GroupId==='sg-030c057c133762083'||g.OwnerId!==account||g.VpcId!=='vpc-05613af21236d6911'||
-  !Array.isArray(g.IpPermissions)||g.IpPermissions.length!==0)throw new Error('Unexpected clone network or parameter state');
+  !Array.isArray(g.IpPermissions))throw new Error('Unexpected clone network or parameter state');
+ if(authorizedMaintenanceGroup===undefined){
+  if(g.IpPermissions.length!==0)throw new Error('Unexpected clone ingress');
+ }else{
+  if(!/^sg-[a-f0-9]{17}$/.test(authorizedMaintenanceGroup)||authorizedMaintenanceGroup===g.GroupId||authorizedMaintenanceGroup==='sg-030c057c133762083'||g.IpPermissions.length!==1)throw new Error('Wrong maintenance group');
+  const rule=object(g.IpPermissions[0]),pairs=rule.UserIdGroupPairs;
+  if(rule.IpProtocol!=='tcp'||rule.FromPort!==5432||rule.ToPort!==5432||
+   ['IpRanges','Ipv6Ranges','PrefixListIds'].some(k=>!Array.isArray(rule[k])||rule[k].length!==0)||!Array.isArray(pairs)||pairs.length!==1)throw new Error('Unexpected maintenance ingress');
+  const pair=object(pairs[0]);
+  if(pair.GroupId!==authorizedMaintenanceGroup||pair.UserId!==account||pair.VpcPeeringConnectionId!==undefined||
+   (pair.VpcId!==undefined&&pair.VpcId!=='vpc-05613af21236d6911'))throw new Error('Wrong maintenance ingress source');
+ }
  if(s.DBSnapshotIdentifier!==snapshotId||s.DBSnapshotArn!==prefix+'snapshot:'+snapshotId||s.DBInstanceIdentifier!=='orio-spc-3-ledger-ledgerdatabase-sdrgecp35snc'||
   s.Status!=='available'||s.SnapshotType!=='manual'||s.Encrypted!==true||s.AllocatedStorage!==20||s.Engine!=='postgres'||s.EngineVersion!=='17.9'||s.VpcId!=='vpc-05613af21236d6911')throw new Error('Wrong source checkpoint');
  if(secret.SecretStatus!=='active'||typeof secret.SecretArn!=='string'||secret.SecretArn===originalSecret||

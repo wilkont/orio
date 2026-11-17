@@ -1,0 +1,448 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Private disposable ORIO SQL upgrade rehearsal; original database inaccessible",
+  "Conditions": {
+    "Target": {
+      "Fn::And": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::AccountId"
+            },
+            "720232346199"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::Region"
+            },
+            "us-east-1"
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "CloneSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Condition": "Target",
+      "Properties": {
+        "GroupDescription": "Disposable ORIO restore with no client ingress",
+        "VpcId": "vpc-05613af21236d6911",
+        "SecurityGroupIngress": [],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 1,
+            "ToPort": 1,
+            "CidrIp": "127.0.0.1/32"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "ORIO-SPC-3"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "disposable-restore-qualification"
+          }
+        ]
+      }
+    },
+    "QualificationClone": {
+      "Type": "AWS::RDS::DBInstance",
+      "Condition": "Target",
+      "DeletionPolicy": "Delete",
+      "UpdateReplacePolicy": "Delete",
+      "Properties": {
+        "DBInstanceIdentifier": "orio-spc-3-restore-qualification-20261116",
+        "DBSnapshotIdentifier": "orio-spc-3-restore-checkpoint-20261116",
+        "DBInstanceClass": "db.t4g.medium",
+        "DBSubnetGroupName": "orio-spc-3-ledger-databasesubnets-sydsyf5mdayu",
+        "DBParameterGroupName": "orio-spc-3-ledger-databaseparameters-tduugdetb77x",
+        "VPCSecurityGroups": [
+          {
+            "Fn::GetAtt": [
+              "CloneSecurityGroup",
+              "GroupId"
+            ]
+          }
+        ],
+        "PubliclyAccessible": false,
+        "MultiAZ": false,
+        "BackupRetentionPeriod": 0,
+        "AutoMinorVersionUpgrade": false,
+        "DeletionProtection": false,
+        "ManageMasterUserPassword": true,
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "ORIO-SPC-3"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "disposable-restore-qualification"
+          }
+        ]
+      }
+    },
+    "AuditSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Condition": "Target",
+      "Properties": {
+        "GroupDescription": "Private temporary ORIO clone SQL qualification only",
+        "VpcId": "vpc-05613af21236d6911",
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 5432,
+            "ToPort": 5432,
+            "DestinationSecurityGroupId": {
+              "Fn::GetAtt": [
+                "CloneSecurityGroup",
+                "GroupId"
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "ORIO-SPC-3"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "temporary-sql-qualification"
+          }
+        ]
+      }
+    },
+    "EndpointSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Condition": "Target",
+      "Properties": {
+        "GroupDescription": "Temporary ORIO audit Secrets Manager endpoint",
+        "VpcId": "vpc-05613af21236d6911",
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 1,
+            "ToPort": 1,
+            "CidrIp": "127.0.0.1/32"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "ORIO-SPC-3"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "temporary-sql-qualification"
+          }
+        ]
+      }
+    },
+    "EndpointIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "Target",
+      "Properties": {
+        "GroupId": {
+          "Ref": "EndpointSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "SourceSecurityGroupId": {
+          "Ref": "AuditSecurityGroup"
+        }
+      }
+    },
+    "AuditEndpointEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Condition": "Target",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AuditSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "DestinationSecurityGroupId": {
+          "Ref": "EndpointSecurityGroup"
+        }
+      }
+    },
+    "DatabaseIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "Target",
+      "Properties": {
+        "GroupId": {
+          "Fn::GetAtt": [
+            "CloneSecurityGroup",
+            "GroupId"
+          ]
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432,
+        "SourceSecurityGroupId": {
+          "Ref": "AuditSecurityGroup"
+        }
+      }
+    },
+    "SecretsEndpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Condition": "Target",
+      "Properties": {
+        "VpcId": "vpc-05613af21236d6911",
+        "VpcEndpointType": "Interface",
+        "ServiceName": "com.amazonaws.us-east-1.secretsmanager",
+        "PrivateDnsEnabled": true,
+        "SubnetIds": [
+          "subnet-074b44d8936032ab9"
+        ],
+        "SecurityGroupIds": [
+          {
+            "Ref": "EndpointSecurityGroup"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret"
+              ],
+              "Resource": {
+                "Fn::GetAtt": [
+                  "QualificationClone",
+                  "MasterUserSecret.SecretArn"
+                ]
+              },
+              "Condition": {
+                "ArnEquals": {
+                  "aws:PrincipalArn": "arn:aws:iam::720232346199:root"
+                }
+              }
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "ORIO-SPC-3"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "temporary-sql-qualification"
+          }
+        ]
+      }
+    },
+    "AuditS3Egress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Condition": "Target",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AuditSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "DestinationPrefixListId": "pl-63a5400a"
+      }
+    },
+    "AuditBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Condition": "Target",
+      "Properties": {
+        "BucketName": "orio-sql-qualification-720232346199-20261116",
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+        "OwnershipControls": {
+          "Rules": [
+            {
+              "ObjectOwnership": "BucketOwnerEnforced"
+            }
+          ]
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "ORIO-SPC-3"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "temporary-sql-qualification"
+          }
+        ]
+      }
+    },
+    "AuditBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Condition": "Target",
+      "Properties": {
+        "Bucket": {
+          "Ref": "AuditBucket"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "TLSOnly",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                "arn:aws:s3:::orio-sql-qualification-720232346199-20261116",
+                "arn:aws:s3:::orio-sql-qualification-720232346199-20261116/*"
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            },
+            {
+              "Sid": "ExistingOwnerSessionOnly",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                "arn:aws:s3:::orio-sql-qualification-720232346199-20261116",
+                "arn:aws:s3:::orio-sql-qualification-720232346199-20261116/*"
+              ],
+              "Condition": {
+                "ArnNotEquals": {
+                  "aws:PrincipalArn": "arn:aws:iam::720232346199:root"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "AuditS3Endpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Condition": "Target",
+      "Properties": {
+        "VpcId": "vpc-05613af21236d6911",
+        "VpcEndpointType": "Gateway",
+        "ServiceName": "com.amazonaws.us-east-1.s3",
+        "RouteTableIds": [
+          "rtb-0f98faf9d3a62865e"
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": "s3:GetObject",
+              "Resource": "arn:aws:s3:::orio-sql-qualification-720232346199-20261116/inputs/qualification-inputs.tar",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:PrincipalArn": "arn:aws:iam::720232346199:root"
+                }
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": "s3:PutObject",
+              "Resource": [
+                "arn:aws:s3:::orio-sql-qualification-720232346199-20261116/reports/qualification.json",
+                "arn:aws:s3:::orio-sql-qualification-720232346199-20261116/reports/execution.jsonl"
+              ],
+              "Condition": {
+                "ArnEquals": {
+                  "aws:PrincipalArn": "arn:aws:iam::720232346199:root"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "CloneIdentifier": {
+      "Condition": "Target",
+      "Value": {
+        "Ref": "QualificationClone"
+      }
+    },
+    "CloneEndpoint": {
+      "Condition": "Target",
+      "Value": {
+        "Fn::GetAtt": [
+          "QualificationClone",
+          "Endpoint.Address"
+        ]
+      }
+    },
+    "CloneSecurityGroup": {
+      "Condition": "Target",
+      "Value": {
+        "Fn::GetAtt": [
+          "CloneSecurityGroup",
+          "GroupId"
+        ]
+      }
+    },
+    "AuditSecurityGroup": {
+      "Condition": "Target",
+      "Value": {
+        "Ref": "AuditSecurityGroup"
+      }
+    },
+    "EndpointId": {
+      "Condition": "Target",
+      "Value": {
+        "Ref": "SecretsEndpoint"
+      }
+    },
+    "SubnetId": {
+      "Condition": "Target",
+      "Value": "subnet-074b44d8936032ab9"
+    },
+    "VpcId": {
+      "Condition": "Target",
+      "Value": "vpc-05613af21236d6911"
+    },
+    "AuditBucket": {
+      "Condition": "Target",
+      "Value": {
+        "Ref": "AuditBucket"
+      }
+    },
+    "CloneSecretArn": {
+      "Condition": "Target",
+      "Value": {
+        "Fn::GetAtt": [
+          "QualificationClone",
+          "MasterUserSecret.SecretArn"
+        ]
+      }
+    }
+  }
+}

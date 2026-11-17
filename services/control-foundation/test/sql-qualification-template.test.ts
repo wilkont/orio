@@ -1,0 +1,24 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {qualificationTemplateSha256} from '../src/qualification-session.ts';
+test('qualification infrastructure has only clone access, exact private artifact keys and no original database grant',async()=>{
+ const source=(await readFile(new URL('../../../infrastructure/aws/sql-qualification.json',import.meta.url),'utf8')).replaceAll('\r\n','\n');
+ assert.equal(createHash('sha256').update(source).digest('hex'),qualificationTemplateSha256);
+ const template=JSON.parse(source),r=template.Resources;
+ assert.equal(Object.keys(r).length,12);assert.equal(source.includes('sg-030c057c133762083'),false);assert.equal(source.includes('rds!db-1bf19966'),false);
+ assert.equal(source.includes('0.0.0.0/0'),false);assert.equal(source.includes('AWS::IAM::'),false);
+ assert.deepEqual(r.DatabaseIngress.Properties.GroupId,{'Fn::GetAtt':['CloneSecurityGroup','GroupId']});
+ assert.deepEqual(r.DatabaseIngress.Properties.SourceSecurityGroupId,{Ref:'AuditSecurityGroup'});
+ assert.equal(r.DatabaseIngress.Properties.FromPort,5432);assert.equal(r.DatabaseIngress.Properties.ToPort,5432);
+ assert.deepEqual(r.SecretsEndpoint.Properties.PolicyDocument.Statement[0].Resource,{'Fn::GetAtt':['QualificationClone','MasterUserSecret.SecretArn']});
+ assert.equal(r.QualificationClone.Properties.PubliclyAccessible,false);assert.equal(r.QualificationClone.DeletionPolicy,'Delete');
+ assert.equal(r.QualificationClone.Properties.DBSnapshotIdentifier,'orio-spc-3-restore-checkpoint-20261116');
+ const routes=r.AuditS3Endpoint.Properties.PolicyDocument.Statement;
+ assert.equal(routes.length,2);assert.equal(routes[0].Action,'s3:GetObject');assert.equal(routes[1].Action,'s3:PutObject');
+ assert.equal(routes[0].Resource,'arn:aws:s3:::orio-sql-qualification-720232346199-20261116/inputs/qualification-inputs.tar');
+ assert.deepEqual(routes[1].Resource,['arn:aws:s3:::orio-sql-qualification-720232346199-20261116/reports/qualification.json','arn:aws:s3:::orio-sql-qualification-720232346199-20261116/reports/execution.jsonl']);
+ for(const statement of routes)assert.equal(statement.Condition.ArnEquals['aws:PrincipalArn'],'arn:aws:iam::720232346199:root');
+ assert.deepEqual(r.AuditBucket.Properties.PublicAccessBlockConfiguration,{BlockPublicAcls:true,BlockPublicPolicy:true,IgnorePublicAcls:true,RestrictPublicBuckets:true});
+});

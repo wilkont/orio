@@ -26,3 +26,13 @@ test('source substitution and unexpected access are rejected before any connecti
  assert.throws(()=>qualificationTarget(instance,snapshot,{...group,OwnerId:'710096437887'}));
  for(const bad of [null,[],{},'unexpected'])assert.throws(()=>qualificationTarget(bad,snapshot,group));
 });
+test('separately authorized maintenance admits only the exact same-account group on PostgreSQL',()=>{
+ const maintenance='sg-0123456789abcdef1';
+ const rule={IpProtocol:'tcp',FromPort:5432,ToPort:5432,IpRanges:[],Ipv6Ranges:[],PrefixListIds:[],UserIdGroupPairs:[{GroupId:maintenance,UserId:'720232346199'}]};
+ const accessible={...group,IpPermissions:[rule]};
+ assert.equal(qualificationTarget(instance,snapshot,accessible,maintenance).host,instance.Endpoint.Address);
+ assert.throws(()=>qualificationTarget(instance,snapshot,accessible));
+ for(const change of [{FromPort:0},{ToPort:65535},{IpRanges:[{CidrIp:'0.0.0.0/0'}]},{UserIdGroupPairs:[{GroupId:maintenance,UserId:'710096437887'}]},{UserIdGroupPairs:[{GroupId:'sg-030c057c133762083',UserId:'720232346199'}]}]){
+  assert.throws(()=>qualificationTarget(instance,snapshot,{...group,IpPermissions:[{...rule,...change}]},maintenance));
+ }
+});
