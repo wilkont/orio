@@ -2,6 +2,11 @@ import type { ChainReader } from './finalized-transfer.ts';
 
 type Method = Parameters<ChainReader['request']>[0];
 type BundlerMethod = 'eth_chainId' | 'eth_supportedEntryPoints';
+type ReserveMethod='eth_chainId'|'eth_getBlockByNumber'|'eth_getCode'|'eth_call';
+export interface ReserveReader {
+ readonly sourceId:string;
+ request(method:ReserveMethod,params:unknown[]):Promise<unknown>;
+}
 export interface BundlerReader {
   readonly sourceId: string;
   request(method: BundlerMethod, params: unknown[]): Promise<unknown>;
@@ -42,7 +47,7 @@ class ReadOnlyHttpsRpc {
     this.fetch = fetchImplementation;
   }
 
-  async request(method: Method | BundlerMethod, params: unknown[]): Promise<unknown> {
+  async request(method: Method | BundlerMethod | ReserveMethod, params: unknown[]): Promise<unknown> {
     if (!Array.isArray(params)) throw new Error('Invalid read-only RPC parameters');
     const chainId = method === 'eth_chainId' && params.length === 0;
     const receipt = method === 'eth_getTransactionReceipt' && params.length === 1 &&
@@ -50,7 +55,18 @@ class ReadOnlyHttpsRpc {
     const block = method === 'eth_getBlockByNumber' && params.length === 2 && params[1] === false &&
       typeof params[0] === 'string' && (params[0] === 'finalized' || /^0x(?:0|[1-9a-f][0-9a-f]*)$/.test(params[0]));
     const supported = method === 'eth_supportedEntryPoints' && params.length === 0;
-    if (!chainId && !receipt && !block && !supported) throw new Error('Unsupported read-only chain RPC request');
+    const pinned=(value:unknown)=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&
+      Object.keys(value).sort().join(',')==='blockHash,requireCanonical'&&
+      (value as Record<string,unknown>).requireCanonical===true&&
+      typeof (value as Record<string,unknown>).blockHash==='string'&&
+      /^0x[0-9a-f]{64}(?![\s\S])/.test((value as Record<string,unknown>).blockHash as string);
+    const target=(value:unknown)=>typeof value==='string'&&/^0x[0-9a-f]{40}(?![\s\S])/.test(value);
+    const code=method==='eth_getCode'&&params.length===2&&target(params[0])&&pinned(params[1]);
+    const call=method==='eth_call'&&params.length===2&&params[0]!==null&&typeof params[0]==='object'&&!Array.isArray(params[0])&&
+      Object.keys(params[0]).sort().join(',')==='data,to'&&target((params[0] as Record<string,unknown>).to)&&
+      typeof (params[0] as Record<string,unknown>).data==='string'&&
+      /^0x[0-9a-f]{8}(?:[0-9a-f]{64}){0,4}(?![\s\S])/.test((params[0] as Record<string,unknown>).data as string)&&pinned(params[1]);
+    if (!chainId && !receipt && !block && !supported && !code && !call) throw new Error('Unsupported read-only chain RPC request');
     try {
       const response = await this.fetch(this.endpoint, {
         method: 'POST', headers: this.headers, redirect: 'error',
@@ -86,6 +102,21 @@ class ReadOnlyHttpsRpc {
       throw new Error('Chain RPC request failed');
     }
   }
+}
+
+/** Reserve observations accept canonical block-hash-pinned reads only. No latest
+ * eth_call, state override, caller-selected from/value or transaction submission.
+ * Existing chain/bundler readers keep their narrower public method allowlists. */
+export class HttpsReserveReader implements ReserveReader {
+ readonly sourceId:string;
+ private readonly transport:ReadOnlyHttpsRpc;
+ constructor(configuration:ChainRpcConfiguration,fetchImplementation:typeof fetch=fetch){
+  this.transport=new ReadOnlyHttpsRpc(configuration,fetchImplementation);this.sourceId=this.transport.sourceId;
+ }
+ async request(method:ReserveMethod,params:unknown[]):Promise<unknown>{
+  if(!['eth_chainId','eth_getBlockByNumber','eth_getCode','eth_call'].includes(method))throw Error('Unsupported read-only reserve RPC request');
+  return this.transport.request(method,params);
+ }
 }
 
 /** Settlement reader deliberately excludes bundler and broadcast methods. */
