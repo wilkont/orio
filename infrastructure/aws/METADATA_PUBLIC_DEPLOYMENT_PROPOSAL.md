@@ -1,3 +1,5 @@
+> Current-state update: public read-only deployment completed November 17, 2026; concurrency is now one. Earlier private-phase pause or pending-approval descriptions below are historical. See [actual public report](PUBLIC_METADATA_DEPLOYMENT_REPORT_2026-11-17.md). Do not replay completed bootstrap steps.
+
 # Next proposal: public protocol metadata only
 
 Prepared locally; no public endpoint has been created or authorized by the private deployment approval. Target AWS account 720232346199, us-east-1. The existing private service exposes only fixed protocol metadata and cannot execute financial operations.

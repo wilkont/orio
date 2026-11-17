@@ -1,3 +1,8 @@
+
+## Current state — November 17, public metadata deployed
+
+The original SQL upgrades 003–019 and private IAM reader qualification are complete. The public read-only metadata service is now live at https://0yer5gvdw3.execute-api.us-east-1.amazonaws.com with all eight external HTTPS checks passing and concurrency one. See [actual deployment report](infrastructure/aws/PUBLIC_METADATA_DEPLOYMENT_REPORT_2026-11-17.md). Temporary public working copies were removed after verified local retention. Financial operations remain disabled. The next prepared step is five disabled production-purpose keys; creation and its separate recurring budget are not yet approved. External review remains advisory. Earlier dated entries are historical.
+
 # ORIO SPC 3 context
 
 ## Current hosted SQL upgrade preparation
