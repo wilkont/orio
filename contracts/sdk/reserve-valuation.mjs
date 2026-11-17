@@ -30,9 +30,9 @@ export function prepareReserveValuation(inputPolicy,inputEvidence,nowSeconds){
  for(const k of ['controller','vault','currency','registry','master','gasTreasury','valuationSigner'])p[k]=address(p[k]);
  if(new Set(['controller','vault','currency','registry','master','gasTreasury','valuationSigner'].map(k=>p[k])).size!==7)throw Error('Reserve and gas authority must be separate');
  if(!Number.isInteger(p.masterDecimals)||p.masterDecimals<0||p.masterDecimals>18)throw Error('Invalid master precision');
- const age=uint(p.maximumAgeSeconds,48),life=uint(p.maximumValiditySeconds,48),deviation=uint(p.maximumPriceDeviationPpm);
+ const age=uint(p.maximumAgeSeconds,48),checkpointAge=uint(p.maximumCheckpointAgeSeconds,48),life=uint(p.maximumValiditySeconds,48),deviation=uint(p.maximumPriceDeviationPpm);
  const lower=uint(p.issuanceMinimumUsd36),upper=uint(p.issuanceMaximumUsd36);
- if(age===0n||age>300n||life===0n||life>300n||deviation>1000000n||lower===0n||upper<lower)throw Error('Invalid explicit reserve risk policy');
+ if(age===0n||age>300n||checkpointAge<age||checkpointAge>3600n||life===0n||life>300n||deviation>1000000n||lower===0n||upper<lower)throw Error('Invalid explicit reserve risk policy');
  if(!Array.isArray(e.observations)||e.observations.length!==2||!Array.isArray(e.prices)||e.prices.length!==2)throw Error('Two configured observations and prices are required');
  for(const rows of [e.observations,e.prices]){
   if(rows.some(x=>typeof x.sourceId!=='string'||x.sourceId!==x.sourceId.trim()||!/^[a-zA-Z0-9:_-]{1,128}$/.test(x.sourceId))||new Set(rows.map(x=>x.sourceId)).size!==2)throw Error('Distinct reserve sources are required');
@@ -44,8 +44,8 @@ export function prepareReserveValuation(inputPolicy,inputEvidence,nowSeconds){
  const s=e.observations[0];
  for(const o of e.observations){
   if(o.chainId!==p.chainId||o.finalized!==true||o.masterDecimals!==p.masterDecimals||(!states.includes(o.phase)||!['ACTIVE_MASTER','DEPOSIT_PAUSED'].includes(o.masterState)))throw Error('Unqualified reserve snapshot');
-  digest(o.blockHash);uint(o.blockNumber);const at=uint(o.blockTimestamp,48);
-  if(at>now||now-at>age)throw Error('Stale reserve snapshot');
+  digest(o.blockHash);uint(o.blockNumber);const at=uint(o.blockTimestamp,48),observed=uint(o.observedAt,48);
+  if(at>observed||observed>now||now-observed>age||now-at>checkpointAge)throw Error('Stale reserve snapshot');
   for(const k of ['controller','vault','currency','registry','master','gasTreasury','valuationSigner'])if(address(o[k])!==p[k])throw Error('Reserve deployment mismatch');
   for(const k of ['controllerRevision','registryEpoch','registryRevision'])if(uint(o[k],k==='controllerRevision'?64:256)!==uint(p[k],k==='controllerRevision'?64:256))throw Error('Reserve revision mismatch');
   for(const k of amounts)uint(o[k]);
@@ -73,8 +73,8 @@ export function prepareReserveValuation(inputPolicy,inputEvidence,nowSeconds){
  if(minimum*10n**BigInt(18-p.masterDecimals)>=1n<<256n||liabilities>=1n<<256n||backing*minimum*10n**BigInt(18-p.masterDecimals)>=1n<<256n)throw Error('Reserve arithmetic exceeds contract precision');
  if(backing*minimum*10n**BigInt(18-p.masterDecimals)<liabilities)throw Error('Reserve value cannot support liabilities');
  if(s.phase==='GENESIS'&&(uint(s.supplyAtoms)!==0n||backing!==0n))throw Error('Original genesis must be empty');
- const oldest=[uint(s.blockTimestamp,48),...e.prices.map(x=>uint(x.observedAt,48))].reduce((a,b)=>a<b?a:b);
- const until=now+life<oldest+age?now+life:oldest+age;
+ const oldest=[uint(s.observedAt,48),...e.prices.map(x=>uint(x.observedAt,48))].reduce((a,b)=>a<b?a:b);
+ const until=[now+life,oldest+age,uint(s.blockTimestamp,48)+checkpointAge].reduce((a,b)=>a<b?a:b);
  if(until<=now)throw Error('Reserve evidence expires before signing');
  const domain={name:'ORIO Monetary Controller',version:'1',chainId:p.chainId,verifyingContract:p.controller};
  const value={asset:p.master,usd36PerToken:minimum.toString(),registryEpoch:p.registryEpoch,registryRevision:p.registryRevision,

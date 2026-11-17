@@ -19,8 +19,10 @@ const masterStates=['CANDIDATE','APPROVED','ACTIVE_MASTER','MIGRATING','RETIRED'
  * Matching providers are evidence agreement, not proof of oracle independence.
  * This reads only: no financial, custody, signing or release authority is created.
  */
-export async function observeReserve(first,second,inputPolicy){
+export async function observeReserve(first,second,inputPolicy,clock=()=>Math.floor(Date.now()/1000).toString()){
  const p=structuredClone(inputPolicy);
+ const observedAt=clock();
+ if(typeof observedAt!=='string'||!/^(0|[1-9][0-9]{0,14})(?![\s\S])/.test(observedAt))throw Error('Invalid reserve observation clock');
  if(p.mode!=='qualification'||p.chainId!=='84532'||first.sourceId===second.sourceId||
   JSON.stringify([first.sourceId,second.sourceId].sort())!==JSON.stringify([...p.chainSources].sort()))throw Error('Unconfigured reserve observers');
  for(const k of ['controller','vault','currency','registry','master','gasTreasury','valuationSigner'])p[k]=getAddress(p[k]);
@@ -51,7 +53,7 @@ export async function observeReserve(first,second,inputPolicy){
   const selected=await single(p.registry,'currentMaster'),asset=await call(p.registry,'assets',[selected]);
   const decimals=Number(await single(p.master,'decimals'));
   if(getAddress(asset[0])!==p.master||Number(asset[1])!==decimals||decimals!==p.masterDecimals)throw Error('Elected reserve asset mismatch');
-  const out={sourceId:r.sourceId,chainId:p.chainId,blockNumber:height.toString(),blockHash:block.hash,
+  const out={sourceId:r.sourceId,chainId:p.chainId,blockNumber:height.toString(),blockHash:block.hash,observedAt,
    blockTimestamp:qty(block.timestamp).toString(),finalized:true,codeHashes,masterDecimals:decimals,
    masterState:masterStates[Number(asset[2])]};
   for(const k of ['controller','vault','currency','registry','master','gasTreasury','valuationSigner'])out[k]=p[k];

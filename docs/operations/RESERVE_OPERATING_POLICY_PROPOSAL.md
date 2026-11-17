@@ -19,11 +19,14 @@ The initial production master candidate is Circle-issued native USDC on Base, ch
 | Purchase issuance price band | $0.995 through $1.005 per USDC, inclusive |
 | Maximum disagreement between two approved price sources | 20,000 parts per million (2%), measured against the lower price |
 | Valuation used for backing checks | Lower of the two acceptable observed prices |
-| Maximum age of each chain/price observation | 300 seconds |
+| Maximum age of the provider observation and each price observation | 300 seconds |
+| Maximum age of the finalized checkpoint itself | 3,600 seconds; never substitute an unsafe/latest checkpoint |
 | Maximum signed valuation lifetime | 120 seconds, shortened to the earliest evidence expiry |
 | Backing deficiency or physical custody shortfall | Refuse the valuation and contain affected monetary execution |
 | Price outside issuance band | Block new issuance; no invented dollar peg or hidden loss |
 | Missing/unavailable evidence | Reject; never interpret missing data as zero |
+
+A read-only Base Sepolia diagnostic observed a finalized-checkpoint lag of 1,471 seconds. Observation acquisition time and finalized block time are distinct; the proposal therefore keeps fresh reads/prices within 300 seconds while bounding finalized checkpoint age separately. Quote expiry is shortened by either limit. This does not treat finalized state as current unfinalized state.
 
 These values are inputs in local qualification only, not activated production defaults. A less permissive time window can be used operationally. Changing the above economic/risk limits requires a new accountable policy revision. The one-percent conversion fee, ordinary 20/80 allocation and the approved genesis/full-redemption exceptions remain unchanged.
 
@@ -39,4 +42,4 @@ The company must approve customer redemption rights, reserve legal ownership and
 
 No reserve has been funded or financial service activated by approving internal policy parameters. Account opening, contract acceptance and actual funding must be completed through the applicable owner-controlled financial interface.
 
-Sources checked November 17, 2026: [Circle USDC contract addresses](https://developers.circle.com/stablecoins/usdc-contract-addresses), [Base network documentation](https://docs.base.org/get-started/connect-to-base). Public Base RPC is best-effort diagnostic access, not the production provider arrangement.
+Sources checked November 17, 2026: [Circle USDC contract addresses](https://developers.circle.com/stablecoins/usdc-contract-addresses), [Base network documentation](https://docs.base.org/get-started/connect-to-base), [Base finality derivation](https://docs.base.org/base-chain/specs/protocol/consensus/derivation). Public Base RPC is best-effort diagnostic access, not the production provider arrangement.

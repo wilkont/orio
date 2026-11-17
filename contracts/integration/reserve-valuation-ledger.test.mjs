@@ -47,7 +47,7 @@ test('committed reserve evidence -> one KMS valuation -> real controller/vault p
    const result=await f.vm.evm.runCall({to:createAddressFromString(params[0].to),data:Buffer.from(params[0].data.slice(2),'hex'),isStatic:true,skipNonceIncrement:true});
    assert.equal(result.execResult.exceptionError,undefined);return bytesToHex(result.execResult.returnValue);
   }});
-  evidence.observations=await observeReserve(reserveReader('chain-a'),reserveReader('chain-b'),policy);
+  evidence.observations=await observeReserve(reserveReader('chain-a'),reserveReader('chain-b'),policy,()=>now);
   const material=prepareReserveValuation(policy,evidence,now),journal=new ValuationSigningJournal(pool);
   await pool.query('INSERT INTO orio_signing.authorities VALUES($1,$2,$3,$4)',['valuation-v1',fixtureKeyArn,f.valuer.address,material.policyDigest]);
   for(const id of ['purchase-valuation','stale','revoked'])await journal.stage(id,'valuation-v1',material);

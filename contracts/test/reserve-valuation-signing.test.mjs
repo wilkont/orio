@@ -40,6 +40,16 @@ test('depegged genesis restricts issuance; reserve or custody shortfalls never g
  f.evidence.observations.forEach(o=>o.physicalMasterUnits='999999999');assert.throws(f.prepare,/custody shortfall/);
 });
 
+test('fresh observations can attest older finalized checkpoints without extending stale price or checkpoint limits',()=>{
+ const f=reserveFixture();f.evidence.observations.forEach(o=>o.blockTimestamp=String(BigInt(f.now)-1471n));
+ assert.equal(f.prepare().value.validUntil,String(BigInt(f.now)+120n));
+ f.evidence.observations.forEach(o=>o.observedAt=String(BigInt(f.now)-301n));assert.throws(f.prepare,/Stale/);
+ f.evidence.observations.forEach(o=>{o.observedAt=f.now;o.blockTimestamp=String(BigInt(f.now)-3601n);});assert.throws(f.prepare,/Stale/);
+ f.evidence.observations.forEach(o=>o.blockTimestamp=String(BigInt(f.now)-3590n));
+ assert.equal(f.prepare().value.validUntil,String(BigInt(f.now)+10n));
+ f.evidence.prices.forEach(p=>p.observedAt=String(BigInt(f.now)-301n));assert.throws(f.prepare,/Stale/);
+});
+
 function staged(f){
  const m=f.prepare();let claimed=false,complete=false;
  return {material:m,get claimed(){return claimed;},get completed(){return complete;},
