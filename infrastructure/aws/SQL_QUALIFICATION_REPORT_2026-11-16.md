@@ -1,6 +1,6 @@
 # Hosted SQL upgrade rehearsal
 
-The owner-approved private rehearsal committed migrations 003â€“019 on an encrypted disposable restore of ORIO's PostgreSQL 17.9 ledger in AWS account 720232346199, us-east-1. Completion was acknowledged at 2026-11-17T01:38:28.233Z (November 16 local time). **The original database was not upgraded and financial operations were not activated.**
+The owner-approved private rehearsal committed migrations 003-019 on an encrypted disposable restore of ORIO's PostgreSQL 17.9 ledger in AWS account 720232346199, us-east-1. Completion was acknowledged at 2026-11-17T01:38:28.233Z (November 16 local time). **The original database was not upgraded and financial operations were not activated.**
 
 ## Actual result
 
