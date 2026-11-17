@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import type { Server } from 'node:http';
 import type { Pool } from 'pg';
 import { publicMonetaryPolicy } from './monetary-policy.ts';
+import { assertProtocolReaderIdentity } from './protocol-reader-identity.ts';
 
 export interface MasterStatus {
   electionId: string | null;
@@ -14,23 +15,34 @@ export class ProtocolReader {
   constructor(pool: Pool) { this.pool = pool; }
 
   async master(): Promise<MasterStatus> {
-    const result = await this.pool.query<{
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
+      await client.query('SET LOCAL search_path=pg_catalog');
+      await assertProtocolReaderIdentity(client);
+      const result = await client.query<{
       election_id: string | null; state: MasterStatus['state']; asset_id: string | null;
       chain_id: string | null; token_address: string | null; decimals: number | null; issuer: string | null;
     }>(`SELECT c.election_id,c.state,a.asset_id,a.chain_id::text,a.token_address,a.decimals,a.issuer
       FROM orio_master.current_election c
       LEFT JOIN orio_master.elections e USING (election_id)
       LEFT JOIN orio_master.assets a USING (asset_id) WHERE c.singleton`);
-    const row = result.rows[0];
-    if (!row || result.rowCount !== 1) throw new Error('Missing singleton master registry');
-    return {
-      electionId: row.election_id,
-      state: row.state,
-      asset: row.asset_id === null ? null : {
-        assetId: row.asset_id, chainId: row.chain_id!, tokenAddress: row.token_address!,
-        decimals: row.decimals!, issuer: row.issuer!,
-      },
-    };
+      const row = result.rows[0];
+      if (!row || result.rowCount !== 1) throw new Error('Missing singleton master registry');
+      const status: MasterStatus = {
+        electionId: row.election_id,
+        state: row.state,
+        asset: row.asset_id === null ? null : {
+          assetId: row.asset_id, chainId: row.chain_id!, tokenAddress: row.token_address!,
+          decimals: row.decimals!, issuer: row.issuer!,
+        },
+      };
+      await client.query('COMMIT');
+      return status;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally { client.release(); }
   }
 }
 
