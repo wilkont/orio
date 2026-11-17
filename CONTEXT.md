@@ -1,3 +1,9 @@
+## Current continuation — paused testnet monetary setup ready for approval
+
+PR #30 merged as ded4ecb1553234b77effe7bd42fbf7d5330d991c with passing CI: reserve-backed valuation signing is locally integrated. Five production-purpose keys remain disabled. The corrected proposed risk limits distinguish fresh observations/prices (300 seconds) from finalized checkpoint age (3,600 seconds); the latest risk-limit question supersedes the earlier combined-age question and remains unanswered.
+
+The next fixed ten-transaction Base Sepolia setup is prepared and EVM-tested. It schedules/executes registration, approval, election, existing registry/controller/vault bindings and qualification signer configuration with executionEnabled=false. The exact nonce-6–15 manifest, bounded executor, private fixed-digest Lambda template and native AWS preview are in infrastructure/aws/TESTNET_MONETARY_SETUP_PROPOSAL.md. The AWS change set is unexecuted; qualifier key is disabled/function paused. Two direct changes and two unchanged-policy reference refreshes require no resource replacement. Up to $0.25 AWS and 0.0015 test-ETH planning ceiling await separate action-time approval. No signing, broadcast, hosted SQL change, website change or financial activation occurred. Preview working files were removed after private evidence verification.
+
 ## Current continuation — reserve-backed valuation signing integration
 
 New local qualification connects dual canonical block observations, exact reserve/price checks, immutable owner-authorized signing intents, one KMS-protocol valuation, actual controller/vault purchase and finalized ledger import. Concurrent replay, revoked authority and changed committed state reject. SQL extension 020 is pending, outside the deployed 001–019 migration manifest; no hosted changes or signing permissions were applied. See docs/operations/RESERVE_VALUATION_SIGNING.md and RESERVE_OPERATING_POLICY_PROPOSAL.md.

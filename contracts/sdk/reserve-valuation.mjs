@@ -1,4 +1,5 @@
 import {getAddress,keccak256,toUtf8Bytes,TypedDataEncoder} from 'ethers';
+import {monetaryPolicyId} from '../../services/control-foundation/src/monetary-engine.ts';
 
 export const valuationTypes=Object.freeze({Valuation:Object.freeze([
  ['asset','address'],['usd36PerToken','uint256'],['registryEpoch','uint256'],['registryRevision','uint256'],
@@ -56,7 +57,7 @@ export function prepareReserveValuation(inputPolicy,inputEvidence,nowSeconds){
  }
  if(typeof e.deploymentId!=='string'||e.deploymentId!==e.deploymentId.trim()||!/^[a-z][a-z0-9_-]{0,63}$/.test(e.deploymentId)||!e.ledgerState)throw Error('Missing committed reserve ledger');
  const l=e.ledgerState;
- if(l.supplyAtoms!==s.supplyAtoms||l.reserveMasterUnits!==s.reserveMasterUnits||l.phase!==s.phase||
+ if(l.policyId!==monetaryPolicyId||l.supplyAtoms!==s.supplyAtoms||l.reserveMasterUnits!==s.reserveMasterUnits||l.phase!==s.phase||
    l.priceUsd36?.numerator!==s.referencePriceUsd36||l.priceUsd36?.denominator!=='1'||
    l.cycle!==s.cycle||l.masterDecimals!==p.masterDecimals||l.masterAssetId!==`erc20:${p.chainId}:${p.master.toLowerCase()}`||
    l.electionId!==`onchain-epoch:${p.registryEpoch}`||e.ledgerVersion!==s.stateVersion||e.companyMasterUnits!==s.companyMasterUnits)

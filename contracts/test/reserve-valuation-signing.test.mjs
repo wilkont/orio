@@ -23,6 +23,7 @@ test('missing, stale, substituted, disagreeing or nonfinal reserve evidence reje
   f=>f.evidence.prices[0].sourceId='unconfigured',f=>f.evidence.observations[0].sourceId='chain-b',
   f=>f.evidence.observations.forEach(o=>o.codeHashes.master='0x'+'f'.repeat(64)),
   f=>f.evidence.observations.forEach(o=>o.supplyAtoms=0),f=>f.evidence.ledgerState.priceUsd36.numerator='2',
+  f=>f.evidence.ledgerState.policyId='unapproved-policy',
   f=>f.policy.gasTreasury=f.policy.vault,f=>f.policy.chainId='8453',f=>delete f.policy.maximumAgeSeconds,
   f=>f.evidence.prices[0].usd36PerToken=(f.one*2n).toString()];
  for(const change of changes){const f=reserveFixture();change(f);assert.throws(f.prepare);}

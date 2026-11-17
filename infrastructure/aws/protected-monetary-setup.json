@@ -1,0 +1,294 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "PREPARED ONLY: ten fixed zero-value Base Sepolia governance setup calls; monetary execution stays paused",
+  "Parameters": {
+    "KeyAdministratorArn": {
+      "Type": "String",
+      "Default": "arn:aws:iam::720232346199:user/orio/orio-operator",
+      "AllowedValues": [
+        "arn:aws:iam::720232346199:user/orio/orio-operator"
+      ],
+      "Description": "Existing dedicated ORIO operator; verify principal before creation"
+    }
+  },
+  "Resources": {
+    "QualificationGasKey": {
+      "Type": "AWS::KMS::Key",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "Description": "ORIO company-operated Base Sepolia gas qualification key - initially disabled",
+        "Enabled": true,
+        "BypassPolicyLockoutSafetyCheck": false,
+        "KeySpec": "ECC_SECG_P256K1",
+        "KeyUsage": "SIGN_VERIFY",
+        "MultiRegion": false,
+        "Origin": "AWS_KMS",
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AccountKeyAdministrationOnly",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::720232346199:root"
+              },
+              "Action": [
+                "kms:DescribeKey",
+                "kms:GetKeyPolicy",
+                "kms:PutKeyPolicy",
+                "kms:EnableKey",
+                "kms:DisableKey",
+                "kms:UpdateKeyDescription",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:ListResourceTags",
+                "kms:CreateAlias"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Sid": "DedicatedOperatorAdministrationAndPublicInspection",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Ref": "KeyAdministratorArn"
+                }
+              },
+              "Action": [
+                "kms:DescribeKey",
+                "kms:GetKeyPolicy",
+                "kms:PutKeyPolicy",
+                "kms:EnableKey",
+                "kms:DisableKey",
+                "kms:UpdateKeyDescription",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:ListResourceTags",
+                "kms:GetPublicKey"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "kms:GetPublicKey"
+              ],
+              "Resource": "*",
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "QualificationRole",
+                    "Arn"
+                  ]
+                }
+              },
+              "Sid": "FixedChallenge0"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "kms:Sign"
+              ],
+              "Resource": "*",
+              "Condition": {
+                "StringEquals": {
+                  "kms:MessageType": "DIGEST",
+                  "kms:SigningAlgorithm": "ECDSA_SHA_256"
+                }
+              },
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "QualificationRole",
+                    "Arn"
+                  ]
+                }
+              },
+              "Sid": "FixedChallenge1"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "ORIO-SPC-3"
+          },
+          {
+            "Key": "Environment",
+            "Value": "qualification"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "gas-signing"
+          }
+        ]
+      },
+      "Condition": "TargetAccountAndRegion"
+    },
+    "QualificationGasAlias": {
+      "Type": "AWS::KMS::Alias",
+      "Properties": {
+        "AliasName": "alias/orio-spc-3-gas-qualification",
+        "TargetKeyId": {
+          "Ref": "QualificationGasKey"
+        }
+      },
+      "Condition": "TargetAccountAndRegion"
+    },
+    "QualificationRole": {
+      "Type": "AWS::IAM::Role",
+      "Condition": "TargetAccountAndRegion",
+      "Properties": {
+        "RoleName": "orio-spc-3-key-qualification",
+        "MaxSessionDuration": 3600,
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+      }
+    },
+    "QualificationPermissions": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "TargetAccountAndRegion",
+      "Properties": {
+        "PolicyName": "orio-fixed-challenge-key-access",
+        "Roles": [
+          {
+            "Ref": "QualificationRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "kms:GetPublicKey"
+              ],
+              "Resource": {
+                "Fn::GetAtt": [
+                  "QualificationGasKey",
+                  "Arn"
+                ]
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "kms:Sign"
+              ],
+              "Resource": {
+                "Fn::GetAtt": [
+                  "QualificationGasKey",
+                  "Arn"
+                ]
+              },
+              "Condition": {
+                "StringEquals": {
+                  "kms:MessageType": "DIGEST",
+                  "kms:SigningAlgorithm": "ECDSA_SHA_256"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "QualificationFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Condition": "TargetAccountAndRegion",
+      "DependsOn": "QualificationPermissions",
+      "Properties": {
+        "FunctionName": "orio-spc-3-key-qualification",
+        "Description": "Private fixed paused testnet monetary setup; ten immutable transaction digests only",
+        "Runtime": "python3.13",
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "QualificationRole",
+            "Arn"
+          ]
+        },
+        "Timeout": 15,
+        "MemorySize": 128,
+        "ReservedConcurrentExecutions": 1,
+        "Code": {
+          "ZipFile": "import base64\nimport boto3\nfrom botocore.config import Config\nKEY = 'arn:aws:kms:us-east-1:720232346199:key/479ae4e7-483e-4d17-8f46-232f08c5c6ee'\nDIGESTS = {'schedule-register': 'da56f3bc37226aa36cdd37128b501757f8c6c205b96425b2d654f96512824066', 'schedule-approve': 'f2151b54ac814eb208fbb8ee75b8edeb6d9deda0ed88da1227bcafd8eebc1204', 'schedule-elect': '21b6f2175d77acdf116569f49d270d1008f46d81f1c10932cb67b26395803f44', 'schedule-bind': '7c0b252d8244c95414f1d2c21d3700245c0cca4763005d883a00e0919dc68a9b', 'schedule-configure-paused': 'b9133775e098c478b98bdaf32b369e3c3bc0b731ab329ee59e4c1f367028bffc', 'execute-register': '0768d1b1c551db4bae82005e45d868044e5887c1f0224b9bb4eb1a6cb7f42707', 'execute-approve': '27a4438033d626270856f65052694c19b9f0022d71a3e4061faf97bd3c0523a8', 'execute-elect': '6a3428fee12add9c39ffd58ba07a02674ed06f063aa400e6d25591ca1cde9ab4', 'execute-bind': '4e8b93f566594c0f2bc1f99a332d84a4daf6a86958fe9c32d1c3455919fc158c', 'execute-configure-paused': '951654b4ab79ef0a88c1fdb09418001e9e95f2fac40a773147bbeab6d2598241'}\n\ndef handler(event, context):\n    if type(event) is not dict or set(event) != {'operationId'} or type(event['operationId']) is not str or event['operationId'] not in DIGESTS:\n        raise ValueError('Only ten fixed paused Base Sepolia setup transactions are authorized')\n    operation = event['operationId']\n    digest = DIGESTS[operation]\n    client = boto3.client('kms', region_name='us-east-1', config=Config(connect_timeout=3, read_timeout=3, retries={'total_max_attempts':1}))\n    public = client.get_public_key(KeyId=KEY)\n    if public.get('KeyId') != KEY or public.get('KeySpec') != 'ECC_SECG_P256K1' or public.get('KeyUsage') != 'SIGN_VERIFY' or 'ECDSA_SHA_256' not in public.get('SigningAlgorithms', []):\n        raise ValueError('Unexpected qualification identity')\n    signed = client.sign(KeyId=KEY, Message=bytes.fromhex(digest), MessageType='DIGEST', SigningAlgorithm='ECDSA_SHA_256')\n    if signed.get('KeyId') != KEY or signed.get('SigningAlgorithm') != 'ECDSA_SHA_256':\n        raise ValueError('Unexpected signing result')\n    return {'operationId':operation, 'keyArn':KEY, 'digest':'0x'+digest, 'publicKey':base64.b64encode(public['PublicKey']).decode(), 'signature':base64.b64encode(signed['Signature']).decode(), 'financialExecutionEnabled':False}\n"
+        }
+      }
+    },
+    "OperatorQualificationInvoke": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "TargetAccountAndRegion",
+      "Properties": {
+        "PolicyName": "orio-invoke-fixed-key-qualification",
+        "Users": [
+          "orio-operator"
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "lambda:InvokeFunction"
+              ],
+              "Resource": {
+                "Fn::GetAtt": [
+                  "QualificationFunction",
+                  "Arn"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "KeyArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "QualificationGasKey",
+          "Arn"
+        ]
+      },
+      "Condition": "TargetAccountAndRegion"
+    },
+    "QualificationOnly": {
+      "Value": "Qualification verified; key disabled and private function paused; no financial activation",
+      "Condition": "TargetAccountAndRegion"
+    }
+  },
+  "Conditions": {
+    "TargetAccountAndRegion": {
+      "Fn::And": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::AccountId"
+            },
+            "720232346199"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::Region"
+            },
+            "us-east-1"
+          ]
+        }
+      ]
+    }
+  }
+}

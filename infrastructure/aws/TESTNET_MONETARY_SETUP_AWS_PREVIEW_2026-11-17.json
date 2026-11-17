@@ -1,0 +1,37 @@
+{
+  "status": "UNEXECUTED_SETUP_PREVIEW_VERIFIED",
+  "templateSha256": "7cdac389b73096b40373820ebf8f01f3d7dba6d4a5c55b15524b1c90f339c3bf",
+  "changeSetArn": "arn:aws:cloudformation:us-east-1:720232346199:changeSet/orio-monetary-setup-20261117/69d92b90-8794-4389-8e7b-81b12266a11b",
+  "changes": [
+    {
+      "LogicalResourceId": "OperatorQualificationInvoke",
+      "ResourceType": "AWS::IAM::Policy",
+      "Action": "Modify",
+      "Replacement": "False"
+    },
+    {
+      "LogicalResourceId": "QualificationFunction",
+      "ResourceType": "AWS::Lambda::Function",
+      "Action": "Modify",
+      "Replacement": "False"
+    },
+    {
+      "LogicalResourceId": "QualificationGasKey",
+      "ResourceType": "AWS::KMS::Key",
+      "Action": "Modify",
+      "Replacement": "False"
+    },
+    {
+      "LogicalResourceId": "QualificationPermissions",
+      "ResourceType": "AWS::IAM::Policy",
+      "Action": "Modify",
+      "Replacement": "False"
+    }
+  ],
+  "iamPolicyDocumentsUnchanged": true,
+  "dependentIamReferenceRefreshes": 2,
+  "keyRemainsDisabled": true,
+  "functionRemainsPaused": true,
+  "signaturesRequested": 0,
+  "blockchainTransactionsSubmitted": 0
+}
