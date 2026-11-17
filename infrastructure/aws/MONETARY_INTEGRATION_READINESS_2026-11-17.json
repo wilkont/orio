@@ -1,0 +1,24 @@
+{
+  "status": "SINGLE_SOURCE_TESTNET_CONFIGURATION_DIAGNOSTIC",
+  "checkedAt": "2026-11-17T21:37:35.470Z",
+  "chainId": "84532",
+  "source": "https://sepolia.base.org",
+  "blockNumber": "0x395aca8",
+  "blockHash": "0x4a0b95ece0f5834954f64e8e5fa99615ec608f48ba513dc34bc9fff8ee85d466",
+  "controller": "0x7ebF7ca8Ea3058DfCebEd89742BcA82Dcf4dC971",
+  "registry": "0x539aEb6B7Be6eD8B1BC154809864e71C6835CA6B",
+  "controllerCodeHashMatches": true,
+  "registryCodeHashMatches": true,
+  "valuationSigner": "0x0000000000000000000000000000000000000000",
+  "settlementOperator": "0x0000000000000000000000000000000000000000",
+  "executionEnabled": false,
+  "revision": "0",
+  "currentMaster": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "monetaryController": "0x0000000000000000000000000000000000000000",
+  "monetaryVault": "0x0000000000000000000000000000000000000000",
+  "financialExecutionEnabled": false,
+  "limits": [
+    "One public source; not dual-provider qualification",
+    "No signing, configuration changes, funding or transaction submission"
+  ]
+}
