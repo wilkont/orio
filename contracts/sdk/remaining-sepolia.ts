@@ -54,11 +54,13 @@ export async function signed(id:string,input:unknown):Promise<Transaction>{
 type ReadMethod='eth_chainId'|'eth_getBlockByNumber'|'eth_getTransactionCount'|'eth_getBalance'|'eth_getCode'|'eth_call'|'eth_estimateGas'|'eth_getTransactionReceipt'|'eth_getTransactionByHash';
 let sequence=0,nextReadAt=0;
 export async function readRpc(method:ReadMethod,params:unknown[]):Promise<unknown>{
+ if(!['eth_chainId','eth_getBlockByNumber','eth_getTransactionCount','eth_getBalance','eth_getCode','eth_call','eth_estimateGas','eth_getTransactionReceipt','eth_getTransactionByHash'].includes(method)||!Array.isArray(params))
+  throw new Error('Unsupported qualification read request');
  const now=Date.now(),delay=Math.max(0,nextReadAt-now);nextReadAt=Math.max(now,nextReadAt)+1000;await pause(delay);
  return request('https://sepolia.base.org',method,params);
 }
 async function request(endpoint:string,method:string,params:unknown[]):Promise<unknown>{
- const id=++sequence,r=await fetch(endpoint,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id,method,params}),signal:AbortSignal.timeout(15000)});
+ const id=++sequence,r=await fetch(endpoint,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id,method,params}),redirect:'error',signal:AbortSignal.timeout(15000)});
  if(!r.ok)throw new Error('Qualification RPC unavailable');const text=await r.text();if(text.length>524288)throw new Error('Oversized RPC response');
  const v=object(JSON.parse(text));if(v.id!==id||v.jsonrpc!=='2.0'||v.error||v.result===undefined)throw new Error('Qualification RPC rejected request');return v.result;
 }

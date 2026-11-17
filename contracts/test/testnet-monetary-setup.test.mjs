@@ -7,6 +7,7 @@ import {createFixture} from './helpers/vm.mjs';
 import {artifacts} from './helpers/monetary-fixture.mjs';
 import {buildTestnetMonetarySetup,registrySetupApi,controllerSetupApi,timelockSetupApi} from '../sdk/testnet-monetary-setup.mjs';
 import {decodeSetupPlan,setupPlan,submitSetup,signedSetup} from '../sdk/monetary-setup-sepolia.mjs';
+import {readRpc} from '../sdk/remaining-sepolia.ts';
 
 test('fixed setup links an empty registry/controller/vault using ordered timelock calls while monetary execution stays disabled',async()=>{
  const f=await createFixture(artifacts,84532);
@@ -63,4 +64,6 @@ test('pinned manifest and Python signer allow exactly ten digests on the existin
  assert.equal(result.status,0,result.stderr);
  await assert.rejects(signedSetup(plan.plans[0].operationId,{operationId:'wrong'}));
  await assert.rejects(submitSetup({isSigned:()=>true,chainId:84532n,to:plan.governance,value:0n,from:plan.sender,unsignedHash:plan.plans[0].unsignedDigest,serialized:'0x00'}),/Signed transaction object/);
+ await assert.rejects(readRpc('eth_sendRawTransaction',['0x00']),/Unsupported qualification read/);
+ await assert.rejects(readRpc('personal_sign',['0x00']),/Unsupported qualification read/);
 });
