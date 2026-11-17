@@ -1,9 +1,11 @@
 # Next AWS deployment
 
-The owner-approved original SQL upgrades 003–019, private three-table IAM metadata service and public read-only gateway have completed. See [actual public deployment report](PUBLIC_METADATA_DEPLOYMENT_REPORT_2026-11-17.md) and its receipt. The service is active at concurrency one. No signing or financial operation was activated. Completed SQL/bootstrap scopes must not be replayed.
+Completed and verified: original hosted SQL upgrades 003–019, private three-table IAM reader, public read-only metadata gateway and five disabled production-purpose keys. See [public deployment report](PUBLIC_METADATA_DEPLOYMENT_REPORT_2026-11-17.md) and [key deployment report](PRODUCTION_DISABLED_KEYS_REPORT_2026-11-17.md). Do not replay completed bootstrap or key creation.
 
-The next concrete step is [five disabled production-purpose keys](PRODUCTION_DISABLED_KEYS_PROPOSAL.md). The ten-resource template is prepared and syntax-validated only; persistent key creation and its separate budget await approval. The actual operator ARN includes the /orio/ IAM path. No production key has been created by this proposal.
+The public metadata service is active at concurrency one. Governance, settlement, valuation, gas reservation and gas operations keys are all disabled, have zero grants and explicitly deny cryptographic use. No signing or financial operation was activated.
 
-Financial deployment still requires protected purpose-bound signing, reserve arrangements, live provider/paymaster admission, consent/recovery and operational reconciliation. ORIO Inc., Delaware, US-origin/global market intent and company-operated protected signing are recorded owner choices. Eligibility is distinct from USDC availability. External review remains advisory.
+The next engineering stage is a concrete purpose-bound signing workload, including exact key/digest authority, committed-ledger prerequisites, replay and spend limits, recovery/revocation, failure handling and operational qualification. KMS cannot enforce Ethereum chain IDs or monetary intent itself. Do not enable keys or remove their signing deny under the completed key-creation approval. Prepare and test the complete access change before requesting its specific approval.
 
-The legacy ORIO.IO website in account 710096437887, published Dot design and DNS/mail are unchanged.
+Actual reserve arrangements, live provider/paymaster admission, consent/recovery and operational reconciliation remain necessary for financial deployment. ORIO Inc., Delaware, US-origin/global market intent and company-operated protected signing are recorded choices; eligibility is distinct from USDC availability. External review remains advisory.
+
+The legacy ORIO.IO website in account 710096437887, published Dot design and DNS/mail are unchanged by these phases.

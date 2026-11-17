@@ -1,3 +1,7 @@
+## Current continuation — five protected production-purpose keys created
+
+On November 17, 2026 the owner approved five disabled AWS keys/aliases, $1 verification and $5/month additional storage. The ten-resource stack reached CREATE_COMPLETE; all five keys are Disabled, have zero grants and exact approved policies denying Sign, Verify and CreateGrant. Public fingerprints and Ethereum identities are distinct; qualification material was not reused. Private evidence was downloaded/hash-verified and temporary working copies removed. See infrastructure/aws/PRODUCTION_DISABLED_KEYS_REPORT_2026-11-17.md and its actual receipt. No signing or financial activation occurred. Next is concrete purpose-bound signing workload/recovery qualification and actual reserve arrangements; external review remains advisory. Earlier pending-key entries are historical.
+
 
 ## Current state — November 17, public metadata deployed
 

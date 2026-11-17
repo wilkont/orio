@@ -1,3 +1,5 @@
+> November 17 update: the separately owner-approved five disabled production-purpose keys were created and verified. See [actual key deployment report](PRODUCTION_DISABLED_KEYS_REPORT_2026-11-17.md) and receipt. Earlier pending-creation descriptions below are historical; do not replay creation. Signing and financial operations remain disabled.
+
 # Next protected-key preparation
 
 Prepared only. No production-purpose key has been created, enabled or granted signing access by this proposal. The owner selected company-operated protected signing; governance, settlement, valuation, gas reservation and gas operations must have explicit, separate authority. Existing Base Sepolia qualification keys must not become production keys.
