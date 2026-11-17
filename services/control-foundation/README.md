@@ -4,6 +4,8 @@ Control foundation for SPC 3 Ledger A and financial release policy. The original
 
 ## Run verification
 
+The prepared private Lambda transport, access boundary and remaining hosted IAM verification are documented in [METADATA_IAM_AUTHORITY.md](METADATA_IAM_AUTHORITY.md). Its package builder performs no deployment, and the exact cloud proposal requires separate access/budget approval.
+
 Requires Node 24+, npm, and Docker Desktop using Linux containers.
 
 ```powershell

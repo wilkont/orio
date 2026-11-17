@@ -30,6 +30,8 @@ jobs:
         working-directory: services/control-foundation
       - run: npm run typecheck
         working-directory: services/control-foundation
+      - run: node scripts/build-metadata-lambda.mjs /tmp/orio-metadata-qualification.zip
+        working-directory: services/control-foundation
       - run: node node_modules/typescript/bin/tsc --ignoreConfig --strict --noEmit --target ES2023 --module NodeNext --moduleResolution NodeNext --allowImportingTsExtensions scripts/audit-hosted-schema.ts
         working-directory: services/control-foundation
       - run: ../services/control-foundation/node_modules/.bin/tsc --strict --noEmit --target ES2023 --module NodeNext --moduleResolution NodeNext scripts/prepare-sepolia-deployment.ts scripts/submit-sepolia-timelock.ts scripts/verify-sepolia-timelock.ts

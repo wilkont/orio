@@ -46,47 +46,27 @@ export class ProtocolReader {
   }
 }
 
-/** Exposes public protocol metadata only. Workload permissions must restrict the supplied reader. */
-export function createProtocolServer(reader: Pick<ProtocolReader, 'master'>): Server {
-  const server = createServer(async (request, response) => {
-    response.setHeader('Content-Type', 'application/json; charset=utf-8');
-    response.setHeader('Cache-Control', 'no-store');
-    response.setHeader('X-Content-Type-Options', 'nosniff');
-    const send = (status: number, body: unknown) => {
-      response.writeHead(status);
-      response.end(JSON.stringify(body));
-    };
-    if (request.method !== 'GET') {
-      response.setHeader('Allow', 'GET');
-      send(405, { error: 'method_not_allowed' });
-      return;
-    }
-    const path = (request.url ?? '/').split('?', 1)[0];
-    if (path === '/health') {
-      send(200, { status: 'ok' });
-      return;
-    }
-    if (path === '/v1/protocol/policy') {
-      send(200, publicMonetaryPolicy());
-      return;
-    }
-    if (path !== '/v1/protocol/master' && path !== '/ready') {
-      send(404, { error: 'not_found' });
-      return;
-    }
-    try {
-      const master = await reader.master();
-      if (path === '/ready') {
-        send(200, { status: 'ok', service: 'protocol-metadata' });
-        return;
-      }
-      send(200, { master, financialExecutionEnabled: false });
-    } catch {
-      send(503, { error: 'protocol_state_unavailable' });
-    }
-  });
-  server.requestTimeout = 10000;
-  server.headersTimeout = 10000;
-  server.keepAliveTimeout = 5000;
-  return server;
+export interface ProtocolResponse {status:number;headers:Record<string,string>;body:unknown}
+/** One fixed public-metadata route table shared by HTTP and Lambda transports. */
+export async function protocolResponse(reader:Pick<ProtocolReader,'master'>,method:string,url:string):Promise<ProtocolResponse>{
+ const headers:Record<string,string>={'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
+ const send=(status:number,body:unknown)=>({status,headers,body});
+ if(method!=='GET'){headers.Allow='GET';return send(405,{error:'method_not_allowed'});}
+ const path=url.split('?',1)[0];
+ if(path==='/health')return send(200,{status:'ok'});
+ if(path==='/v1/protocol/policy')return send(200,publicMonetaryPolicy());
+ if(path!=='/v1/protocol/master'&&path!=='/ready')return send(404,{error:'not_found'});
+ try{
+  const master=await reader.master();
+  return path==='/ready'?send(200,{status:'ok',service:'protocol-metadata'}):send(200,{master,financialExecutionEnabled:false});
+ }catch{return send(503,{error:'protocol_state_unavailable'});}
+}
+/** Exposes public protocol metadata only. Workload permissions restrict the reader. */
+export function createProtocolServer(reader:Pick<ProtocolReader,'master'>):Server{
+ const server=createServer(async(request,response)=>{
+  const result=await protocolResponse(reader,request.method??'',request.url??'/');
+  response.writeHead(result.status,result.headers);response.end(JSON.stringify(result.body));
+ });
+ server.requestTimeout=10000;server.headersTimeout=10000;server.keepAliveTimeout=5000;
+ return server;
 }

@@ -4,6 +4,8 @@ Target account: 720232346199, us-east-1. The original private ledger database co
 
 ## First hosted workload
 
+The concrete next phase is now [the private IAM-authenticated metadata qualification proposal](METADATA_IAM_DEPLOYMENT_PROPOSAL.md), with a one-shot reader grant, reviewed private Lambda/artifact templates, compiled package and local tests. It does not publish a public API or authorize financial execution. Its new cloud access and budget remain pending separate approval.
+
 The next deployment needs a dedicated application identity, private database connectivity and a pinned workload artifact. It must read only public protocol metadata and remain financially disabled. Never supply the original administrator secret to an application. The existing metadata reader checks the authenticated session, reachable privileges and each actual registry read; its restricted Linux/TLS container qualification and local tests are recorded separately.
 
 Prepare a concrete, reviewable workload/IAM/network change and limited database grant, with source/target checks, bounded resource use, credential-safe failure behavior, rollback/cleanup and actual hosted qualification. Creating a permanent database login, AWS role, public endpoint or recurring workload is outside the completed SQL-only approval. Do not activate those changes until separately authorized. The existing orio-operator permissions do not imply authority for a new workload identity.

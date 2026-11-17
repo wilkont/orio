@@ -24,6 +24,31 @@ async function fixture(run:(root:Pool,service:Pool,names:{database:string;reader
  }
 }
 const paused={electionId:null,state:'DEPOSIT_PAUSED',asset:null};
+test('unrelated PUBLIC customer tables and functions cannot be exposed through the reader',async()=>fixture(async(root,service,{reader})=>{
+ const protocol=new ProtocolReader(service);
+ await root.query('CREATE SCHEMA customer_data; CREATE TABLE customer_data.records(id integer); GRANT USAGE ON SCHEMA customer_data TO PUBLIC; GRANT SELECT ON customer_data.records TO PUBLIC');
+ await assert.rejects(protocol.master(),/not sufficiently restricted/);
+ await root.query('REVOKE SELECT ON customer_data.records FROM PUBLIC');
+ assert.deepEqual(await protocol.master(),paused);
+ await root.query('GRANT SELECT(id) ON customer_data.records TO PUBLIC');
+ await assert.rejects(protocol.master(),/not sufficiently restricted/);
+ await root.query('REVOKE SELECT(id) ON customer_data.records FROM PUBLIC');
+ assert.deepEqual(await protocol.master(),paused);
+ await root.query('CREATE FUNCTION customer_data.leak() RETURNS integer LANGUAGE sql AS $$ SELECT 1 $$');
+ await assert.rejects(protocol.master(),/not sufficiently restricted/);
+ await root.query('REVOKE EXECUTE ON FUNCTION customer_data.leak() FROM PUBLIC');
+ assert.deepEqual(await protocol.master(),paused);
+ await root.query('GRANT CREATE ON SCHEMA customer_data TO '+reader);
+ await assert.rejects(protocol.master(),/not sufficiently restricted/);
+}));
+test('latent server file and operating-system execution roles are rejected',async()=>fixture(async(root,service,{reader})=>{
+ for(const role of ['pg_read_server_files','pg_write_server_files','pg_execute_server_program']){
+  await root.query('GRANT '+role+' TO '+reader);
+  await assert.rejects(new ProtocolReader(service).master(),/not sufficiently restricted/);
+  await root.query('REVOKE '+role+' FROM '+reader);
+ }
+ assert.deepEqual(await new ProtocolReader(service).master(),paused);
+}));
 test('dedicated registry reader works and privilege changes are rechecked on every request',async()=>fixture(async(root,service,{reader})=>{
  const protocol=new ProtocolReader(service);assert.deepEqual(await protocol.master(),paused);
  await root.query('GRANT USAGE ON SCHEMA orio_ledger TO '+reader);await root.query('GRANT SELECT ON orio_ledger.journals TO '+reader);

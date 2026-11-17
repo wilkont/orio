@@ -23,6 +23,7 @@
     "scan:history": "node scripts/scan-history.mjs"
   },
   "dependencies": {
+    "@aws-sdk/rds-signer": "3.1170.0",
     "pg": "8.23.1"
   },
   "devDependencies": {
