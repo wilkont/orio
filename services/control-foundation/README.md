@@ -1,6 +1,6 @@
 # ORIO control foundation
 
-Implemented local engineering prerequisite for SPC 3 Ledger A and financial release policy. This is not a deployed financial service. No deployed public HTTP endpoint, production chain signing, live deposit verification, or production financial activation is provided by this package.
+Control foundation for SPC 3 Ledger A and financial release policy. The original private RDS schema upgrade through 019 is [hosted and verified](../../infrastructure/aws/ORIGINAL_SQL_UPGRADE_REPORT_2026-11-17.md). A deployed public HTTP service, production chain signing, live deposit verification and financial activation remain unfinished; this package is not a live financial service.
 
 ## Run verification
 

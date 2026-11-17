@@ -1,17 +1,17 @@
-# Next AWS deployment preparation
+# Next AWS hosted application deployment
 
-Target account: 720232346199, us-east-1. The dedicated non-root orio-operator session was freshly verified November 14. It can read the ledger stack and its outputs; broader listing/key-management actions are denied. This plan grants no IAM, network, migration, spending or deployment permission.
+Target account: 720232346199, us-east-1. The original private ledger database completed its owner-approved atomic 003-019 upgrade on November 17, 2026. Existing history and rollback-only accounting probes passed, the resulting catalog matched the qualified RDS rehearsal, and temporary maintenance resources were removed after recovery coverage acceptance. See [the actual upgrade report](ORIGINAL_SQL_UPGRADE_REPORT_2026-11-17.md) and its sanitized receipt. Historical 001/002 installation versions were not invented or rewritten.
 
-Historical and current stack boundary: orio-spc-3-ledger reports CREATE_COMPLETE. The existing installation receipt verifies initial SQL migrations 001/002 only. No new inspection establishes later schema versions. Migrations 003-018 remain unapplied by this work. Do not rerun initial migrations, infer resource deletion from denied listing, or use the administrator secret as an application login.
+## First hosted workload
 
-## First protected-key change
+The next deployment needs a dedicated application identity, private database connectivity and a pinned workload artifact. It must read only public protocol metadata and remain financially disabled. Never supply the original administrator secret to an application. The existing metadata reader checks the authenticated session, reachable privileges and each actual registry read; its restricted Linux/TLS container qualification and local tests are recorded separately.
 
-The exact initially disabled qualification key/alias template and scoped existing-operator key management are prepared in protected-signing-key.json. See PROTECTED_SIGNER_BOOTSTRAP.md for costs, permission changes, validation limits and the one-time administrator requirement. No key is created or enabled and no cryptographic signing access is granted by that preparation. The earlier USD2 temporary migration approval is not approval for recurring keys or an application workload.
+Prepare a concrete, reviewable workload/IAM/network change and limited database grant, with source/target checks, bounded resource use, credential-safe failure behavior, rollback/cleanup and actual hosted qualification. Creating a permanent database login, AWS role, public endpoint or recurring workload is outside the completed SQL-only approval. Do not activate those changes until separately authorized. The existing orio-operator permissions do not imply authority for a new workload identity.
 
-## Hosted service/database change
+Existing informational website hosting in legacy account 710096437887 is separate. Preserve the published Dot design and mail/DNS settings. Website publication does not authorize financial database access or financial activation.
 
-Before execution, finalize a pinned application image, concrete workload/network change set, resource-specific deploy role, separate migration identity and least-privilege workload logins. Verify TLS/hostname and the installed schema/checksums, establish and verify recoverable backup/restore evidence, then apply only unapplied migrations. No public database ingress, old administrator-secret runtime use or fabricated migration-version record is permitted.
+## Financial production qualification
 
-The first hosted candidate remains financially read-only, without public signing or money routes. Demonstrate private database connectivity, immutable journals, bounded observers, retries and restoration before financial activation. Existing website hosting in legacy account 710096437887 remains separate; no DNS or financial database cutover is performed by publishing a website.
+Base Sepolia contract deployment and protected-key qualification have their own receipts; they are not mainnet or customer financial authorization. Actual production signing/custody authority, reserve arrangements, live provider/paymaster admission, consent/recovery, operational reconciliation and accountable financial release evidence remain unfinished. Qualification signing was last recorded disabled/paused; this SQL maintenance did not enable signing or move funds.
 
-Actual custody/signing authority, production contracts, customer consent/recovery, event-specific monetary history adapters, full Base fee attribution, provider admission and accountable release evidence remain outstanding. The owner selected ORIO Inc., US-origin/global market intent and company-operated protected signing; do not ask those preference questions again. Actual ORIO eligibility is still distinct from USDC availability. External independent review is advisory, not a waiting requirement.
+The owner selected ORIO Inc., Delaware, US-origin/global market intent and company-operated protected signing. Actual ORIO eligibility is distinct from USDC availability. Do not ask these preference questions again or fabricate legal/reserve readiness. External review remains advisory, not a waiting requirement.

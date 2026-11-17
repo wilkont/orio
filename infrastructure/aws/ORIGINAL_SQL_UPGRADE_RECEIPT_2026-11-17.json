@@ -1,0 +1,138 @@
+{
+  "status": "ATOMIC_UPGRADE_COMMITTED",
+  "baselineFingerprint": "8374196a216470ba79eb63c908ed801d8b0b04ba9a19859ae08919ca58a4f09d",
+  "resultingCatalogFingerprint": "c4d12f3655980558f8e87bc526b2e6ea630ae06cc937b6fba7efce70278c67db",
+  "committedMigrations": [
+    {
+      "file": "003_conversion_entries.sql",
+      "sha256": "61bbb34b02e0346c351b0a2d01540c609d992cc2b649a1063c33a0a6496336bc"
+    },
+    {
+      "file": "004_conversion_route_start.sql",
+      "sha256": "d5c400d713664b016f326e57bf376803f0a28dd689e21cdf576d385f0075733d"
+    },
+    {
+      "file": "005_redemption_claims.sql",
+      "sha256": "5941786a488b5807243e88b5361865112fa2352ea1ac786e04345ffa42263105"
+    },
+    {
+      "file": "006_shared_receipt_claims.sql",
+      "sha256": "cd95cdd2a4db5c862d4e29f0e20a2da98f30a7c58f103a51c3c0910cc9d50743"
+    },
+    {
+      "file": "007_master_receipt_accounting.sql",
+      "sha256": "83842545448eccf58ececc19c42907fa2f2b2528f711aaed89984635c4c425c3"
+    },
+    {
+      "file": "008_gas_controls.sql",
+      "sha256": "20a1fdea41a1e92823b096b4d5d4b60940b1d83012297368ab1486b33528c78f"
+    },
+    {
+      "file": "009_gas_execution_bindings.sql",
+      "sha256": "11cd9afc50e9fe19f2a6689c98afed6c6c211dee5a805ee7e4d0ae25b6b4e68e"
+    },
+    {
+      "file": "010_gas_prepayment_funding.sql",
+      "sha256": "0add8e61ed7749b16fcb3387847600c659df3eb4795f186979b3e2f8d139f999"
+    },
+    {
+      "file": "011_gas_prepayment_refunds.sql",
+      "sha256": "7f9eb3dc1d1f0e7de0d4b30065703a76a39f8c90782e2d751ec3bed5c6968650"
+    },
+    {
+      "file": "012_monetary_execution.sql",
+      "sha256": "c7b11ddd6b4a03fd6c196d3517f9fbab04f217819706ebd8c4b77a12a0ab195a"
+    },
+    {
+      "file": "013_zero_supply_execution.sql",
+      "sha256": "d11e584e5f7922129f79a9e495d30585a112205fc55b26ae576cf0762722f697"
+    },
+    {
+      "file": "014_company_withdrawal_execution.sql",
+      "sha256": "811ddb03ac8b5a7a85d6290621c6d242a7527be67e7cb71f2848137140037ad8"
+    },
+    {
+      "file": "015_reserve_migration_execution.sql",
+      "sha256": "fdc4668c2dcaf24be5004bf09f0a4cacef0a08349c7d7d9a9b6524d3f9bbc875"
+    },
+    {
+      "file": "016_finalized_history.sql",
+      "sha256": "18381d16bd45bcc267d19d85b87921a7b64e181cdb0a81ec27ec1a3a6cacf6a1"
+    },
+    {
+      "file": "017_history_consumers.sql",
+      "sha256": "f5cf66da61a8df269d875c331f4f82a1f6df2e8fd4d28f346a1dc566fa1c354b"
+    },
+    {
+      "file": "018_protected_gas_signing.sql",
+      "sha256": "d4aa748aed937c188b5b6203a59a93c03c5bd87709bf57ffb85b73255d2dc666"
+    },
+    {
+      "file": "019_managed_digest_permissions.sql",
+      "sha256": "1ca8ee33cd8313bc71ce166f3e576cad08d0ee95999eeb9715ef8a0d81171d00"
+    }
+  ],
+  "syntheticProbeRolledBack": true,
+  "existingHistoryVerified": true,
+  "historical001002VersionsInferred": false,
+  "financialActivationPerformed": false,
+  "contextSha256": "5e0b8292df7d98d4395df01c62ab18b4d2e0d850360fc6213601561e9b49abba",
+  "completedAt": "2026-11-17T18:34:56.649Z",
+  "target": "ORIGINAL_HOSTED_DATABASE",
+  "secretPrintedOrPersisted": false,
+  "sourceCommit": "52ed00fc72b0bd14b499d2c35c598085a85ea564",
+  "privateReportSha256": "93f21bb0b0ef56d8a107bbc92172e1699d1d9b21c7777f1c5fa825d4a5462e5e",
+  "privateArchiveSha256": "62a1745a673821ad38c1e4ed3f0a08126c7946996ac6b14376a6b8c0ed22b64c",
+  "originalDatabaseUpgraded": true,
+  "financialLaunch": false,
+  "externalReview": "ADVISORY",
+  "cleanupStatus": "VERIFIED",
+  "checkpointRefreshedAfterAuthenticationGap": true,
+  "temporaryAccessApprovalReceived": true,
+  "approvedAdditionalUsd": 5,
+  "cleanup": {
+    "status": "ORIGINAL_UPGRADE_CLEANUP_VERIFIED",
+    "verifiedAt": "2026-11-17T18:47:24.700406+00:00",
+    "account": "720232346199",
+    "region": "us-east-1",
+    "stackArn": "arn:aws:cloudformation:us-east-1:720232346199:stack/orio-spc-3-sql-maintenance/41719040-e23d-11f1-86d1-0affcb1c9c95",
+    "stackDeleteComplete": true,
+    "temporarySnapshotAbsent": true,
+    "temporaryGroupsInterfacesEndpointsBucketAbsent": true,
+    "temporaryGatewayRouteAbsent": true,
+    "privateEnvironmentDeleted": true,
+    "privateEnvironmentInterfaceAbsent": true,
+    "originalDatabaseAvailablePrivateEncryptedMultiAzProtected": true,
+    "originalBackupRetentionDays": 14,
+    "originalIngressEmpty": true,
+    "originalSecretIdentityPreserved": true,
+    "originalTlsRequired": true,
+    "recoveryWindowStillCoversAcceptedUpgrade": true,
+    "recoveryWindow": {
+      "EarliestTime": "2026-11-11T01:12:25.029000+00:00",
+      "LatestTime": "2026-11-17T18:43:19+00:00"
+    },
+    "sourceDbiResourceId": "db-GDKQSO4LQYHC4WACUEYAGRFZNA",
+    "sourceIamDatabaseAuthenticationEnabled": false,
+    "financialActivationPerformed": false
+  },
+  "recoveryCoverage": {
+    "status": "RECOVERY_COVERS_ACCEPTED_UPGRADE",
+    "mayDeleteCheckpoint": true,
+    "checkpointIdentifier": "orio-spc-3-pre-upgrade-20261117",
+    "earliestRestorableAt": "2026-11-11T01:12:25.029Z",
+    "latestRestorableAt": "2026-11-17T18:43:19.000Z",
+    "checkpointCreatedAt": "2026-11-17T18:28:03.021Z",
+    "acceptedUpgradeAt": "2026-11-17T18:34:56.649Z",
+    "financialActivationPerformed": false,
+    "checkedAt": "2026-11-17T18:45:43.241Z"
+  },
+  "cleanupReportSha256": "c3fffa8e29078dc0219fa7154b482ac508554c81e16c2dd0f227e7ce2d59d3a1",
+  "recoveryCoverageSha256": "c83d7b71c9ad2e9c0c1e9bf513f27aa1c5354b5ffc099c30f8d36af80906c028",
+  "cleanupArchiveSha256": "784338843ae1d41d1fbb19dc9ef32e311abefea5da8eb23210b9d0ff13d3f9d5",
+  "localControlFoundationTestsPassed": 235,
+  "privateReportsRetainedAndVerified": true,
+  "privateEvidenceAccessVerified": "OWNER_AND_SYSTEM_ONLY",
+  "publicMaintenanceEvidenceCopiesAbsent": true,
+  "originalUpgradeReplayed": false
+}
