@@ -1,6 +1,6 @@
 # Private metadata service: exact next deployment
 
-Status: prepared locally; cloud access and spending not yet authorized. This is a private qualification phase, not public financial launch. Target: AWS 720232346199, us-east-1, existing ORIO private ledger. The original 003-019 upgrade is complete and must not be replayed.
+Status: owner-approved and executed on November 17, 2026; [actual verification and cleanup report](METADATA_IAM_DEPLOYMENT_REPORT_2026-11-17.md). This historical scope is closed and is not replay permission. The current workload template defaults to concurrency zero, matching the verified paused deployment. This was private qualification, not public financial launch. Target: AWS 720232346199, us-east-1, existing ORIO private ledger. The original 003-019 upgrade is complete and must not be replayed.
 
 ## Proposed access and resources
 

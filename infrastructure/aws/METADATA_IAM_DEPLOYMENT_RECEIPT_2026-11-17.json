@@ -1,0 +1,103 @@
+{
+  "status": "PRIVATE_METADATA_DEPLOYED_VERIFIED_PAUSED_AND_CLEANED",
+  "account": "720232346199",
+  "region": "us-east-1",
+  "runtimeSourceCommit": "e737f3a3aa6f8de3976d7d3a39fa7b47a43217fa",
+  "runtimeMergedCommit": "920d2200322af56256d0c10f791b2227c66a1734",
+  "bootstrapGuardSourceCommit": "d64ee9afe901e89be001e5dafa0eb75cee621498",
+  "bootstrapGuardMergedCommit": "020940185fc99ce4b37fa73a1cef03cc70d85fdd",
+  "actualLinuxPackageSha256": "34504f86dd79355025125cc2a377160815f180417061fb5f402c125fe40301d2",
+  "actualLambdaCodeSha256Base64": "NFBPht15NVAlElzCo3cWCBXxgEFwYftfQCwSX+QDAdI=",
+  "artifactVersionId": "c_kotjDsTBJK_nIOaLOOQhjXjymrnPKm",
+  "buildMatchesGitHubLinuxCI": true,
+  "databaseIamAuthenticationEnabled": true,
+  "reader": "orio_protocol_reader",
+  "readerAuthority": "THREE_PUBLIC_REGISTRY_TABLES_ONLY",
+  "beforeReaderCatalogFingerprint": "c4d12f3655980558f8e87bc526b2e6ea630ae06cc937b6fba7efce70278c67db",
+  "afterReaderCatalogFingerprint": "141a8c8aedd1ea45af794d2de847c836798e19d21cf1223334b740e9082b33f7",
+  "bootstrapCompletedAt": "2026-11-17T19:36:11.190Z",
+  "qualificationStartedAt": "2026-11-17T19:44:01.620022+00:00",
+  "qualificationCompletedAt": "2026-11-17T19:44:14.282783+00:00",
+  "checks": [
+    {
+      "check": "PINNED_CODE_PRIVATE_NETWORK_AND_EXACT_RESTRICTED_ROLE",
+      "passed": true
+    },
+    {
+      "path": "/health",
+      "method": "GET",
+      "httpStatus": 200,
+      "passed": true,
+      "responseSha256": "711214b4c24b641d7b0014f1371c7da5bfcd039929cded5ae2c434b0813122fd"
+    },
+    {
+      "path": "/ready",
+      "method": "GET",
+      "httpStatus": 200,
+      "passed": true,
+      "responseSha256": "23bc80775cee65317cdc93e78f571d0cc945d83c63f414a65ac7fe2c586e67f0"
+    },
+    {
+      "path": "/v1/protocol/policy",
+      "method": "GET",
+      "httpStatus": 200,
+      "passed": true,
+      "responseSha256": "49e5e09a6e1e5ae5c3e9a5a0c44a040bd88d66555823226ee4a87b51d3142a5d"
+    },
+    {
+      "path": "/v1/protocol/master",
+      "method": "GET",
+      "httpStatus": 200,
+      "passed": true,
+      "responseSha256": "593c6c5994ea99d504fd7a2f3729ca6de645010de6524bde67beef9a946694c4"
+    },
+    {
+      "path": "/v1/protocol/master",
+      "method": "POST",
+      "httpStatus": 405,
+      "passed": true,
+      "responseSha256": "8969788c661fb23d9afb15f1c23bacf13d4a429259296e3cbe3cb609c1d8629e"
+    },
+    {
+      "path": "/v1/settlement",
+      "method": "GET",
+      "httpStatus": 404,
+      "passed": true,
+      "responseSha256": "ddcd21b62081e5e5821e9b85b62609d8fd7d4814995f1d93fe6f6e92ae20c7c6"
+    }
+  ],
+  "minimumFreeableMemoryBeforeBytes": 3076362240,
+  "minimumFreeableMemoryAfterBytes": 2592743424,
+  "reservedConcurrency": 0,
+  "deployedTemplateAndRepositoryDefaultPaused": true,
+  "originalDatabaseProtectionsPreserved": true,
+  "temporaryInfrastructureRemoved": true,
+  "temporaryMaintenanceRequestedAt": "2026-11-17T19:31:14.542440+00:00",
+  "temporaryInfrastructureRemovalVerifiedAt": "2026-11-17T19:57:24.228080+00:00",
+  "publicWorkingCopiesRemovalVerifiedAt": "2026-11-17T20:01:59.074342+00:00",
+  "privateRouteTableRestoredToLocalOnly": true,
+  "cloudFormationTlsParameterRepresentationDifference": {
+    "reportedDriftPreserved": true,
+    "directRdsParameterValue": "1",
+    "source": "system",
+    "parameterGroupApplyStatus": "in-sync",
+    "parameterGroupModified": false
+  },
+  "privateEvidence": {
+    "initialArchiveSha256": "151138fd4b89878b2b922c98d863d60ad89828376dd79e7f66f9784a78675d72",
+    "cleanupArchiveSha256": "20a8bdc7179a12fee6945e30aed8b8a2ce3a70b263b898bf352a4f54bc02bf17",
+    "bootstrapReportSha256": "e7d430643c74c85425c51d35aeea94bf3d46d61a04f1a20e5601e53c6c75b0cf",
+    "qualificationReportSha256": "72a64b81ecea30b148642e9b09fbdf9583d24394fdac6389d7b09783aee101fe",
+    "finalVerificationSha256": "9f2fab6260e7b3369e1035b7b1c373a34d845005fea850bc683627082e302234",
+    "publicCopyCleanupSha256": "fd16d963b1a2e3826f0b3b76847385c36e0dcb4a047f14f86fb630202a45c50a",
+    "retainedOnOwnerComputer": true
+  },
+  "approvedBudget": {
+    "verificationUsd": 5,
+    "retainedStorageLogsUsdPerMonth": 1
+  },
+  "publicEndpointCreated": false,
+  "financialActivationPerformed": false,
+  "mainnetOrSigningPerformed": false,
+  "externalReviewRequired": false
+}

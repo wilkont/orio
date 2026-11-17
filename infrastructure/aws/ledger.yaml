@@ -59,6 +59,7 @@ Resources:
       DBName: orio_control
       MasterUsername: orio_ledger_admin
       ManageMasterUserPassword: true
+      EnableIAMDatabaseAuthentication: true
       AllocatedStorage: '20'
       StorageType: gp3
       StorageEncrypted: true

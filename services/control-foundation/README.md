@@ -1,10 +1,10 @@
 # ORIO control foundation
 
-Control foundation for SPC 3 Ledger A and financial release policy. The original private RDS schema upgrade through 019 is [hosted and verified](../../infrastructure/aws/ORIGINAL_SQL_UPGRADE_REPORT_2026-11-17.md). A deployed public HTTP service, production chain signing, live deposit verification and financial activation remain unfinished; this package is not a live financial service.
+Control foundation for SPC 3 Ledger A and financial release policy. The original private RDS schema upgrade through 019 is [hosted and verified](../../infrastructure/aws/ORIGINAL_SQL_UPGRADE_REPORT_2026-11-17.md). Its [private IAM metadata service is deployed, verified and paused](../../infrastructure/aws/METADATA_IAM_DEPLOYMENT_REPORT_2026-11-17.md). Public HTTP access, production chain signing, live deposit verification and financial activation remain unfinished; this package is not a live financial service.
 
 ## Run verification
 
-The prepared private Lambda transport, access boundary and remaining hosted IAM verification are documented in [METADATA_IAM_AUTHORITY.md](METADATA_IAM_AUTHORITY.md). Its package builder performs no deployment, and the exact cloud proposal requires separate access/budget approval.
+The private Lambda transport and verified access boundary are documented in [METADATA_IAM_AUTHORITY.md](METADATA_IAM_AUTHORITY.md). Its package builder performs no deployment. The next public metadata template is prepared and tested but requires separate access/budget approval.
 
 Requires Node 24+, npm, and Docker Desktop using Linux containers.
 
