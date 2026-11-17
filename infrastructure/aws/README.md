@@ -1,3 +1,5 @@
+> Current-state update: public read-only deployment completed November 17, 2026; concurrency is now one. Earlier private-phase pause or pending-approval descriptions below are historical. See [actual public report](PUBLIC_METADATA_DEPLOYMENT_REPORT_2026-11-17.md). Do not replay completed bootstrap steps.
+
 # AWS deployment for ORIO Ledger A
 
 Target account 720232346199 in us-east-1. The stack creates its own VPC in us-east-1a and us-east-1b. The template creates a private, encrypted Multi-AZ PostgreSQL 17 database with 14-day backups, TLS enforcement, and an RDS-managed administrator secret. AWS charges apply to RDS, backups, Secrets Manager, and logs. Review the CloudFormation change set before execution.

@@ -1,0 +1,118 @@
+{
+  "status": "PUBLIC_READ_ONLY_METADATA_DEPLOYED",
+  "sourceCommit": "81d80cd9c063a47782b62ab982bd85165f6132a8",
+  "controlPlane": {
+    "status": "PUBLIC_METADATA_CONTROL_PLANE_VERIFIED",
+    "checkedAt": "2026-11-17T20:20:43.251877+00:00",
+    "endpoint": "https://0yer5gvdw3.execute-api.us-east-1.amazonaws.com",
+    "apiId": "0yer5gvdw3",
+    "gatewayStackArn": "arn:aws:cloudformation:us-east-1:720232346199:stack/orio-spc-3-public-metadata/2c941b80-e2c3-11f1-8390-0affea1664f5",
+    "codeSha256Base64": "NFBPht15NVAlElzCo3cWCBXxgEFwYftfQCwSX+QDAdI=",
+    "reservedConcurrency": 1,
+    "databaseProtectionsPreserved": true,
+    "databasePermissionsExpanded": false,
+    "minimumFreeableMemoryBytes": 2558799872.0,
+    "corsOrigins": [
+      "https://orio.io",
+      "https://www.orio.io"
+    ],
+    "fourExactGetPermissions": true,
+    "signingOrFinancialActivationPerformed": false,
+    "websiteDnsMailChanged": false
+  },
+  "externalHttps": {
+    "status": "PUBLIC_METADATA_EXTERNAL_HTTPS_VERIFICATION_PASSED",
+    "endpoint": "https://0yer5gvdw3.execute-api.us-east-1.amazonaws.com",
+    "checkedAt": "2026-11-17T20:18:10.947896+00:00",
+    "checks": [
+      {
+        "method": "GET",
+        "path": "/health",
+        "status": 200,
+        "sha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288",
+        "orioCors": true
+      },
+      {
+        "method": "GET",
+        "path": "/ready",
+        "status": 200,
+        "sha256": "1f83b2ad7cc03803331df12280a237f7605cd1e91ffbf44e1e70ba8e7ef4f702",
+        "orioCors": true
+      },
+      {
+        "method": "GET",
+        "path": "/v1/protocol/policy",
+        "status": 200,
+        "sha256": "ecb327ab65f8c54f06ab1386d57f96aba0c57f739de3ff6855de848eea83a7c5",
+        "orioCors": true
+      },
+      {
+        "method": "GET",
+        "path": "/v1/protocol/master",
+        "status": 200,
+        "sha256": "db90b5e6564ce86f0aa5d22880a6ed45baf0832a96d8870dc5113db253446935",
+        "orioCors": true
+      },
+      {
+        "method": "POST",
+        "path": "/v1/protocol/master",
+        "status": 404,
+        "sha256": "8fd54eee4277f1327015cc0bcaed8a878bf44d1804364cd5d93dfab9e2d1a5af"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/settlement",
+        "status": 404,
+        "sha256": "8fd54eee4277f1327015cc0bcaed8a878bf44d1804364cd5d93dfab9e2d1a5af"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/protocol/policy",
+        "untrustedOriginGetsNoCorsGrant": true,
+        "publicDataStillReadable": true
+      },
+      {
+        "method": "OPTIONS",
+        "path": "/v1/protocol/master",
+        "status": 204,
+        "orioPreflight": true
+      }
+    ],
+    "financialActivationPerformed": false,
+    "websiteDnsMailChanged": false
+  },
+  "cleanup": {
+    "status": "PUBLIC_METADATA_WORKING_COPIES_REMOVED",
+    "checkedAt": "2026-11-17T20:32:37.291332+00:00",
+    "sourceDirectoryAbsent": true,
+    "archiveCopyAbsent": true,
+    "publicServiceRemainsActive": true,
+    "financialActivationPerformed": false
+  },
+  "gatewayResourceCount": 11,
+  "ratePerSecond": 1,
+  "burstLimit": 2,
+  "externalReviewRequired": false,
+  "approvedBudget": {
+    "verificationUsd": 5,
+    "additionalMonthlyApiUsd": 5,
+    "existingMonthlyStorageLogsUsd": 1
+  },
+  "evidenceSha256": {
+    "cleanup.json": "89f42b97377cf935e861345fe84664b6619542f8a43f2448880169d527461434",
+    "external-https.json": "bcc3be8e0ddd10fd3d7392ffd4f452894f5a5624b26073361d524b067f7d144e",
+    "final-control-plane.json": "ca55b49b49767b2f21c0339f7afc68e34b91ea62605c97d6c15c6f5d64545ef0",
+    "gateway-execution.json": "7ceda3e665cb049e11cfdacd0177099ae0d04a6d95fe8068a3d0521604e0da9e",
+    "gateway-preview.json": "d3320baf8c182b7c2832ab17fbeb2bcfe2ff32b42dafd29445395e68e6ecdb97",
+    "gateway-verification.json": "9b374aa465d453e08cc840d9b63ab85954fd90c4735157ad7f0d7cbd5ef4417b",
+    "key-preparation-validation.json": "f855aa64aca4aee4fbcae8099c6b1e99426ad63ee087cb88b882b3b9ca2f0b3b",
+    "orio-public-metadata-evidence-20261117.tar": "9586407eed0ad1d26d317edb714ba4c23fcb77282bb9ff836f4e2f06827655ad",
+    "preflight.json": "0b7ba0b1e519f8c671ca93e6bbcded06c038a93fabd82ad7a8791d4d0fbc7e7c",
+    "private-active-template.json": "ea54ad975a16c3b266890f45c3c7caf263a06f391526aba476a9a5acfbc87c0a",
+    "private-paused-template.json": "e3d51fe40f3f5b1c52d60b7a47e5717b44ff4c9ed8be2dd45e6126d7d4ac7697",
+    "public-api.json": "e634b7f3c24aa6a53344180b4b3bd0bd1c10b35abbbb08449097a803e215cd15",
+    "resume-execution.json": "979d6af33acd4224a1dbc45efb65dfdbcc62892ec6c996cdcf28c511e60ee987",
+    "resume-preview.json": "e2e4dae8a4d152ee8557ffd296f98a0a8a97cb06f5a32620a7ec39e5d4b346d2",
+    "resumed-private-qualification.json": "2c33405f83df9c0200fca0e534223866ccbd408585eb474eddb21e606613c9a1"
+  }
+}

@@ -1,3 +1,5 @@
+> November 17 current-state update: hosted SQL 003–019 is installed and verified; private IAM metadata qualification and public read-only HTTPS deployment are complete. Financial operations, production signing and reserve arrangements remain unfinished. See ../../infrastructure/aws/PUBLIC_METADATA_DEPLOYMENT_REPORT_2026-11-17.md. Earlier preparation descriptions below do not override these actual receipts.
+
 # Reserve and treasury activation runbook
 
 Status: preparation for owner-accountable activation; no reserve, production key, financial service or funds transfer has been established by this document. ORIO Inc. (Delaware, US) is the owner-identified operating company, with company-operated protected signing selected. External review remains advisory.
@@ -18,4 +20,4 @@ The on-chain controller/vault model requires actual native master stablecoins he
 
 ## Current facts and missing work
 
-The informational website and whitepaper are live. The current hosted database evidence establishes initial migrations 001/002 only; upgrades 003-018 are not verified as installed. Company-operated signing coordination and AWS protocol/SDK adapters are locally tested, but a qualification KMS key and private fixed-challenge Lambda have been provisioned and verified, then disabled/paused; the actual ledger-backed monetary signer workload remains unprovisioned. No production vault address, reserve balance, funding amount or custody arrangement is fabricated. US-origin/global-where-USDC-available is the market intent, not blanket ORIO eligibility.
+The informational website and whitepaper are live. The hosted database has completed the verified atomic 003–019 upgrade and public read-only metadata deployment; financial execution remains disabled. Company-operated signing coordination and AWS protocol/SDK adapters are locally tested, but a qualification KMS key and private fixed-challenge Lambda have been provisioned and verified, then disabled/paused; the actual ledger-backed monetary signer workload remains unprovisioned. No production vault address, reserve balance, funding amount or custody arrangement is fabricated. US-origin/global-where-USDC-available is the market intent, not blanket ORIO eligibility.

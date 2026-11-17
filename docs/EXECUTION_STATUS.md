@@ -257,3 +257,7 @@ November 16 hosted schema inspection completed read-only with a privately retain
 ## Private restore qualification completed, 2026-11-16
 
 AWS completed the approved private encrypted snapshot restore; exact metadata and cleanup receipts are retained. All temporary resources, including the separate managed clone secret, were independently confirmed absent after deletion. The original database remains protected with six automated snapshots present. No SQL connection or hosted migration was included. Local verification now passes 207 tests plus strict typechecking. Next: qualify the SQL upgrade on an explicitly authorized disposable copy before any original database upgrade. The financial platform is not yet live; external review remains advisory. See `infrastructure/aws/PRIVATE_RESTORE_REPORT_2026-11-16.md`.
+
+## Current state — November 17, public metadata deployed
+
+The original SQL upgrades 003–019 and private IAM reader qualification are complete. The public read-only metadata service is now live at https://0yer5gvdw3.execute-api.us-east-1.amazonaws.com with all eight external HTTPS checks passing and concurrency one. See [actual deployment report](../infrastructure/aws/PUBLIC_METADATA_DEPLOYMENT_REPORT_2026-11-17.md). Temporary public working copies were removed after verified local retention. Financial operations remain disabled. The next prepared step is five disabled production-purpose keys; creation and its separate recurring budget are not yet approved. External review remains advisory. Earlier dated entries are historical.

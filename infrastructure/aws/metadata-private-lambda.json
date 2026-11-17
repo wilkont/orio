@@ -142,7 +142,7 @@
         "Handler": "src/metadata-lambda-entry.handler",
         "MemorySize": 256,
         "Timeout": 10,
-        "ReservedConcurrentExecutions": 0,
+        "ReservedConcurrentExecutions": 1,
         "Role": {
           "Fn::GetAtt": [
             "MetadataRole",

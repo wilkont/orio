@@ -1,3 +1,5 @@
+> Current-state update: public read-only deployment completed November 17, 2026; concurrency is now one. Earlier private-phase pause or pending-approval descriptions below are historical. See [actual public report](PUBLIC_METADATA_DEPLOYMENT_REPORT_2026-11-17.md). Do not replay completed bootstrap steps.
+
 # Private IAM metadata backend: deployed, verified and paused
 
 The owner-approved private deployment completed in AWS account 720232346199, us-east-1, on November 17, 2026. The original RDS database now supports IAM authentication, a passwordless application reader can select only the three public registry tables, and the private Lambda passed actual IAM-authenticated reads. The function is paused with reserved concurrency zero. Temporary maintenance resources and AWS working copies were removed, and verified private evidence is retained on the owner's computer. No public endpoint or financial operation was activated.

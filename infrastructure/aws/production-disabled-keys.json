@@ -1,0 +1,545 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "PREPARED ONLY: five disabled production-purpose keys, public metadata inspection, no signing or financial authority",
+  "Conditions": {
+    "Target": {
+      "Fn::And": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::AccountId"
+            },
+            "720232346199"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::Region"
+            },
+            "us-east-1"
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "GovernanceKey": {
+      "Type": "AWS::KMS::Key",
+      "Condition": "Target",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "Description": "ORIO production-purpose governance key; disabled preparation only; no financial activation",
+        "KeySpec": "ECC_SECG_P256K1",
+        "KeyUsage": "SIGN_VERIFY",
+        "Origin": "AWS_KMS",
+        "MultiRegion": false,
+        "Enabled": false,
+        "BypassPolicyLockoutSafetyCheck": false,
+        "PendingWindowInDays": 30,
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "ORIO-SPC-3"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "production-governance-disabled"
+          }
+        ],
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "OwnerAdministration",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::720232346199:root"
+              },
+              "Action": [
+                "kms:DescribeKey",
+                "kms:GetPublicKey",
+                "kms:GetKeyPolicy",
+                "kms:PutKeyPolicy",
+                "kms:EnableKey",
+                "kms:DisableKey",
+                "kms:ListResourceTags",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:CreateAlias",
+                "kms:UpdateAlias",
+                "kms:DeleteAlias",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion",
+                "kms:ListGrants"
+              ],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:PrincipalArn": "arn:aws:iam::720232346199:root"
+                }
+              }
+            },
+            {
+              "Sid": "OperatorPublicMetadataOnly",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::720232346199:user/orio/orio-operator"
+              },
+              "Action": [
+                "kms:DescribeKey",
+                "kms:GetPublicKey"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Sid": "NoCryptographicUseOrGrantDelegation",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": [
+                "kms:Sign",
+                "kms:Verify",
+                "kms:CreateGrant"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    },
+    "GovernanceAlias": {
+      "Type": "AWS::KMS::Alias",
+      "Condition": "Target",
+      "Properties": {
+        "AliasName": "alias/orio-spc-3/production-governance",
+        "TargetKeyId": {
+          "Ref": "GovernanceKey"
+        }
+      }
+    },
+    "SettlementKey": {
+      "Type": "AWS::KMS::Key",
+      "Condition": "Target",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "Description": "ORIO production-purpose settlement key; disabled preparation only; no financial activation",
+        "KeySpec": "ECC_SECG_P256K1",
+        "KeyUsage": "SIGN_VERIFY",
+        "Origin": "AWS_KMS",
+        "MultiRegion": false,
+        "Enabled": false,
+        "BypassPolicyLockoutSafetyCheck": false,
+        "PendingWindowInDays": 30,
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "ORIO-SPC-3"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "production-settlement-disabled"
+          }
+        ],
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "OwnerAdministration",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::720232346199:root"
+              },
+              "Action": [
+                "kms:DescribeKey",
+                "kms:GetPublicKey",
+                "kms:GetKeyPolicy",
+                "kms:PutKeyPolicy",
+                "kms:EnableKey",
+                "kms:DisableKey",
+                "kms:ListResourceTags",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:CreateAlias",
+                "kms:UpdateAlias",
+                "kms:DeleteAlias",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion",
+                "kms:ListGrants"
+              ],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:PrincipalArn": "arn:aws:iam::720232346199:root"
+                }
+              }
+            },
+            {
+              "Sid": "OperatorPublicMetadataOnly",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::720232346199:user/orio/orio-operator"
+              },
+              "Action": [
+                "kms:DescribeKey",
+                "kms:GetPublicKey"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Sid": "NoCryptographicUseOrGrantDelegation",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": [
+                "kms:Sign",
+                "kms:Verify",
+                "kms:CreateGrant"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    },
+    "SettlementAlias": {
+      "Type": "AWS::KMS::Alias",
+      "Condition": "Target",
+      "Properties": {
+        "AliasName": "alias/orio-spc-3/production-settlement",
+        "TargetKeyId": {
+          "Ref": "SettlementKey"
+        }
+      }
+    },
+    "ValuationKey": {
+      "Type": "AWS::KMS::Key",
+      "Condition": "Target",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "Description": "ORIO production-purpose valuation key; disabled preparation only; no financial activation",
+        "KeySpec": "ECC_SECG_P256K1",
+        "KeyUsage": "SIGN_VERIFY",
+        "Origin": "AWS_KMS",
+        "MultiRegion": false,
+        "Enabled": false,
+        "BypassPolicyLockoutSafetyCheck": false,
+        "PendingWindowInDays": 30,
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "ORIO-SPC-3"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "production-valuation-disabled"
+          }
+        ],
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "OwnerAdministration",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::720232346199:root"
+              },
+              "Action": [
+                "kms:DescribeKey",
+                "kms:GetPublicKey",
+                "kms:GetKeyPolicy",
+                "kms:PutKeyPolicy",
+                "kms:EnableKey",
+                "kms:DisableKey",
+                "kms:ListResourceTags",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:CreateAlias",
+                "kms:UpdateAlias",
+                "kms:DeleteAlias",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion",
+                "kms:ListGrants"
+              ],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:PrincipalArn": "arn:aws:iam::720232346199:root"
+                }
+              }
+            },
+            {
+              "Sid": "OperatorPublicMetadataOnly",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::720232346199:user/orio/orio-operator"
+              },
+              "Action": [
+                "kms:DescribeKey",
+                "kms:GetPublicKey"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Sid": "NoCryptographicUseOrGrantDelegation",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": [
+                "kms:Sign",
+                "kms:Verify",
+                "kms:CreateGrant"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    },
+    "ValuationAlias": {
+      "Type": "AWS::KMS::Alias",
+      "Condition": "Target",
+      "Properties": {
+        "AliasName": "alias/orio-spc-3/production-valuation",
+        "TargetKeyId": {
+          "Ref": "ValuationKey"
+        }
+      }
+    },
+    "GasReservationKey": {
+      "Type": "AWS::KMS::Key",
+      "Condition": "Target",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "Description": "ORIO production-purpose gas-reservation key; disabled preparation only; no financial activation",
+        "KeySpec": "ECC_SECG_P256K1",
+        "KeyUsage": "SIGN_VERIFY",
+        "Origin": "AWS_KMS",
+        "MultiRegion": false,
+        "Enabled": false,
+        "BypassPolicyLockoutSafetyCheck": false,
+        "PendingWindowInDays": 30,
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "ORIO-SPC-3"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "production-gas-reservation-disabled"
+          }
+        ],
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "OwnerAdministration",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::720232346199:root"
+              },
+              "Action": [
+                "kms:DescribeKey",
+                "kms:GetPublicKey",
+                "kms:GetKeyPolicy",
+                "kms:PutKeyPolicy",
+                "kms:EnableKey",
+                "kms:DisableKey",
+                "kms:ListResourceTags",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:CreateAlias",
+                "kms:UpdateAlias",
+                "kms:DeleteAlias",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion",
+                "kms:ListGrants"
+              ],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:PrincipalArn": "arn:aws:iam::720232346199:root"
+                }
+              }
+            },
+            {
+              "Sid": "OperatorPublicMetadataOnly",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::720232346199:user/orio/orio-operator"
+              },
+              "Action": [
+                "kms:DescribeKey",
+                "kms:GetPublicKey"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Sid": "NoCryptographicUseOrGrantDelegation",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": [
+                "kms:Sign",
+                "kms:Verify",
+                "kms:CreateGrant"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    },
+    "GasReservationAlias": {
+      "Type": "AWS::KMS::Alias",
+      "Condition": "Target",
+      "Properties": {
+        "AliasName": "alias/orio-spc-3/production-gas-reservation",
+        "TargetKeyId": {
+          "Ref": "GasReservationKey"
+        }
+      }
+    },
+    "GasOperationsKey": {
+      "Type": "AWS::KMS::Key",
+      "Condition": "Target",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "Description": "ORIO production-purpose gas-operations key; disabled preparation only; no financial activation",
+        "KeySpec": "ECC_SECG_P256K1",
+        "KeyUsage": "SIGN_VERIFY",
+        "Origin": "AWS_KMS",
+        "MultiRegion": false,
+        "Enabled": false,
+        "BypassPolicyLockoutSafetyCheck": false,
+        "PendingWindowInDays": 30,
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "ORIO-SPC-3"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "production-gas-operations-disabled"
+          }
+        ],
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "OwnerAdministration",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::720232346199:root"
+              },
+              "Action": [
+                "kms:DescribeKey",
+                "kms:GetPublicKey",
+                "kms:GetKeyPolicy",
+                "kms:PutKeyPolicy",
+                "kms:EnableKey",
+                "kms:DisableKey",
+                "kms:ListResourceTags",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:CreateAlias",
+                "kms:UpdateAlias",
+                "kms:DeleteAlias",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion",
+                "kms:ListGrants"
+              ],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:PrincipalArn": "arn:aws:iam::720232346199:root"
+                }
+              }
+            },
+            {
+              "Sid": "OperatorPublicMetadataOnly",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::720232346199:user/orio/orio-operator"
+              },
+              "Action": [
+                "kms:DescribeKey",
+                "kms:GetPublicKey"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Sid": "NoCryptographicUseOrGrantDelegation",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": [
+                "kms:Sign",
+                "kms:Verify",
+                "kms:CreateGrant"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    },
+    "GasOperationsAlias": {
+      "Type": "AWS::KMS::Alias",
+      "Condition": "Target",
+      "Properties": {
+        "AliasName": "alias/orio-spc-3/production-gas-operations",
+        "TargetKeyId": {
+          "Ref": "GasOperationsKey"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "GovernanceKeyArn": {
+      "Condition": "Target",
+      "Value": {
+        "Fn::GetAtt": [
+          "GovernanceKey",
+          "Arn"
+        ]
+      }
+    },
+    "SettlementKeyArn": {
+      "Condition": "Target",
+      "Value": {
+        "Fn::GetAtt": [
+          "SettlementKey",
+          "Arn"
+        ]
+      }
+    },
+    "ValuationKeyArn": {
+      "Condition": "Target",
+      "Value": {
+        "Fn::GetAtt": [
+          "ValuationKey",
+          "Arn"
+        ]
+      }
+    },
+    "GasReservationKeyArn": {
+      "Condition": "Target",
+      "Value": {
+        "Fn::GetAtt": [
+          "GasReservationKey",
+          "Arn"
+        ]
+      }
+    },
+    "GasOperationsKeyArn": {
+      "Condition": "Target",
+      "Value": {
+        "Fn::GetAtt": [
+          "GasOperationsKey",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

@@ -5,7 +5,7 @@ test('private qualification template cannot expose a public function or financia
  const text=await readFile(new URL('../../../infrastructure/aws/metadata-private-lambda.json',import.meta.url),'utf8'),template=JSON.parse(text),r=template.Resources;
  assert.equal(Object.keys(r).length,5);
  const f=r.MetadataFunction.Properties;
- assert.equal(f.Runtime,'nodejs24.x');assert.equal(f.ReservedConcurrentExecutions,0);assert.equal(f.Timeout,10);assert.equal(f.MemorySize,256);
+ assert.equal(f.Runtime,'nodejs24.x');assert.equal(f.ReservedConcurrentExecutions,1);assert.equal(f.Timeout,10);assert.equal(f.MemorySize,256);
  assert.equal(f.Environment.Variables.ORIO_DATABASE_USER,'orio_protocol_reader');
  assert.equal(f.FunctionName,'orio-spc-3-protocol-metadata');
  assert.deepEqual(r.ReaderSecurityGroup.Properties.SecurityGroupEgress,[{IpProtocol:'tcp',FromPort:5432,ToPort:5432,DestinationSecurityGroupId:'sg-030c057c133762083'}]);
