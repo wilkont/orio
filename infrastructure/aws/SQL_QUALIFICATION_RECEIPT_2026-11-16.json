@@ -120,6 +120,10 @@
     "executed": false,
     "localTestsPassed": 229,
     "strictTypecheckingPassed": true,
-    "templateSha256": "4ebb302ea1679b9f721b8a0ce2d68144adaffe73fed2f262667b8731512bc61c"
+    "templateSha256": "4ebb302ea1679b9f721b8a0ce2d68144adaffe73fed2f262667b8731512bc61c",
+    "awsTemplateValidationPassed": true,
+    "credentialFreeLinuxPreparationPassed": true,
+    "verifiedUpgradeCount": 17,
+    "preparedSourceCommit": "52ed00fc72b0bd14b499d2c35c598085a85ea564"
   }
 }
