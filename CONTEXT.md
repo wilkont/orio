@@ -1,4 +1,10 @@
-## Current continuation - private journal startup verified and paused
+## Current continuation - runtime diagnosis and private signing entry
+
+The read-only native differential reproduced 24 cases with three unexpected allows, isolating the simulator mismatch to explicit-resource evaluation of lambda:SourceFunctionArn. The same Null/StringEquals/ArnEquals condition works without ResourceArns; aws:SourceArn controls work in both modes. This localizes the simulation issue, not live enforcement. See infrastructure/aws/JOURNAL_SIMULATION_DIAGNOSIS_2026-11-18.md. A three-resource isolated KMS authorization-only dry-run probe has an AWS-validated template and an AVAILABLE, unexecuted CREATE change set; no probe runtime/role has been deployed. Specific new-runtime access confirmation is pending. The actual journal remains paused; keys and financial execution are unchanged.
+
+The checksum-pinned private signing entry connects immutable Lambda journal transport to committed-intent load/claim, one KMS signature, signature recovery and fenced completion. Local tests reject caller-selected keys, policy, evidence, digest, SQL, malformed events, changed configuration, mutable function versions, mainnet and replay. It has not been deployed and creates no signing permission. The owner reserve-arrangement decision record is prepared; targeted Drive metadata discovery did not establish actual reserve ownership terms, customer rights or treasury/recovery appointments. See docs/operations/RESERVE_ARRANGEMENT_DECISIONS.md. External review remains advisory.
+
+## Prior continuation - private journal startup verified and paused
 
 The approved startup correction completed November 18 at 20:27Z. The original private journal version 1 passed four actual live checks, including IAM database login/privilege qualification. The original ViaService assumption failed against the observed startup context; the final exact function-ciphertext/account correction is deployed. Stack UPDATE_COMPLETE, reserved concurrency zero, all six signing keys Disabled, financial execution false. No SQL rerun, secret retrieval, signing, blockchain transaction or budget increase occurred.
 

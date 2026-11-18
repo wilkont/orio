@@ -1,0 +1,19 @@
+# Fixed runtime-denial test - prepared, not deployed
+
+The November 18 read-only differential isolates the discrepancy to explicit resource simulation. The same wildcard-resource policy and supplied source-function identity denies access without ResourceArns, but allows it when the exact startup-key ResourceArns is supplied. Null, StringEquals and ArnEquals show this behavior. aws:SourceArn provides a working control. This is an observed simulator inconsistency, not proof that the deployed guard fails or succeeds. Changing the deployed policy to satisfy the simulator would provide false confidence.
+
+## Exact proposed live test
+
+Create three temporary resources in AWS account 720232346199, us-east-1: role, one-day log group and administrator-invoked function named orio-spc-3-journal-denial-probe. The generator journal-runtime-denial-probe.mjs copies the deployed journal's six KMS statements exactly into an isolated role. It adds logs only and explicitly denies database, secrets, further function invocation and role assumption. The production journal role, code, private network and paused state remain unchanged.
+
+The temporary function is outside the private database VPC so its fixed code can reach the AWS KMS endpoint. No database network or login is assigned. It starts with zero concurrency. After comparing the deployed code and policy to the reviewed candidate, temporarily permit one concurrent invocation and send only the fixed probe event. Its sole KMS request is Decrypt with DryRun=true and DryRunModifiers=IGNORE_CIPHERTEXT on the existing AWS-managed startup key, with the original function ciphertext context. There is no ciphertext, secret, actual decryption, Sign, key enablement or transaction. An unsupported runtime SDK yields an inconclusive failure; no real-decryption fallback is permitted.
+
+Capture the actual AWS authorization trace and attribute the denial specifically to DenyRuntimeCodeDecryption with lambda:SourceFunctionArn present. Generic AccessDenied, invalid parameters or an unrelated key-policy denial is inconclusive. This tests the copied identity policy under real Lambda runtime credentials; it does not qualify arbitrary future code, callers, key policies or networking. Compare its copied six statements to the retained journal before drawing a conclusion.
+
+Pause the probe in a finally path, retain the sanitized/private evidence as appropriate, then delete its disposable function, role, log group and stack within 24 hours. No journal SQL, authority binding, signing workload access, production-purpose key policy or financial activation is part of this test. Allow at most $0.10 metered cost within the existing verification allowance; no new recurring resource is retained. Actual billing remains unmeasured.
+
+## Prepared verification
+
+AWS ValidateTemplate accepted the three-resource candidate on November 18. Local tests verify exact KMS-statement copying, paused function, absence of database/signing/caller grants and dry-run-only source. Native validation does not create resources or verify runtime enforcement. Creating the temporary role/function requires action-time approval because it creates a new runtime capable of reaching the startup-key service, outside the earlier private-journal approval.
+
+Sources: [AWS source-function identity](https://docs.aws.amazon.com/lambda/latest/dg/permissions-source-function-arn.html), [simulator limitations](https://docs.aws.amazon.com/IAM/latest/APIReference/API_SimulateCustomPolicy.html), [KMS authorization-only dry run](https://docs.aws.amazon.com/kms/latest/APIReference/API_Decrypt.html), [runtime-included Python SDK](https://docs.aws.amazon.com/lambda/latest/dg/python-package.html). The resource-dependent discrepancy is our observation, not an AWS-confirmed defect diagnosis.
