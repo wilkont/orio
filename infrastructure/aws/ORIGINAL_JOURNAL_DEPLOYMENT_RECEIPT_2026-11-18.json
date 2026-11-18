@@ -1,0 +1,65 @@
+{
+  "status": "ORIGINAL_JOURNAL_INSTALLED_SERVICE_DEPLOYED_PAUSED_STARTUP_BLOCKED",
+  "account": "720232346199",
+  "region": "us-east-1",
+  "approvedVerificationBudgetUsd": 5,
+  "approvedAdditionalMonthlyBudgetUsd": 1,
+  "actualAwsBillingMeasured": false,
+  "sourceCommit": "4628ab697dbcb82c36b7a7f5540b3bc34c5f0a9b",
+  "contextFormatCorrectionCommit": "2b550da4796fbca38307fbd76231da16b72bc392",
+  "originalCommittedAt": "2026-11-18T19:20:24.822Z",
+  "originalReportSha256": "f616e3002025ab9d43c7b2228fc8b086dbaf37c75da31d79ddc3da93b50f84ac",
+  "applied": [
+    {
+      "name": "services/control-foundation/pending-migrations/020_reserve_valuation_signing.sql",
+      "sha256": "38ed5c1a6a2b684d9c15e5443f5d49f0da8f14a1dabef0c6dfd429a0fa401d72"
+    },
+    {
+      "name": "services/control-foundation/pending-migrations/021_valuation_runtime_functions.sql",
+      "sha256": "b0e8846bc424f46c18e19398b12da35cf4accc1a8a1d66c700d1c4da9260e3fd"
+    },
+    {
+      "name": "infrastructure/aws/valuation-journal-bootstrap.sql",
+      "sha256": "3043466b5a915cb31a88fc7e3a1c7ec3d16e6ccc1cf9cc8c4fa0be8e863ad3e1"
+    }
+  ],
+  "preservedExistingRecords": true,
+  "qualifiedCatalogMatched": true,
+  "authorityBindings": 0,
+  "serviceStackArn": "arn:aws:cloudformation:us-east-1:720232346199:stack/orio-spc-3-valuation-journal/14633430-e384-11f1-8e0f-0afffafb7b53",
+  "serviceStackStatus": "UPDATE_COMPLETE",
+  "versionArn": "arn:aws:lambda:us-east-1:720232346199:function:orio-spc-3-valuation-journal:1",
+  "codeSha256": "8692186852a85a5dcacf8e21ec0b90de7249612169d06cf520ef60a236d61926",
+  "reservedConcurrency": 0,
+  "publicEndpointCreated": false,
+  "actualIamDatabaseLoginVerified": false,
+  "blockedBeforeHandler": "KMSAccessDeniedException: blanket kms denial also blocks default Lambda environment decryption",
+  "secretPrintedOrPersisted": false,
+  "allSixSigningKeysDisabled": true,
+  "signingPerformed": false,
+  "blockchainTransactions": 0,
+  "financialExecutionEnabled": false,
+  "temporaryInfrastructureRemoved": true,
+  "temporaryCheckpointRemovedAfterPreUpgradeRecoveryVerified": true,
+  "remoteWorkingFilesRemoved": true,
+  "privateReportsOwnerSystemOnly": true,
+  "evidenceArchiveSha256": "32fccba29d50e22fa81a3b4b1f37dda37939f41ff3fdc4f94bd07c848ace142c",
+  "finalAwsVerifiedAt": "2026-11-18T19:33:34.713432+00:00",
+  "startupCorrectionApplied": false,
+  "startupCorrectionChangeSetArn": "arn:aws:cloudformation:us-east-1:720232346199:changeSet/orio-startup-decrypt-proposal-20261118/fee7d124-8d47-4c27-b714-b78427f01d78",
+  "startupCorrectionApiPreviewResources": [
+    {
+      "logicalId": "JournalFunction",
+      "action": "Modify",
+      "replacement": "False"
+    },
+    {
+      "logicalId": "JournalRole",
+      "action": "Modify",
+      "replacement": "False"
+    }
+  ],
+  "nativePolicySimulationCases": 48,
+  "nativePolicySimulationAllowedCases": 1,
+  "independentReviewMandatory": false
+}
