@@ -212,7 +212,7 @@
         "FunctionName": {
           "Ref": "JournalFunction"
         },
-        "CodeSha256": "VQ8lCuZRNyvEodHHVZaXD0KB8YZnqJNL6h8LCecDMzU=",
+        "CodeSha256": "hpIYaFKoWl3Kz44h7AuQ3nJJYSFp0Gz1IO9gojbWGSY=",
         "Description": "Pinned qualification journal artifact; no KMS permission"
       }
     }

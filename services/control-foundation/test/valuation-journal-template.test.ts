@@ -10,7 +10,7 @@ test('prepared journal is paused, private, version-pinned and has no signing, se
  assert.deepEqual(t.Parameters.QualificationConcurrency.AllowedValues,[0,1]);assert.equal(t.Parameters.QualificationConcurrency.Default,0);
  assert.equal(f.Handler,'src/valuation-journal-lambda-entry.handler');assert.equal(f.Environment.Variables.ORIO_DATABASE_USER,'orio_valuation_journal');
  assert.equal(f.Environment.Variables.ORIO_JOURNAL_MODE,'SCOPED_QUALIFICATION_IAM');
- assert.equal(t.Resources.JournalVersion.Properties.CodeSha256,'VQ8lCuZRNyvEodHHVZaXD0KB8YZnqJNL6h8LCecDMzU=');
+ assert.equal(t.Resources.JournalVersion.Properties.CodeSha256,'hpIYaFKoWl3Kz44h7AuQ3nJJYSFp0Gz1IO9gojbWGSY=');
  assert.deepEqual(t.Resources.DatabaseIngress.Properties,{GroupId:'sg-030c057c133762083',IpProtocol:'tcp',FromPort:5432,ToPort:5432,SourceSecurityGroupId:{Ref:'JournalSecurityGroup'}});
  assert.deepEqual(t.Resources.JournalSecurityGroup.Properties.SecurityGroupEgress,[{IpProtocol:'tcp',FromPort:5432,ToPort:5432,DestinationSecurityGroupId:'sg-030c057c133762083'}]);
  const statements=r.Policies[0].PolicyDocument.Statement;
