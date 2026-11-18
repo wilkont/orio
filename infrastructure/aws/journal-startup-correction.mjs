@@ -23,3 +23,23 @@ export function journalStartupCorrection(source){
  );
  return template;
 }
+
+export const journalStartupFunctionArn='arn:aws:lambda:us-east-1:720232346199:function:orio-spc-3-valuation-journal';
+/** The actual failed-request authorization trace supplies FunctionArn encryption
+ * context but no kms:ViaService. Bind ciphertext to this function and deny
+ * runtime-code credentials; the unchanged role trust admits Lambda only.
+ * This does not turn caller-supplied encryption context into authentication.
+ * No deployment or AWS call is performed here. */
+export function journalObservedStartupCorrection(source){
+ const template=journalStartupCorrection(source);
+ const statements=template.Resources.JournalRole.Properties.Policies[0].PolicyDocument.Statement;
+ const route=statements.find(s=>s.Sid==='DenyDirectOrOtherServiceDecryption');
+ route.Sid='DenyOtherFunctionCiphertext';
+ route.Condition={StringNotEquals:{'kms:EncryptionContext:aws:lambda:FunctionArn':journalStartupFunctionArn}};
+ const allow=statements.find(s=>s.Sid==='AllowLambdaManagedStartupDecryption');
+ allow.Condition={StringEquals:{'kms:EncryptionContext:aws:lambda:FunctionArn':journalStartupFunctionArn,'kms:CallerAccount':'720232346199'},
+  Null:{'lambda:SourceFunctionArn':'true'}};
+ statements.push({Sid:'DenyRuntimeCodeDecryption',Effect:'Deny',Action:'kms:Decrypt',Resource:lambdaStartupKey,
+  Condition:{Null:{'lambda:SourceFunctionArn':'false'}}});
+ return template;
+}

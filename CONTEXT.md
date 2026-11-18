@@ -1,3 +1,11 @@
+## Current continuation - private journal startup verified and paused
+
+The approved startup correction completed November 18 at 20:27Z. The original private journal version 1 passed four actual live checks, including IAM database login/privilege qualification. The original ViaService assumption failed against the observed startup context; the final exact function-ciphertext/account correction is deployed. Stack UPDATE_COMPLETE, reserved concurrency zero, all six signing keys Disabled, financial execution false. No SQL rerun, secret retrieval, signing, blockchain transaction or budget increase occurred.
+
+The 72-case data-boundary simulation passed, but runtime-code source-function denial simulations unexpectedly allowed access. That guard remains deployed but is NOT verified; the discrepancy is unresolved. Actual deployed networking allows PostgreSQL only and has no KMS route. Evidence was hash-verified locally and remote working files removed. See infrastructure/aws/JOURNAL_STARTUP_VERIFICATION_REPORT_2026-11-18.md and its sanitized receipt. Hosted valuation worker, provider admission, reserve arrangements and production financial qualification remain unfinished; external review is advisory.
+
+## Historical checkpoints below
+
 ## Current continuation - original journal installed; private service paused with startup block
 
 The founder's original-database/private-service approval ($5 verification plus $1/month additional storage/service/logs) was executed on November 18. SQL 020/021 and the restricted passwordless bootstrap committed atomically at 19:20:24Z, preserved existing records and matched the copy-qualified catalog. No authority binding was created. The grouped-EC2-ingress representation bug was fixed while preserving exactly the two approved sources.

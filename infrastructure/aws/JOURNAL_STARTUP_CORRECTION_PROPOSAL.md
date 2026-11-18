@@ -1,3 +1,7 @@
+# Startup proposal history - approved and executed
+
+**Current status:** correction and four live checks completed; service paused again. See [verification report](JOURNAL_STARTUP_VERIFICATION_REPORT_2026-11-18.md). The ViaService candidate below is historical and failed actual startup. The deployed generator is journalObservedStartupCorrection, using observed exact function ciphertext context and account. Runtime-code denial simulation remains unresolved and unverified; PostgreSQL-only deployed networking has no KMS route. The historical 48-case result below is not the final policy qualification.
+
 # Private journal startup correction - prepared, not applied
 
 ## Observed problem
