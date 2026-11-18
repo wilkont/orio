@@ -32,3 +32,15 @@ test('clone approval, stale recovery, original substitution and altered network 
  v=>{v.resources.pop();},v=>{v.principalArn+='-other';},v=>{v.instance.PubliclyAccessible=true;},v=>{v.restoreWindow.LatestTime='2026-11-18T02:59:59Z';}];
  for(const change of changes){const v=fixture();change(v);assert.throws(()=>journalOriginalContext(v,now));}
 });
+
+test('AWS grouped ingress preserves exactly the two approved sources and rejects added or duplicate pairs',()=>{
+ const v=fixture(),rules=v.databaseSecurityGroup.IpPermissions;
+ rules[0]!.UserIdGroupPairs.push(...rules[1]!.UserIdGroupPairs);rules.pop();
+ assert.equal(journalOriginalContext(v,now).target.host,metadataHost);
+ for(const pair of [{GroupId:'sg-22222222222222222',UserId:'720232346199'},structuredClone(rules[0]!.UserIdGroupPairs[0]!)]){
+  const changed=structuredClone(v);changed.databaseSecurityGroup.IpPermissions[0]!.UserIdGroupPairs.push(pair);
+  assert.throws(()=>journalOriginalContext(changed,now));
+ }
+ const duplicate=structuredClone(v);duplicate.databaseSecurityGroup.IpPermissions[0]!.UserIdGroupPairs[1]=structuredClone(rules[0]!.UserIdGroupPairs[0]!);
+ assert.throws(()=>journalOriginalContext(duplicate,now));
+});

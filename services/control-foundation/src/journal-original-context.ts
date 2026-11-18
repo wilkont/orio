@@ -34,13 +34,15 @@ export function journalOriginalContext(value:unknown,now=new Date()){
  if(typeof maintenance!=='string'||!/^sg-[a-f0-9]{17}$/.test(maintenance)||maintenance==='sg-030c057c133762083')throw new Error('Wrong maintenance security group');
  const group=object(c.databaseSecurityGroup),rules=group.IpPermissions;
  if(group.GroupId!=='sg-030c057c133762083'||group.OwnerId!=='720232346199'||group.VpcId!=='vpc-05613af21236d6911'||
-  !Array.isArray(rules)||rules.length!==2||maintenance===retainedMetadataGroup)throw new Error('Unexpected journal maintenance ingress');
+  !Array.isArray(rules)||rules.length<1||rules.length>2||maintenance===retainedMetadataGroup)throw new Error('Unexpected journal maintenance ingress');
  const sources=new Set<string>();
  for(const raw of rules){const rule=object(raw),pairs=rule.UserIdGroupPairs;
-  if(rule.IpProtocol!=='tcp'||rule.FromPort!==5432||rule.ToPort!==5432||['IpRanges','Ipv6Ranges','PrefixListIds'].some(k=>!Array.isArray(rule[k])||rule[k].length!==0)||!Array.isArray(pairs)||pairs.length!==1)throw new Error('Unexpected journal ingress rule');
-  const pair=object(pairs[0]);if(typeof pair.GroupId!=='string'||![maintenance,retainedMetadataGroup].includes(pair.GroupId)||pair.UserId!=='720232346199'||pair.VpcPeeringConnectionId!==undefined||
+  if(rule.IpProtocol!=='tcp'||rule.FromPort!==5432||rule.ToPort!==5432||['IpRanges','Ipv6Ranges','PrefixListIds'].some(k=>!Array.isArray(rule[k])||rule[k].length!==0)||!Array.isArray(pairs)||pairs.length<1||pairs.length>2)throw new Error('Unexpected journal ingress rule');
+  for(const rawPair of pairs){const pair=object(rawPair);if(typeof pair.GroupId!=='string'||![maintenance,retainedMetadataGroup].includes(pair.GroupId)||pair.UserId!=='720232346199'||pair.VpcPeeringConnectionId!==undefined||
    (pair.VpcId!==undefined&&pair.VpcId!=='vpc-05613af21236d6911'))throw new Error('Unexpected journal ingress source');
+  if(sources.has(pair.GroupId))throw new Error('Duplicate journal ingress source');
   sources.add(pair.GroupId);
+  }
  }
  if(sources.size!==2)throw new Error('Both fixed journal maintenance ingress sources are required');
  const recovery=object(c.restoreWindow),latest=typeof recovery.LatestTime==='string'?Date.parse(recovery.LatestTime):NaN,earliest=typeof recovery.EarliestTime==='string'?Date.parse(recovery.EarliestTime):NaN;
