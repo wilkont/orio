@@ -17,6 +17,7 @@ jobs:
       - run: bash -n infrastructure/aws/build-hosted-audit-inputs.sh
       - run: bash -n infrastructure/aws/build-sql-qualification-inputs.sh
       - run: bash -n infrastructure/aws/build-valuation-journal-qualification-inputs.sh
+      - run: bash -n infrastructure/aws/build-original-journal-inputs.sh
       - run: bash -n infrastructure/aws/build-original-maintenance-inputs.sh
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
@@ -28,6 +29,8 @@ jobs:
       - run: npm ci --ignore-scripts
         working-directory: contracts
       - run: npm ci --ignore-scripts
+        working-directory: services/control-foundation
+      - run: node --check scripts/verify-clone-journal-grants.mjs
         working-directory: services/control-foundation
       - run: npm run typecheck
         working-directory: services/control-foundation

@@ -14,7 +14,7 @@ export async function signCommittedReserveValuation(journal,inputPolicy,intentId
  const p=structuredClone(inputPolicy);
  if(typeof intentId!=='string'||intentId!==intentId.trim()||!/^[a-zA-Z0-9:_-]{1,100}$/.test(intentId)||
   typeof p.keyArn!=='string'||p.keyArn!==p.keyArn.trim()||!/^arn:aws:kms:us-east-1:720232346199:key\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(p.keyArn))throw Error('Invalid reserve signing identity');
- let client,claimed=false;
+ let client,claimed=false,claimAttempted=false;
  try{
   const intent=await journal.load(intentId);
   const material=prepareReserveValuation(p.reservePolicy,intent.evidence,intent.preparedAt);
@@ -24,7 +24,7 @@ export async function signCommittedReserveValuation(journal,inputPolicy,intentId
   live();
   client=clientFactory({region:'us-east-1',endpoint:'https://kms.us-east-1.amazonaws.com',maxAttempts:1});
   if(publicAddress(await client.send(new GetPublicKeyCommand({KeyId:p.keyArn})),p.keyArn)!==getAddress(p.signer))throw Error('Wrong reserve public key');
-  live();await journal.claim(intentId,material.digest);claimed=true;live();
+  live();claimAttempted=true;await journal.claim(intentId,material.digest);claimed=true;live();
   const result=await client.send(new SignCommand({KeyId:p.keyArn,Message:getBytes(material.digest),MessageType:'DIGEST',SigningAlgorithm:'ECDSA_SHA_256'}));
   if(result.KeyId!==p.keyArn||result.SigningAlgorithm!=='ECDSA_SHA_256')throw Error('Wrong reserve signing response');
   const {r,s}=derSignature(result.Signature);let signature;
@@ -34,6 +34,7 @@ export async function signCommittedReserveValuation(journal,inputPolicy,intentId
   live();await journal.complete(intentId,material.digest,signature);
   return {intentId,domain:material.domain,value:material.value,digest:material.digest,signature,financialExecutionEnabled:false};
  }catch{
-  throw Error(claimed?'Reserve signing outcome requires reconciliation; claim remains consumed':'Reserve signing authorization failed');
+  throw Error(claimed?'Reserve signing outcome requires reconciliation; claim remains consumed':claimAttempted?
+   'Reserve signing outcome requires reconciliation; claim acknowledgement is unknown':'Reserve signing authorization failed');
  }finally{client?.destroy();}
 }

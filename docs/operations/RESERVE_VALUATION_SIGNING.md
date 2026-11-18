@@ -26,6 +26,8 @@ Local PostgreSQL verification covers cross-authority denial, single concurrent c
 
 ## Failure and recovery
 
+`LambdaValuationJournal` now implements the private transport boundary for the future hosted worker. Its configured ARN must name an immutable version of the exact ORIO journal function in account 720232346199/us-east-1; aliases, unqualified names, other accounts and unexpected executed versions reject. Each synchronous invocation uses a fixed AWS endpoint with SDK retries disabled. Strict payload/response limits and generic errors prevent accidental widening or backend-detail disclosure. The worker marks a claim attempt before awaiting acknowledgement, so an uncertain response cannot be mistaken for an unused authorization. Actual IAM invocation permission and the hosted valuation worker are not created by this code.
+
 Missing/stale/disagreeing observations, changed code/revisions, ledger/cash mismatch, insufficient custody/backing, unknown/revoked authority, expiry and a previously consumed intent fail closed. A Sign error, wrong public signature, completion failure or unknown acknowledgement after a claim requires reconciliation; never blindly resubmit or invent a new authorization. The worker does not disclose provider/credential/backend errors.
 
 Revocation is serialized with worker claim/completion. It cannot cryptographically revoke an already returned signature: short validity and on-chain authority rotation remain essential. Previously emitted signatures may remain usable until expiry or contract configuration changes. Unknown data is never a zero balance. Canonical provider agreement is not a cryptographic state proof or independent financial review.

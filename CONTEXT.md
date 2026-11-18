@@ -1,4 +1,13 @@
-## Current continuation — private valuation journal prepared
+## Current continuation — private journal rehearsal verified and cleaned
+
+The approved $5 private-copy rehearsal passed on November 18 UTC. SQL extensions 020/021 and the restricted passwordless journal bootstrap committed atomically on a fresh encrypted private copy. Existing record hashes/counts were preserved; the runtime login had exactly three executable ORIO functions, no direct table/column privileges and no authority bindings. Actual IAM login remains for the next private-service qualification. See infrastructure/aws/JOURNAL_REHEARSAL_REPORT_2026-11-18.md and its sanitized receipt.
+
+All temporary database, checkpoint, managed secret, network, transfer storage, private CloudShell environment and working files were removed and absence verified. The original database remained unchanged with its protections and metadata-reader ingress intact. All six protected keys remained disabled; no blockchain transaction or financial activation occurred.
+
+A version-pinned private Lambda journal transport now rejects altered versions and ambiguous claim acknowledgements without signing or retrying. All 262 local service checks (9 atomic plus 253 integration), 71 contract/SDK tests and strict typechecking pass. Separate original-only context/installer and credential-free packaging are prepared; original SQL installation and the retained paused private journal require the specific new approval in infrastructure/aws/ORIGINAL_JOURNAL_DEPLOYMENT_PROPOSAL.md. Reserve arrangements and production financial qualification remain unfinished. External review is advisory.
+
+## Historical continuation — private valuation journal prepared
+
 
 PR #32 merged with passing CI. A later read-only public Base Sepolia check found all ten setup receipt blocks canonical and below the provider-advertised finalized checkpoint; see infrastructure/aws/TESTNET_MONETARY_SETUP_FINALITY_2026-11-18.json. This is explicitly a single-provider observation, not dual-provider reserve qualification. Signing and financial execution remain disabled.
 
