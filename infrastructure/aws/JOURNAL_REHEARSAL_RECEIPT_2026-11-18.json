@@ -1,0 +1,57 @@
+{
+  "status": "PRIVATE_JOURNAL_REHEARSAL_VERIFIED_AND_CLEANED",
+  "account": "720232346199",
+  "region": "us-east-1",
+  "sourceCommit": "d798fb94ef4923eafe8f13ccee3a4c82f57a83b8",
+  "approvedAdditionalBudgetUsd": 5,
+  "actualAwsBillingMeasured": false,
+  "completedAt": "2026-11-18T03:05:25.545Z",
+  "cleanupVerifiedAt": "2026-11-18T03:28:21.315265+00:00",
+  "extensions": [
+    {
+      "file": "services/control-foundation/pending-migrations/020_reserve_valuation_signing.sql",
+      "sha256": "38ed5c1a6a2b684d9c15e5443f5d49f0da8f14a1dabef0c6dfd429a0fa401d72"
+    },
+    {
+      "file": "services/control-foundation/pending-migrations/021_valuation_runtime_functions.sql",
+      "sha256": "b0e8846bc424f46c18e19398b12da35cf4accc1a8a1d66c700d1c4da9260e3fd"
+    },
+    {
+      "file": "infrastructure/aws/valuation-journal-bootstrap.sql",
+      "sha256": "3043466b5a915cb31a88fc7e3a1c7ec3d16e6ccc1cf9cc8c4fa0be8e863ad3e1"
+    }
+  ],
+  "existingRecordsPreserved": true,
+  "effectiveRuntimePrivilegesVerified": true,
+  "executableOrioFunctions": 3,
+  "directTableOrColumnPrivileges": false,
+  "authorityBindings": 0,
+  "actualIamLoginPerformed": false,
+  "originalSqlAccessed": false,
+  "originalDatabaseModified": false,
+  "awsSigningPerformed": false,
+  "blockchainTransactionsSubmitted": 0,
+  "financialActivationPerformed": false,
+  "allSixKeysDisabledAtInspection": true,
+  "temporaryResourcesRemoved": {
+    "cloneAbsent": true,
+    "checkpointAbsent": true,
+    "cloneSecretAbsent": true,
+    "temporarySecurityGroupsAbsent": true,
+    "temporaryEndpointsRemoved": true,
+    "temporaryNetworkInterfacesAbsent": true,
+    "temporaryBucketAbsent": true,
+    "privateRouteLocalOnly": true
+  },
+  "temporaryCloudShellEnvironmentDeleted": true,
+  "remoteWorkingFilesRemoved": true,
+  "originalProtectionsPreserved": true,
+  "originalMetadataIngressPreserved": true,
+  "privateReportSha256": "6256c62186b44397370a1df6a8f8242fdf1d8c2a900e20621c5f25aabf0b16af",
+  "privateEvidenceArchiveSha256": "2fc99f4ad52f24c72469b36170ab2d2a7e87e28431e7683583d409713e2a284f",
+  "privateCleanupArchiveSha256": "65786e32e18e479f108fada15e04ed95b30fd17c8da260b1811fd6e3153b650c",
+  "qualifiedCatalogFingerprint": "ea31f39f97fc104cbd5f4ec9be42333fbc39606f00c6af12eeee7dd744b73f3d",
+  "originalUpgradeAuthorized": false,
+  "retainedJournalServiceDeployed": false,
+  "externalReviewRequired": false
+}
