@@ -6,8 +6,11 @@ import {UpgradeFailure} from './hosted-upgrade.ts';
 const names=['services/control-foundation/pending-migrations/020_reserve_valuation_signing.sql',
  'services/control-foundation/pending-migrations/021_valuation_runtime_functions.sql','infrastructure/aws/valuation-journal-bootstrap.sql'];
 const sha=(s:string)=>createHash('sha256').update(s).digest('hex');
+export const journalBootstrapManifestSha256='a7ab7cfa2360ec7b0e8e84d4da2b1d98e058c6773f22cf15bb519235f3278b62';
 export async function reviewedValuationJournalPlan(){
- const manifest:Record<string,string>=JSON.parse(await readFile(new URL('../config/valuation-journal-bootstrap-checksums.json',import.meta.url),'utf8'));
+ const source=(await readFile(new URL('../config/valuation-journal-bootstrap-checksums.json',import.meta.url),'utf8')).replaceAll('\r\n','\n');
+ if(sha(source)!==journalBootstrapManifestSha256)throw Error('Journal bootstrap manifest changed');
+ const manifest:Record<string,string>=JSON.parse(source);
  if(JSON.stringify(Object.keys(manifest))!==JSON.stringify(names))throw Error('Unexpected journal bootstrap sequence');
  const entries=[];
  for(const name of names){
