@@ -1,6 +1,6 @@
 # Original database and paused private journal — prepared approval package
 
-Status: prepared only. The founder's $5 disposable-copy approval does **not** authorize this original-database access or retained service. No original SQL, new retained role/service or signing access has been applied. External review is advisory.
+Status: this original-database/private-service scope was subsequently approved and executed on November 18. SQL committed and the service is deployed/paused. Actual runtime qualification is blocked before the handler by the blanket KMS denial. See ORIGINAL_JOURNAL_DEPLOYMENT_REPORT_2026-11-18.md and JOURNAL_STARTUP_CORRECTION_PROPOSAL.md. The original proposal below records the approved scope; it does not authorize the new startup-key exception. External review is advisory.
 
 ## Qualified inputs
 
