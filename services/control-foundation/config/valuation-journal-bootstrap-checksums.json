@@ -1,0 +1,5 @@
+{
+  "services/control-foundation/pending-migrations/020_reserve_valuation_signing.sql": "38ed5c1a6a2b684d9c15e5443f5d49f0da8f14a1dabef0c6dfd429a0fa401d72",
+  "services/control-foundation/pending-migrations/021_valuation_runtime_functions.sql": "b0e8846bc424f46c18e19398b12da35cf4accc1a8a1d66c700d1c4da9260e3fd",
+  "infrastructure/aws/valuation-journal-bootstrap.sql": "3043466b5a915cb31a88fc7e3a1c7ec3d16e6ccc1cf9cc8c4fa0be8e863ad3e1"
+}

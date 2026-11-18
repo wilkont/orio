@@ -6,6 +6,8 @@ The machine-readable receipt is `TESTNET_MONETARY_SETUP_RECEIPT_2026-11-17.json`
 
 ## Result
 
+Later read-only verification: `TESTNET_MONETARY_SETUP_FINALITY_2026-11-18.json` records all ten canonical receipt blocks at or below the public RPC's advertised finalized checkpoint. Original receipt observations are retained unchanged. This later check uses one public provider and does not establish independent dual-provider reserve qualification.
+
 - Test USDC registered, approved and elected as master.
 - Existing registry, monetary controller and vault connected.
 - Qualification valuation signer and settlement operator configured.

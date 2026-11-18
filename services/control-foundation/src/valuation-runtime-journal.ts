@@ -44,6 +44,7 @@ export class ValuationRuntimeJournal {
    return await query(client);
   }finally{client.release();}
  }
+ async qualify():Promise<void>{await this.checked(async()=>{});}
  async load(intentId:string):Promise<PreparedIntent>{
   id(intentId);return this.checked(async c=>{
    const row=(await c.query<{intent:PreparedIntent}>('SELECT orio_signing.valuation_runtime_load($1) AS intent',[intentId])).rows[0];

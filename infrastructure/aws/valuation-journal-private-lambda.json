@@ -1,0 +1,262 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "PREPARED ONLY: private scoped valuation journal, initially paused. No signing or financial activation.",
+  "Parameters": {
+    "CodeBucket": {
+      "Type": "String",
+      "AllowedValues": [
+        "orio-metadata-artifacts-720232346199-us-east-1"
+      ]
+    },
+    "CodeKey": {
+      "Type": "String",
+      "AllowedPattern": "valuation-journal/[a-f0-9]{64}\\.zip"
+    },
+    "CodeVersion": {
+      "Type": "String",
+      "MinLength": 1,
+      "MaxLength": 1024
+    },
+    "QualificationConcurrency": {
+      "Type": "Number",
+      "Default": 0,
+      "AllowedValues": [
+        0,
+        1
+      ],
+      "Description": "Zero by default. One only during separately approved private verification; restore zero afterward."
+    }
+  },
+  "Resources": {
+    "JournalSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "ORIO scoped journal to original private ledger TLS PostgreSQL only",
+        "VpcId": "vpc-05613af21236d6911",
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 5432,
+            "ToPort": 5432,
+            "DestinationSecurityGroupId": "sg-030c057c133762083"
+          }
+        ]
+      },
+      "Condition": "Target"
+    },
+    "DatabaseIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": "sg-030c057c133762083",
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432,
+        "SourceSecurityGroupId": {
+          "Ref": "JournalSecurityGroup"
+        }
+      },
+      "Condition": "Target"
+    },
+    "JournalLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/orio-spc-3-valuation-journal",
+        "RetentionInDays": 7
+      },
+      "Condition": "Target"
+    },
+    "JournalRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "orio-spc-3-valuation-journal",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "PinnedScopedValuationJournal",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "rds-db:connect",
+                  "Resource": "arn:aws:rds-db:us-east-1:720232346199:dbuser:db-GDKQSO4LQYHC4WACUEYAGRFZNA/orio_valuation_journal"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "arn:aws:logs:us-east-1:720232346199:log-group:/aws/lambda/orio-spc-3-valuation-journal:*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeSubnets",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:AssignPrivateIpAddresses",
+                    "ec2:UnassignPrivateIpAddresses"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Deny",
+                  "Action": [
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeSubnets",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:AssignPrivateIpAddresses",
+                    "ec2:UnassignPrivateIpAddresses"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "ArnEquals": {
+                      "lambda:SourceFunctionArn": "arn:aws:lambda:us-east-1:720232346199:function:orio-spc-3-valuation-journal"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Deny",
+                  "Action": [
+                    "kms:*",
+                    "secretsmanager:GetSecretValue",
+                    "rds-data:*",
+                    "lambda:InvokeFunction",
+                    "sts:AssumeRole"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "Condition": "Target"
+    },
+    "JournalFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": [
+        "JournalLogs",
+        "DatabaseIngress"
+      ],
+      "Properties": {
+        "FunctionName": "orio-spc-3-valuation-journal",
+        "Runtime": "nodejs24.x",
+        "Architectures": [
+          "x86_64"
+        ],
+        "Handler": "src/valuation-journal-lambda-entry.handler",
+        "MemorySize": 256,
+        "Timeout": 10,
+        "ReservedConcurrentExecutions": {
+          "Ref": "QualificationConcurrency"
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "JournalRole",
+            "Arn"
+          ]
+        },
+        "Code": {
+          "S3Bucket": {
+            "Ref": "CodeBucket"
+          },
+          "S3Key": {
+            "Ref": "CodeKey"
+          },
+          "S3ObjectVersion": {
+            "Ref": "CodeVersion"
+          }
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "JournalSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-074b44d8936032ab9",
+            "subnet-01c4eea25a938e901"
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "ORIO_JOURNAL_MODE": "SCOPED_QUALIFICATION_IAM",
+            "ORIO_DATABASE_HOST": "orio-spc-3-ledger-ledgerdatabase-sdrgecp35snc.cpa8oeo62tiq.us-east-1.rds.amazonaws.com",
+            "ORIO_DATABASE_NAME": "orio_control",
+            "ORIO_DATABASE_USER": "orio_valuation_journal",
+            "NODE_ENV": "production"
+          }
+        }
+      },
+      "Condition": "Target"
+    },
+    "JournalVersion": {
+      "Type": "AWS::Lambda::Version",
+      "Condition": "Target",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "JournalFunction"
+        },
+        "CodeSha256": "VQ8lCuZRNyvEodHHVZaXD0KB8YZnqJNL6h8LCecDMzU=",
+        "Description": "Pinned qualification journal artifact; no KMS permission"
+      }
+    }
+  },
+  "Outputs": {
+    "FunctionArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "JournalFunction",
+          "Arn"
+        ]
+      }
+    },
+    "SecurityGroupId": {
+      "Value": {
+        "Ref": "JournalSecurityGroup"
+      }
+    },
+    "PinnedVersionArn": {
+      "Value": {
+        "Ref": "JournalVersion"
+      }
+    }
+  },
+  "Conditions": {
+    "Target": {
+      "Fn::And": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::AccountId"
+            },
+            "720232346199"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::Region"
+            },
+            "us-east-1"
+          ]
+        }
+      ]
+    }
+  }
+}
