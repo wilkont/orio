@@ -51,6 +51,16 @@ test('fresh observations can attest older finalized checkpoints without extendin
  f.evidence.prices.forEach(p=>p.observedAt=String(BigInt(f.now)-301n));assert.throws(f.prepare,/Stale/);
 });
 
+test('founder-approved risk ceilings cannot be widened by deployment configuration',()=>{
+ const changes=[p=>p.riskPolicyId='unapproved',p=>p.maximumAgeSeconds='301',p=>p.maximumCheckpointAgeSeconds='3601',
+  p=>p.maximumValiditySeconds='121',p=>p.maximumPriceDeviationPpm='20001',
+  p=>p.issuanceMinimumUsd36=(BigInt(p.issuanceMinimumUsd36)-1n).toString(),
+  p=>p.issuanceMaximumUsd36=(BigInt(p.issuanceMaximumUsd36)+1n).toString()];
+ for(const change of changes){const f=reserveFixture();change(f.policy);assert.throws(f.prepare,/explicit reserve risk/);}
+ const stricter=reserveFixture();stricter.policy.maximumValiditySeconds='60';stricter.policy.maximumPriceDeviationPpm='10000';
+ assert.doesNotThrow(stricter.prepare);
+});
+
 function staged(f){
  const m=f.prepare();let claimed=false,complete=false;
  return {material:m,get claimed(){return claimed;},get completed(){return complete;},

@@ -1,0 +1,139 @@
+{
+  "status": "TEN_PAUSED_TESTNET_SETUP_OPERATIONS_VERIFIED",
+  "completedAt": "2026-11-18T00:23:05.480038+00:00",
+  "receipts": [
+    {
+      "status": "VERIFIED_PAUSED_TESTNET_SETUP",
+      "operationId": "schedule-register",
+      "transactionHash": "0x3475f19cbc2d79057fb359f8ecae4142cef3df635ad0ffbdbd26f93c943d8336",
+      "blockNumber": "0x3967e7e",
+      "blockHash": "0xe147ae71b0499460fe150ef7937061190bb297f0274682710c9bef3027d402b6",
+      "observedNetworkFeeWei": "348258000310",
+      "finalizedAtObservation": false,
+      "financialExecutionEnabled": false
+    },
+    {
+      "status": "VERIFIED_PAUSED_TESTNET_SETUP",
+      "operationId": "schedule-approve",
+      "transactionHash": "0x2dd71531bce20b8664a9dc215578bc65c6c4e6511500f3539bd4de6e4657adb1",
+      "blockNumber": "0x3967fcb",
+      "blockHash": "0xf6e56af546cdbf222fab392beea7cc3d36e0efb1904dc03fe596739f9445451d",
+      "observedNetworkFeeWei": "348870000349",
+      "finalizedAtObservation": false,
+      "financialExecutionEnabled": false
+    },
+    {
+      "status": "VERIFIED_PAUSED_TESTNET_SETUP",
+      "operationId": "schedule-elect",
+      "transactionHash": "0xfd68df223bc4c335255434064ad3839779c3eb6d130c175abd443412f47cb99f",
+      "blockNumber": "0x3968118",
+      "blockHash": "0xb101738756b71c307ff291b82367aa3e93c2f033afc5212485d522ac4a7868ee",
+      "observedNetworkFeeWei": "348942000208",
+      "finalizedAtObservation": false,
+      "financialExecutionEnabled": false
+    },
+    {
+      "status": "VERIFIED_PAUSED_TESTNET_SETUP",
+      "operationId": "schedule-bind",
+      "transactionHash": "0x7398381ab76346450fcce5e76b8f2b7c7b11d3c2f61406ecceef6252f2a703c9",
+      "blockNumber": "0x3968264",
+      "blockHash": "0x18562ce0bf53f4760d733526c76a47b9e484b419b0446a225fe80ff9bdfa99a7",
+      "observedNetworkFeeWei": "347214000328",
+      "finalizedAtObservation": false,
+      "financialExecutionEnabled": false
+    },
+    {
+      "status": "VERIFIED_PAUSED_TESTNET_SETUP",
+      "operationId": "schedule-configure-paused",
+      "transactionHash": "0xa56740182183506f52e9988d48bb9764b1df38be61a8cf592d6d1e6e9f9b16f8",
+      "blockNumber": "0x39683b2",
+      "blockHash": "0x3749da0c3af5b4685238c5791b82b9886f42e6eb628213c1913ce086a7657105",
+      "observedNetworkFeeWei": "352038000292",
+      "finalizedAtObservation": false,
+      "financialExecutionEnabled": false
+    },
+    {
+      "status": "VERIFIED_PAUSED_TESTNET_SETUP",
+      "operationId": "execute-register",
+      "transactionHash": "0x1e2131d9cb84ea4fca886be3d54b1b0f03154e5135a89038b05f1b8a2094c9af",
+      "blockNumber": "0x3968501",
+      "blockHash": "0x29395a07763604d06f6ed5fe168cc19265d785f738ed6c4fab2f6dd87e8c3f45",
+      "observedNetworkFeeWei": "616350000176",
+      "finalizedAtObservation": false,
+      "financialExecutionEnabled": false
+    },
+    {
+      "status": "VERIFIED_PAUSED_TESTNET_SETUP",
+      "operationId": "execute-approve",
+      "transactionHash": "0xd97d28328b7dc5e42fe58f3b0416ec60d8e2daa6b45fcf2ba187ad14eaf754ad",
+      "blockNumber": "0x3968652",
+      "blockHash": "0xbd32d417409e2733ebc7433ca650d0eddb45cf81c0f26dd7a263bf8cb38d3f50",
+      "observedNetworkFeeWei": "315000000199",
+      "finalizedAtObservation": false,
+      "financialExecutionEnabled": false
+    },
+    {
+      "status": "VERIFIED_PAUSED_TESTNET_SETUP",
+      "operationId": "execute-elect",
+      "transactionHash": "0xb7bd6104ceba6f77fdad2372bc8855f0994f0a22f0bee7cbf76fb406eb6e3c54",
+      "blockNumber": "0x39687a3",
+      "blockHash": "0x5fed8c8e48c82555b3bbeac24d4b233c211c6a5150e8ec67c46b78edc5ca8f14",
+      "observedNetworkFeeWei": "724860000199",
+      "finalizedAtObservation": false,
+      "financialExecutionEnabled": false
+    },
+    {
+      "status": "VERIFIED_PAUSED_TESTNET_SETUP",
+      "operationId": "execute-bind",
+      "transactionHash": "0xc4ac9290b992b0438b1a44cc43f53bedfd53cc8cf1ce3ca640b22ec7a4282ba2",
+      "blockNumber": "0x39688f5",
+      "blockHash": "0x10c6bc2d8e645ab7c8a441addfc8cd0f3662b6c13cabe835fbdd40303c232e74",
+      "observedNetworkFeeWei": "665184000187",
+      "finalizedAtObservation": false,
+      "financialExecutionEnabled": false
+    },
+    {
+      "status": "VERIFIED_PAUSED_TESTNET_SETUP",
+      "operationId": "execute-configure-paused",
+      "transactionHash": "0xd98086211fef909e8a59e5dde721ac56b72ba8af18714b51924855c7591d4c1c",
+      "blockNumber": "0x3968a47",
+      "blockHash": "0xf26f903db076fb460424af91d4e9462a22da2e0741a78efa4ca4dfe5578afb12",
+      "observedNetworkFeeWei": "557088000287",
+      "finalizedAtObservation": false,
+      "financialExecutionEnabled": false
+    }
+  ],
+  "actualNetworkFeeWei": "4623804002535",
+  "financialExecutionEnabled": false,
+  "productionKeysUsed": false,
+  "approval": "Founder approved the ten pinned paused Base Sepolia setup calls and $0.25 AWS / 0.0015 test ETH planning ceiling",
+  "sourceCommit": "22c21b88b0336de65b67f388e3d5078bcf5bd49f",
+  "chainId": "84532",
+  "fixedPlanSha256": "fe2aa6e3fc4c52335b226150ff68856e63b311eb672d0044bcd1e91f7efdd7c6",
+  "awsAccount": "720232346199",
+  "region": "us-east-1",
+  "containment": {
+    "status": "ORIGINAL_PAUSED_CONFIGURATION_RESTORED",
+    "verifiedAt": "2026-11-18T00:28:58.733963+00:00",
+    "stackStatus": "UPDATE_COMPLETE",
+    "originalTemplateMatches": true,
+    "functionConcurrency": 0,
+    "keyStates": {
+      "479ae4e7-483e-4d17-8f46-232f08c5c6ee": "Disabled",
+      "5d824156-6210-4031-b449-c14ee84efc74": "Disabled",
+      "a1c003ae-c821-4503-91c6-38e719c3bb0c": "Disabled",
+      "21102ff5-21da-4c30-982a-9d05eda857e9": "Disabled",
+      "c229588b-dcbb-4f31-b4ca-d77ad54caad4": "Disabled",
+      "02e14770-afe4-45f8-a9b0-125ee918064d": "Disabled"
+    },
+    "financialExecutionEnabled": false
+  },
+  "actualNetworkFeeTestEth": "0.000004623804002535",
+  "awsBilledCost": "NOT_MEASURED",
+  "realMoneyOperationsPerformed": false,
+  "databaseChanged": false,
+  "websiteChanged": false,
+  "privateEvidenceArchiveSha256": "ebad97942ad4456caef57ba23bbf2ceff2da01ae9ef085e9cd84c97829f2c8bc",
+  "temporaryWorkingFilesRemoved": true,
+  "finalityNote": "Each receipt was canonical and successful at execution verification; finalizedAtObservation is separate and was false at that observation."
+}
