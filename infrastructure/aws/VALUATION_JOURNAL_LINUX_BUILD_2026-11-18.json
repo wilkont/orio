@@ -1,0 +1,15 @@
+{
+  "kind": "PREPARED_LINUX_JOURNAL_ARTIFACT",
+  "status": "BUILT_AND_SMOKE_TESTED_NOT_DEPLOYED",
+  "platform": "linux",
+  "runtime": "nodejs24.x",
+  "nodeVersion": "24.22.1",
+  "sourceCommit": "d56595340d1a716ed9117fefb1d573b556e5b1f9",
+  "sha256": "8692186852a85a5dcacf8e21ec0b90de7249612169d06cf520ef60a236d61926",
+  "codeSha256Base64": "hpIYaFKoWl3Kz44h7AuQ3nJJYSFp0Gz1IO9gojbWGSY=",
+  "bytes": 2359486,
+  "lockSha256": "74cd14d119f3ed7fb1160f19dcbdd0c9788f8ab395806646d626e0d008a36f01",
+  "qualificationRun": "https://github.com/wilkont/orio/actions/runs/44211092061",
+  "scope": "Journal packaging and smoke passed; first cross-platform digest comparison failed because the template initially referenced the Windows build. The template now pins this Linux output. Full passing qualification must follow.",
+  "financialExecutionEnabled": false
+}

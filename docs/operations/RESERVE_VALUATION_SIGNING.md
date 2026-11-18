@@ -32,6 +32,8 @@ Revocation is serialized with worker claim/completion. It cannot cryptographical
 
 ## Verification and remaining work
 
+The private journal handler, pinned IAM pool, checked three-file installer, clone-only rehearsal runner/context validator and paused AWS service template are now prepared. Their scoped authority and proposed next disposable rehearsal are documented in `infrastructure/aws/VALUATION_JOURNAL_DEPLOYMENT_PROPOSAL.md`. A local synthetic journal is preserved through successful installation and an injected final-stage failure rolls back schema and role creation together. This preparation adds no hosted role, database extension or signing access.
+
 Local tests use a disposable PostgreSQL database, actual compiled contracts in an isolated EVM and a deterministic KMS-protocol fixture. They verify one concurrent claimant, an accepted valuation/purchase, reserve/currency results, finalized journal import, stale-state rejection, revocation and append-only/permission boundaries. Synthetic keys and test funds never leave the local VM. Focused tests cover expiry, depeg/shortfalls, source substitution, EIP-1898 restrictions, opaque errors and uncertain KMS outcomes.
 
 Live price-source authentication/admission, issuer freeze/blacklist checks, proxy implementation upgrade verification, purpose-bound least-privilege hosted roles, actual KMS valuation execution, recovery drills, production contract deployment and actual reserve arrangements remain outstanding. Public testnet diagnostics are labeled single-source only. Existing production-purpose keys remain disabled; the public read-only metadata service and ORIO.IO are unchanged.

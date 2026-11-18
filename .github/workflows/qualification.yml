@@ -16,6 +16,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - run: bash -n infrastructure/aws/build-hosted-audit-inputs.sh
       - run: bash -n infrastructure/aws/build-sql-qualification-inputs.sh
+      - run: bash -n infrastructure/aws/build-valuation-journal-qualification-inputs.sh
       - run: bash -n infrastructure/aws/build-original-maintenance-inputs.sh
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
@@ -32,6 +33,11 @@ jobs:
         working-directory: services/control-foundation
       - run: node scripts/build-metadata-lambda.mjs /tmp/orio-metadata-qualification.zip
         working-directory: services/control-foundation
+      - run: node scripts/build-valuation-journal-lambda.mjs /tmp/orio-valuation-journal-qualification.zip
+        working-directory: services/control-foundation
+      - run: >-
+          node --input-type=module -e
+          "import fs from 'node:fs';import assert from 'node:assert/strict';const built=JSON.parse(fs.readFileSync('/tmp/orio-valuation-journal-qualification.zip.json','utf8'));const plan=JSON.parse(fs.readFileSync('infrastructure/aws/valuation-journal-private-lambda.json','utf8'));assert.equal(built.codeSha256Base64,plan.Resources.JournalVersion.Properties.CodeSha256);"
       - run: node node_modules/typescript/bin/tsc --ignoreConfig --strict --noEmit --target ES2023 --module NodeNext --moduleResolution NodeNext --allowImportingTsExtensions scripts/audit-hosted-schema.ts
         working-directory: services/control-foundation
       - run: ../services/control-foundation/node_modules/.bin/tsc --strict --noEmit --target ES2023 --module NodeNext --moduleResolution NodeNext scripts/prepare-sepolia-deployment.ts scripts/submit-sepolia-timelock.ts scripts/verify-sepolia-timelock.ts
