@@ -2,6 +2,12 @@
 
 Original SQL 020/021 and the restricted passwordless bootstrap are installed. Private immutable journal version 1 passed actual IAM database qualification and three rejection checks after the approved startup correction. It is paused again; all signing keys remain disabled. See ../../infrastructure/aws/JOURNAL_STARTUP_VERIFICATION_REPORT_2026-11-18.md. Runtime-code decryption-denial simulation is unresolved and unverified; deployed PostgreSQL-only networking has no KMS route. No authority binding, hosted valuation worker or financial activation is established by this result. Earlier pending-install wording below records implementation history and is superseded by this status.
 
+## Private signing entry integration
+
+`contracts/sdk/valuation-worker-lambda.mjs` now binds a checksum-pinned deployment configuration to immutable journal transport and the existing committed-valuation signer. Callers can submit only version 1, action signCommittedIntent and an intent ID; they cannot select policy, evidence, keys, digests, SQL or contract identities. Configurations supporting mainnet or mutable journal aliases reject. The request handler returns opaque reconciliation-required failures, never retries and never invokes transaction submission. Tests exercise the full transport through claim, recovered ECDSA signature and completion, including replay and caller substitution rejection. These are synthetic local tests; no hosted worker or signing permission was created.
+
+The simulator discrepancy has been narrowed by a 24-case native differential to explicit-resource evaluation of the source-function condition. Live enforcement remains unverified; see ../../infrastructure/aws/JOURNAL_SIMULATION_DIAGNOSIS_2026-11-18.md and the prepared fixed dry-run proposal. The original journal network remains PostgreSQL-only, and its function remains paused. Actual owner reserve arrangements are tracked in RESERVE_ARRANGEMENT_DECISIONS.md.
+
 # Reserve-backed monetary valuation signing
 
 ## Authority and integration
