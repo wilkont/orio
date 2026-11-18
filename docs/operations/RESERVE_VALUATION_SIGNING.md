@@ -1,4 +1,10 @@
-## Hosted status - November 18, 2026
+## Current hosted status - live runtime guard verified
+
+The founder-approved isolated dry-run test verified DenyRuntimeCodeDecryption using the actual AWS authorization trace, with Lambda source identity present. Its six KMS statements matched the original journal exactly; the original policy stayed unchanged. Temporary resources and working files were removed and the evidence retained privately. The source simulator inconsistency remains reproducible, but the tested runtime permission concern is resolved. See ../../infrastructure/aws/JOURNAL_RUNTIME_DENIAL_REPORT_2026-11-18.md.
+
+The compiled qualification worker packager is contracts/scripts/build-valuation-worker.mjs. It requires an explicit reviewed configuration checksum and new ZIP path, copies only the required SDK modules, compiles accounting TypeScript to JavaScript, installs the separate locked production dependencies with scripts disabled and smoke-tests the actual packaged entry with no credential environment. The qualification script checks wrong-checksum rejection and two byte-identical synthetic builds. It does not admit live providers/configuration or create signing permission. Original journal paused; all keys Disabled; no financial activation. Owner contact designation is recorded privately; actual reserve terms and funding remain unfinished.
+
+## Prior hosted status - November 18, 2026
 
 Original SQL 020/021 and the restricted passwordless bootstrap are installed. Private immutable journal version 1 passed actual IAM database qualification and three rejection checks after the approved startup correction. It is paused again; all signing keys remain disabled. See ../../infrastructure/aws/JOURNAL_STARTUP_VERIFICATION_REPORT_2026-11-18.md. Runtime-code decryption-denial simulation is unresolved and unverified; deployed PostgreSQL-only networking has no KMS route. No authority binding, hosted valuation worker or financial activation is established by this result. Earlier pending-install wording below records implementation history and is superseded by this status.
 

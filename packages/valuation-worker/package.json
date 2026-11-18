@@ -1,0 +1,12 @@
+{
+  "name": "@orio/valuation-worker-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=24"},
+  "dependencies": {
+    "@aws-sdk/client-kms": "3.1169.0",
+    "@aws-sdk/client-lambda": "3.1169.0",
+    "ethers": "6.17.0"
+  }
+}

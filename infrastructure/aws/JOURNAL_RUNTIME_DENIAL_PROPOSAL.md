@@ -1,4 +1,6 @@
-# Fixed runtime-denial test - prepared, not deployed
+# Fixed runtime-denial test - approved, executed and removed
+
+Current status: the founder approved the exact test. Live AWS authorization evidence matched DenyRuntimeCodeDecryption, and all three temporary resources were removed with absence verified. See [the final report](JOURNAL_RUNTIME_DENIAL_REPORT_2026-11-18.md) and sanitized receipt. The proposed scope below is retained as the execution history.
 
 The November 18 read-only differential isolates the discrepancy to explicit resource simulation. The same wildcard-resource policy and supplied source-function identity denies access without ResourceArns, but allows it when the exact startup-key ResourceArns is supplied. Null, StringEquals and ArnEquals show this behavior. aws:SourceArn provides a working control. This is an observed simulator inconsistency, not proof that the deployed guard fails or succeeds. Changing the deployed policy to satisfy the simulator would provide false confidence.
 

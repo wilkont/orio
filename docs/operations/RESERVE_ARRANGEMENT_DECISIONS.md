@@ -1,6 +1,6 @@
 # ORIO company-operated reserve arrangements - owner decisions required
 
-Status: preparation only. ORIO Inc., Delaware, and company-operated protected signing are founder-confirmed. Approved monetary and risk parameters remain unchanged. No reserve funding, customer agreement, bank/custody account, treasury appointment or financial activation is established by this document. External review is advisory.
+Status: operating arrangements remain in preparation. ORIO Inc., Delaware, and company-operated protected signing are founder-confirmed. On November 18 the owner designated himself as treasury approver and recovery contact; the named appointment record is retained privately. That designation grants no new AWS access and does not demonstrate a working recovery procedure. Approved monetary and risk parameters remain unchanged. No reserve funding, customer agreement, bank/custody account or financial activation is established by this document. External review is advisory.
 
 ## Proposed operating resolution for company approval
 
@@ -18,7 +18,7 @@ Confirm the company source and authorized budget for Gas Treasury operating capi
 | --- | --- | --- |
 | Operating company | Founder identifies ORIO Inc., Delaware; incorporation-file metadata found in connected Drive | Current company authority/status record retained privately |
 | Reserve customer rights and ownership | Not established by the engineering record | Company-approved effective terms and evidence digest |
-| Treasury and recovery appointments | Names and authority not recorded | Owner-approved appointment record and tested recovery route |
+| Treasury approver and recovery contact | Owner explicitly designated himself; private record retained | Remaining purpose-specific action limits and a tested recovery route |
 | Production vault and reserve | Not deployed/funded | Accepted production identities, code/configuration hashes and finalized reconciliation |
 | Gas operating capital | No amount/source authorized for production funding | Company capital authorization and owner-performed funding receipt |
 | Signing workload | Private entry locally integrated; no new worker deployed | Purpose-bound permissions, immutable package, staged authority, live controlled qualification and recovery evidence |
