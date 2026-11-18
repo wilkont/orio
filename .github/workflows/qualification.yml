@@ -34,6 +34,8 @@ jobs:
         working-directory: services/control-foundation
       - run: npm run typecheck
         working-directory: services/control-foundation
+      - run: node scripts/qualify-valuation-worker-package.mjs
+        working-directory: contracts
       - run: node scripts/build-metadata-lambda.mjs /tmp/orio-metadata-qualification.zip
         working-directory: services/control-foundation
       - run: node scripts/build-valuation-journal-lambda.mjs /tmp/orio-valuation-journal-qualification.zip

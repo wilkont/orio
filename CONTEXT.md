@@ -1,4 +1,12 @@
-## Current continuation - runtime diagnosis and private signing entry
+## Current continuation - live runtime guard verified; signing package qualified
+
+The founder-approved isolated dry run verified DenyRuntimeCodeDecryption in the actual AWS authorization trace at 21:56:55Z on November 18. The Lambda source-function identity was present; the key/session policies allowed and the intended identity guard alone denied. All six journal KMS statements were copied exactly and the original policy stayed unchanged. The simulator inconsistency remains reproducible, but the tested permission concern is resolved by live enforcement evidence. See infrastructure/aws/JOURNAL_RUNTIME_DENIAL_REPORT_2026-11-18.md and its sanitized receipt.
+
+The temporary function/role/log group and stack were deleted and absence verified at 22:04Z. Eight private JSON records were downloaded/hash-verified with owner/SYSTEM-only access; remote working files were removed. The original journal remains paused, all six signing keys Disabled, and financial execution false. No ciphertext decryption, signing, key enablement, blockchain transaction or original SQL change occurred.
+
+The worker packager compiles its TypeScript accounting dependencies into a Node.js 24 runtime ZIP, uses a separate locked production-only dependency set and pins deployment configuration by checksum. Two synthetic-configuration builds produced identical bytes and passed the packaged rejection check; no AWS call or hosted worker deployment occurred. The owner designated himself as treasury approver and recovery contact; a private record and proposed operating-resolution draft are retained. Actual customer/reserve terms, capital authorization, admitted live policy/sources, authority binding, hosted signing and production qualification remain unfinished. External review remains advisory.
+
+## Prior continuation - runtime diagnosis and private signing entry
 
 The read-only native differential reproduced 24 cases with three unexpected allows, isolating the simulator mismatch to explicit-resource evaluation of lambda:SourceFunctionArn. The same Null/StringEquals/ArnEquals condition works without ResourceArns; aws:SourceArn controls work in both modes. This localizes the simulation issue, not live enforcement. See infrastructure/aws/JOURNAL_SIMULATION_DIAGNOSIS_2026-11-18.md. A three-resource isolated KMS authorization-only dry-run probe has an AWS-validated template and an AVAILABLE, unexecuted CREATE change set; no probe runtime/role has been deployed. Specific new-runtime access confirmation is pending. The actual journal remains paused; keys and financial execution are unchanged.
 

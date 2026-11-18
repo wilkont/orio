@@ -1,5 +1,7 @@
 # Resource-dependent IAM simulation discrepancy
 
+**Subsequent live resolution:** the approved isolated dry run verified the copied runtime guard using the actual AWS authorization trace; all temporary resources were removed. See [the final live report](JOURNAL_RUNTIME_DENIAL_REPORT_2026-11-18.md). The native simulator inconsistency below remains reproducible; its internal cause is not confirmed. Earlier unverified/pending statements below describe that diagnostic checkpoint.
+
 The repeated read-only reproducer is `python3 infrastructure/aws/diagnose-journal-policy.py` in the existing authorized AWS session. The November 18 native run returned exit status 2: 24 cases, three mismatches, liveRuntimeEnforcementVerified=false. The downloaded full input/response evidence SHA-256 is `335e59b4b8ec2db0a6a7f3b0ed2dcabd7716630967dbcde89a5cc645bfc2165d`; the private local copy matches AWS and is owner/SYSTEM-only. The remote transfer file was removed after verification.
 
 ## Minimized result
