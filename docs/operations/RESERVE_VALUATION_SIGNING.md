@@ -1,3 +1,7 @@
+## Hosted status - November 18, 2026
+
+Original SQL 020/021 and the restricted passwordless bootstrap are installed. Private immutable journal version 1 passed actual IAM database qualification and three rejection checks after the approved startup correction. It is paused again; all signing keys remain disabled. See ../../infrastructure/aws/JOURNAL_STARTUP_VERIFICATION_REPORT_2026-11-18.md. Runtime-code decryption-denial simulation is unresolved and unverified; deployed PostgreSQL-only networking has no KMS route. No authority binding, hosted valuation worker or financial activation is established by this result. Earlier pending-install wording below records implementation history and is superseded by this status.
+
 # Reserve-backed monetary valuation signing
 
 ## Authority and integration
