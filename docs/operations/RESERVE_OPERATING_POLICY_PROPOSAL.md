@@ -1,6 +1,8 @@
+> Founder resolution: the updated numeric risk limits, including the separate 3,600-second finalized-checkpoint age, were explicitly approved for implementation on November 17, 2026. The earlier combined-age question was superseded. See services/control-foundation/config/approved-reserve-risk-policy.json. Funding, financial activation and company legal reserve/customer-rights arrangements are not authorized or established by that decision. The remaining operating/legal proposals below retain their stated scope.
+
 # ORIO Inc. reserve operating policy — proposed resolution
 
-Status: proposed internal operating/risk policy for founder approval. Company-operated protected signing is already selected; this document does not ask to change that choice. It creates no bank or custody account, customer agreement, asset transfer or financial activation. External review is advisory.
+Status: numeric risk parameters approved for implementation; remaining legal/operating terms proposed for founder resolution. Company-operated protected signing is already selected; this document does not ask to change that choice. It creates no bank or custody account, customer agreement, asset transfer or financial activation. External review is advisory.
 
 ## Operating model
 
@@ -12,7 +14,7 @@ Gas Treasury capital is separate company operating capital, never customer backi
 
 The initial production master candidate is Circle-issued native USDC on Base, chain 8453, address 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913. This is a candidate asset identifier, not a deployed ORIO reserve address or payment instruction. Base Sepolia uses valueless test USDC at 0x036CbD53842c5426634e7929541eC2318f3dCF7e. They must never be confused.
 
-## Proposed explicit risk parameters
+## Approved explicit risk parameters
 
 | Parameter | Proposed value |
 | --- | --- |

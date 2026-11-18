@@ -1,0 +1,18 @@
+{
+  "id": "orio-reserve-risk-2026-11-17-v1",
+  "status": "FOUNDER_APPROVED_FOR_IMPLEMENTATION",
+  "approvalScope": "Internal risk-policy implementation; no funding or financial activation",
+  "issuanceMinimumUsd36": "995000000000000000000000000000000000",
+  "issuanceMaximumUsd36": "1005000000000000000000000000000000000",
+  "maximumPriceDeviationPpm": "20000",
+  "valuationSelection": "LOWER_ACCEPTABLE_PRICE",
+  "maximumAgeSeconds": "300",
+  "maximumCheckpointAgeSeconds": "3600",
+  "maximumValiditySeconds": "120",
+  "expiry": "EARLIEST_OF_VALIDITY_PRICE_OBSERVATION_OR_CHECKPOINT_EXPIRY",
+  "missingEvidence": "REJECT",
+  "backingOrCustodyShortfall": "REJECT_VALUATION",
+  "financialExecutionEnabled": false,
+  "liveSourcesAdmitted": false,
+  "externalReviewRequired": false
+}

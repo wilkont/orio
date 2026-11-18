@@ -1,11 +1,12 @@
 import {Wallet} from 'ethers';
 import {initialMonetaryState} from '../../../services/control-foundation/src/monetary-engine.ts';
 import {prepareReserveValuation} from '../../sdk/reserve-valuation.mjs';
+import {approvedReserveRiskLimits} from '../../sdk/approved-reserve-risk.mjs';
 import {fixtureKeyArn,kmsFixtureClient} from './kms-signing-fixture.mjs';
 const addr=i=>'0x'+i.toString(16).padStart(40,'0');
 export function reserveFixture(now='1800000000'){
  const one=10n**36n,wallet=new Wallet('0x'+'33'.repeat(32));
- const policy={mode:'qualification',chainId:'84532',controller:addr(1),vault:addr(2),currency:addr(3),registry:addr(4),master:addr(5),gasTreasury:addr(6),
+ const policy={...approvedReserveRiskLimits,mode:'qualification',chainId:'84532',controller:addr(1),vault:addr(2),currency:addr(3),registry:addr(4),master:addr(5),gasTreasury:addr(6),
   valuationSigner:wallet.address,masterDecimals:6,controllerRevision:'1',registryEpoch:'1',registryRevision:'4',maximumAgeSeconds:'300',maximumCheckpointAgeSeconds:'3600',maximumValiditySeconds:'120',
   issuanceMinimumUsd36:(one*995n/1000n).toString(),issuanceMaximumUsd36:(one*1005n/1000n).toString(),maximumPriceDeviationPpm:'20000',
   chainSources:['chain-a','chain-b'],priceSources:['price-a','price-b'],codeHashes:Object.fromEntries(['controller','vault','currency','registry','master'].map(k=>[k,'0x'+'a'.repeat(64)]))};

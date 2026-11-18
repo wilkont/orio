@@ -1,4 +1,10 @@
-## Current continuation — paused testnet monetary setup ready for approval
+## Current continuation — approved paused testnet setup completed
+
+The founder approved the updated reserve risk limits and the ten fixed Base Sepolia governance calls. All ten nonce-6–15 transactions succeeded and their canonical receipts, exact inputs, expected effects and bounded network fees were verified. Test USDC is registered/approved/elected; the existing registry, controller and vault are bound; qualification signers are configured with monetary execution OFF, zero supply and zero reserve. Actual network cost was 4,623,804,002,535 wei of valueless test ETH. Original paused CloudFormation template was restored to UPDATE_COMPLETE, the qualification key and all five production-purpose keys are Disabled, and the function has zero reserved concurrency. Evidence was retained privately, hash-verified and temporary working files removed. See infrastructure/aws/TESTNET_MONETARY_SETUP_RECEIPT_2026-11-17.json. Mined/canonical receipt verification and finality are reported separately.
+
+Risk policy orio-reserve-risk-2026-11-17-v1 is implemented with mandatory identity and no widened limits. Pending SQL extension 021 and ValuationRuntimeJournal provide an authority-scoped three-function database boundary, with real PostgreSQL tests for replay, stale state, revocation and privilege escalation. Extensions 020/021 remain outside installed migrations 001–019 and are not hosted. No new hosted database access, protected valuation signing service, price-source admission, mainnet deployment, reserve arrangements or financial activation was performed. All 254 local checks (8 atomic plus 246 integration tests), 68 contract tests and strict service typechecking pass. External review remains advisory. Prior entries below describe earlier checkpoints, not current approval status.
+
+## Historical checkpoint — paused testnet monetary setup ready for approval
 
 PR #30 merged as ded4ecb1553234b77effe7bd42fbf7d5330d991c with passing CI: reserve-backed valuation signing is locally integrated. Five production-purpose keys remain disabled. The corrected proposed risk limits distinguish fresh observations/prices (300 seconds) from finalized checkpoint age (3,600 seconds); the latest risk-limit question supersedes the earlier combined-age question and remains unanswered.
 

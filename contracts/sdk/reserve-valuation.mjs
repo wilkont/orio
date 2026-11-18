@@ -1,5 +1,6 @@
 import {getAddress,keccak256,toUtf8Bytes,TypedDataEncoder} from 'ethers';
 import {monetaryPolicyId} from '../../services/control-foundation/src/monetary-engine.ts';
+import {approvedReserveRiskLimits as approved} from './approved-reserve-risk.mjs';
 
 export const valuationTypes=Object.freeze({Valuation:Object.freeze([
  ['asset','address'],['usd36PerToken','uint256'],['registryEpoch','uint256'],['registryRevision','uint256'],
@@ -33,7 +34,10 @@ export function prepareReserveValuation(inputPolicy,inputEvidence,nowSeconds){
  if(!Number.isInteger(p.masterDecimals)||p.masterDecimals<0||p.masterDecimals>18)throw Error('Invalid master precision');
  const age=uint(p.maximumAgeSeconds,48),checkpointAge=uint(p.maximumCheckpointAgeSeconds,48),life=uint(p.maximumValiditySeconds,48),deviation=uint(p.maximumPriceDeviationPpm);
  const lower=uint(p.issuanceMinimumUsd36),upper=uint(p.issuanceMaximumUsd36);
- if(age===0n||age>300n||checkpointAge<age||checkpointAge>3600n||life===0n||life>300n||deviation>1000000n||lower===0n||upper<lower)throw Error('Invalid explicit reserve risk policy');
+ if(p.riskPolicyId!==approved.riskPolicyId||age===0n||age>uint(approved.maximumAgeSeconds)||checkpointAge<age||
+  checkpointAge>uint(approved.maximumCheckpointAgeSeconds)||life===0n||life>uint(approved.maximumValiditySeconds)||
+  deviation>uint(approved.maximumPriceDeviationPpm)||lower<uint(approved.issuanceMinimumUsd36)||
+  upper>uint(approved.issuanceMaximumUsd36)||upper<lower)throw Error('Invalid explicit reserve risk policy');
  if(!Array.isArray(e.observations)||e.observations.length!==2||!Array.isArray(e.prices)||e.prices.length!==2)throw Error('Two configured observations and prices are required');
  for(const rows of [e.observations,e.prices]){
   if(rows.some(x=>typeof x.sourceId!=='string'||x.sourceId!==x.sourceId.trim()||!/^[a-zA-Z0-9:_-]{1,128}$/.test(x.sourceId))||new Set(rows.map(x=>x.sourceId)).size!==2)throw Error('Distinct reserve sources are required');

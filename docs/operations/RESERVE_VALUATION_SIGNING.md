@@ -12,6 +12,18 @@ The owner-only `ValuationSigningJournal` stages authorized evidence against the 
 
 Pending SQL extension 020 is deliberately outside the deployed 001–019 migration directory and checksum manifest. It adds owner-only append-only authorities, revocations, intents, claims and completions. No runtime grants are added. Do not replay the original hosted upgrade or claim this extension is installed there. Hosted least-privilege bootstrap and service deployment require a concrete separate change.
 
+## Approved limits and scoped runtime delegate
+
+The founder approved risk policy `orio-reserve-risk-2026-11-17-v1`: USDC issuance band $0.995–$1.005, source disagreement at most 20,000 ppm, lower-price backing valuation, observation/price age at most 300 seconds, finalized checkpoint age at most 3,600 seconds, and signature validity at most 120 seconds shortened by either evidence expiry. The committed JSON in `services/control-foundation/config/approved-reserve-risk-policy.json` is the implementation authority. The SDK rejects an unknown policy ID and any widened limit; a caller may narrow the band or shorten validity. This does not admit a live price source or activate financial operations.
+
+Pending extension 021 adds three SECURITY DEFINER functions with a fixed, catalog-first search path. An owner-installed immutable binding connects one database login to one signing authority. The login can load, claim and complete only that authority's staged requests. Each call locks authority/deployment rows and rechecks revocation, committed state, ledger balances, expiry and the exact typed digest. Claims are single-use. Completion records are receipts, not independent cryptographic validation; the protected worker and every signature consumer must verify ECDSA recovery.
+
+`ValuationRuntimeJournal` uses one leased connection for identity checks and the function call. It rejects administrator/server roles, database CREATE, direct ORIO table or column access, and access to additional ORIO functions. All catalog references are explicitly qualified so temporary objects cannot hide permissions. Neither extension creates a login, role membership or execution grant. Extensions 020 and 021 remain outside the installed migration manifest and are **not installed on the hosted database**.
+
+The intended hosted boundary is a private in-VPC journal service with IAM database authentication, invoked only by the purpose-bound KMS valuation worker. The journal service must have no KMS signing permission, and the worker must have no database administrator access. A reviewed bootstrap, deployable service adapters, restricted IAM roles, live-provider admission and an actual protected valuation signature remain outstanding. No new hosted access is authorized by these local changes.
+
+Local PostgreSQL verification covers cross-authority denial, single concurrent claim, stale state, revocation, immutable bindings, direct table/column permission leakage, database CREATE, server-program membership, unexpected executable functions and temporary-catalog shadowing. The separate contract integration exercises real ECDSA validation; the scoped journal test uses a signature-shaped receipt only.
+
 ## Failure and recovery
 
 Missing/stale/disagreeing observations, changed code/revisions, ledger/cash mismatch, insufficient custody/backing, unknown/revoked authority, expiry and a previously consumed intent fail closed. A Sign error, wrong public signature, completion failure or unknown acknowledgement after a claim requires reconciliation; never blindly resubmit or invent a new authorization. The worker does not disclose provider/credential/backend errors.
