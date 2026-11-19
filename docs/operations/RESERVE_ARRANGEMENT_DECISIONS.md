@@ -4,6 +4,8 @@ Status: operating arrangements remain in preparation. ORIO Inc., Delaware, and c
 
 ## Proposed operating resolution for company approval
 
+Founder access clarification, November 18: customers should initiate redemption under protocol rules without discretionary company approval. ADR 0004 records that requirement and the verified gap: the existing contract still requires a settlement operator and valuation signer, and governance can disable execution. This is not yet a permissionless payout implementation. The access statement does not establish reserve legal ownership or insolvency treatment; those remain unspecified.
+
 Use the verified on-chain Reserve Vault to hold native master stablecoins assigned to redemption backing. Prohibit lending, staking, pledging and operating-expense use of that backing under the initial operating policy. Keep conversion revenue, rounding residuals, unassigned excess and company-funded Gas Treasury separate in accounting and authority. The vault's shared physical address for company fee units and backing is not, by itself, legal segregation or insolvency protection.
 
 Approve and retain actual company customer redemption terms and reserve legal-ownership/insolvency terms before accepting customer funds. Record the approving officer's authority, effective date and immutable document digest privately. A technical declaration cannot establish those rights or assert regulatory qualification. The existing owner-accountable release process permits one authorized owner to accept multiple readiness categories; an external reviewer is not mandatory.
