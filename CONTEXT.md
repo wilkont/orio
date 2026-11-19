@@ -1,4 +1,8 @@
-## Current continuation - founder requires protocol-only redemption access
+## Current continuation - autonomous redemption source candidate
+
+A separate qualification-only controller removes company operator, valuation signer and governance approval from public customer-authorized redemption. Immutable two-source valuation, canonical bounded epochs, public settlement, funded recipient claims and permissionless expiry replace those controls. Existing monetary contracts/deployments stay unchanged. See docs/operations/AUTONOMOUS_REDEMPTION_QUALIFICATION.md for explicit feed/stablecoin/network risks and remaining wallet, gas, ledger, migration and reserve integration. This is not a live release or a claim that no third party can affect withdrawals.
+
+## Prior continuation - founder requires protocol-only redemption access
 
 The founder clarified that customers should redeem through the protocol's own rules without a person controlling access. ADR 0004 records customer-initiated redemption without discretionary company approval as the access requirement, while preserving the approved monetary, gas, snapshot and backing rules. This does not establish reserve legal ownership or insolvency terms.
 

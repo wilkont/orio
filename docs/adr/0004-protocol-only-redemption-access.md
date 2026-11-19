@@ -1,6 +1,8 @@
 # ADR 0004: customer-initiated redemption under protocol rules
 
-Date: November 18, 2026. Status: founder-confirmed access intent; implementation gap identified, not activated.
+Date: November 18, 2026. Status: founder-confirmed access intent; separate qualification source candidate implemented, not deployed or activated.
+
+The new `ORIOAutonomousController` candidate removes company operator, valuation-signing and governance approval from its redemption path. It provides signed public admission, fixed complete-queue settlement and funded recipient claims. Qualification boundaries and remaining dependencies are recorded in [the qualification design](../operations/AUTONOMOUS_REDEMPTION_QUALIFICATION.md). The current deployed version below retains its controls. A source candidate does not authorize migration or justify unconditional withdrawal claims.
 
 The founder states that customers can take their money through a self-serving system governed by its protocol rules, with no person controlling access. Record this as a requirement for customer-initiated, rule-governed redemption without discretionary company approval. It does not supply a reserve-ownership or insolvency arrangement, approve new monetary economics, or establish that the current deployment already satisfies the requirement.
 

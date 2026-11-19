@@ -6,7 +6,7 @@ import { createVM, runTx } from '@ethereumjs/vm';
 import { createLegacyTx } from '@ethereumjs/tx';
 import { createAccount, createAddressFromPrivateKey, hexToBytes, bytesToHex, createAddressFromString } from '@ethereumjs/util';
 
-export async function createFixture(artifacts, chainId = 31337) {
+export async function createFixture(artifacts, chainId = 31337, withGovernance = true) {
   const common = createCustomCommon({ chainId }, Mainnet, { hardfork: Hardfork.Cancun });
   const vm = await createVM({ common });
   // These published deterministic keys are valid ONLY in this disconnected, disposable VM.
@@ -32,7 +32,7 @@ export async function createFixture(artifacts, chainId = 31337) {
     transact(contract.api.encodeFunctionData(name, args), contract.address, signingKey, value);
   async function read(contract, name, args = []) {
     const result = await vm.evm.runCall({ to: createAddressFromString(contract.address), caller: sender,
-      data: hexToBytes(contract.api.encodeFunctionData(name, args)), isStatic: true, skipNonceIncrement: true });
+      data: hexToBytes(contract.api.encodeFunctionData(name, args)), isStatic: true, skipNonceIncrement: true, block: createBlock({ header: { number: 1n, timestamp: time, gasLimit: 30000000n, baseFeePerGas: 7n } }, { common }) });
     assert.equal(result.execResult.exceptionError, undefined, name + ': ' + bytesToHex(result.execResult.returnValue));
     return contract.api.decodeFunctionResult(name, bytesToHex(result.execResult.returnValue));
   }
@@ -40,8 +40,9 @@ export async function createFixture(artifacts, chainId = 31337) {
     return (result.execResult.logs ?? []).filter(([address]) => bytesToHex(address).toLowerCase() === contract.address.toLowerCase())
       .map(([, topics, data]) => contract.api.parseLog({ topics: topics.map(bytesToHex), data: bytesToHex(data) }));
   }
-  const authority = await deploy('src/ORIOGovernanceTimelock.sol', 'ORIOGovernanceTimelock', [5, [sender.toString()], [ZeroAddress]]);
+  const authority = withGovernance ? await deploy('src/ORIOGovernanceTimelock.sol', 'ORIOGovernanceTimelock', [5, [sender.toString()], [ZeroAddress]]) : undefined;
   async function govern(contract, name, args) {
+    if (!authority) throw Error('No governance authority in this fixture');
     const data = contract.api.encodeFunctionData(name, args), salt = keccak256(toUtf8Bytes('operation-' + operation++));
     const delay = (await read(authority, 'getMinDelay'))[0];
     const plan = await call(authority, 'schedule', [contract.address, 0, data, ZeroHash, salt, delay]);
