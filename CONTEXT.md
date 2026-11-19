@@ -1,4 +1,10 @@
-## Current continuation - live runtime guard verified; signing package qualified
+## Current continuation - founder requires protocol-only redemption access
+
+The founder clarified that customers should redeem through the protocol's own rules without a person controlling access. ADR 0004 records customer-initiated redemption without discretionary company approval as the access requirement, while preserving the approved monetary, gas, snapshot and backing rules. This does not establish reserve legal ownership or insolvency terms.
+
+Verified source still has operator-only epoch sealing/redemption, governance-controlled executionEnabled/operator/valuer configuration, mandatory valuation signatures and controller-only vault disbursement. Company signing/relay/gas services remain availability dependencies. The current implementation cannot truthfully claim that nobody controls redemption. The next design must address canonical admission and bounded settlement, valuation/relay withholding, governance controls and failed-payout isolation without allowing callers to select profitable epoch membership. No contract, permission or financial activation was changed by this clarification. See docs/adr/0004-protocol-only-redemption-access.md.
+
+## Prior continuation - live runtime guard verified; signing package qualified
 
 The founder-approved isolated dry run verified DenyRuntimeCodeDecryption in the actual AWS authorization trace at 21:56:55Z on November 18. The Lambda source-function identity was present; the key/session policies allowed and the intended identity guard alone denied. All six journal KMS statements were copied exactly and the original policy stayed unchanged. The simulator inconsistency remains reproducible, but the tested permission concern is resolved by live enforcement evidence. See infrastructure/aws/JOURNAL_RUNTIME_DENIAL_REPORT_2026-11-18.md and its sanitized receipt.
 
