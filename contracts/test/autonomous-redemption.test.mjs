@@ -49,13 +49,16 @@ async function fixture(){
  return {...f,owner,second,master,a,b,controller,currency,vault,payouts,state,value,now,buy,request,close,fresh};
 }
 
-test('maximum canonical epoch settles within the transaction budget and excludes a 257th admission',async()=>{
+test('maximum canonical epoch settles within the transaction budget and excludes a 65th admission',async t=>{
  const f=await fixture();await f.buy();
- for(let i=0;i<256;i++)await f.request(atom);
+ for(let i=0;i<64;i++){
+  const wallet=new Wallet('0x'+BigInt(i+1000).toString(16).padStart(64,'0'));
+  ok(await f.call(f.currency,'transfer',[wallet.address,atom]));await f.request(atom,{wallet});
+ }
  const extra=await f.request(atom,{enqueue:false});rejects(await f.call(f.controller,'enqueue',[extra.r,extra.signature]));
  await f.close();const result=await f.call(f.controller,'settleEpoch',[],f.outsiderKey);ok(result);
- assert.ok(result.totalGasSpent<25000000n);assert.equal((await f.read(f.currency,'totalSupply'))[0],734n*atom);
- assert.equal((await f.read(f.payouts,'claimable',[f.owner.address]))[0],253440000n);
+ t.diagnostic(`64 distinct-owner settlement charged gas: ${result.totalGasSpent}`);assert.ok(result.totalGasSpent<25000000n);assert.equal((await f.read(f.currency,'totalSupply'))[0],926n*atom);
+ assert.equal((await f.read(f.payouts,'totalOwed'))[0],63360000n);
  assert.equal((await f.read(f.controller,'queueLength'))[0],0n);
 });
 
@@ -117,17 +120,29 @@ test('withheld/stale prices cannot force an unsafe payout or trap expired custom
 });
 
 test('minimum payouts, expiry, cancellation, signature substitution and replay follow public rules',async()=>{
- const f=await fixture();await f.buy();const tooHigh=await f.request(10n*atom,{minimumPayout:1000000000n}),valid=await f.request(10n*atom);
+ const f=await fixture();await f.buy();const tooHigh=await f.request(10n*atom,{minimumPayout:9900000n}),valid=await f.request(10n*atom);
  const pending=await f.request(atom,{enqueue:false});
  rejects(await f.call(f.controller,'enqueue',[{...pending.r,recipient:f.second.address},pending.signature]));
  ok(await f.call(f.controller,'enqueue',[pending.r,pending.signature]));ok(await f.call(f.controller,'cancel',[pending.r.requestId]));
  rejects(await f.call(f.controller,'enqueue',[pending.r,pending.signature]));
  const locked=(await f.read(f.currency,'locked',[f.owner.address]))[0];assert.equal(locked,20n*atom);
  rejects(await f.call(f.currency,'transfer',[f.second.address,980n*atom]));
- await f.close();rejects(await f.call(f.controller,'cancel',[valid.r.requestId]));ok(await f.call(f.controller,'settleEpoch',[],f.outsiderKey));
+ await f.close();await f.fresh(100500000n);rejects(await f.call(f.controller,'cancel',[valid.r.requestId]));ok(await f.call(f.controller,'settleEpoch',[],f.outsiderKey));
  assert.equal((await f.read(f.currency,'totalSupply'))[0],980n*atom);assert.equal((await f.read(f.currency,'locked',[f.owner.address]))[0],0n);
- assert.equal((await f.read(f.payouts,'claimable',[f.owner.address]))[0],9900000n);
+ assert.equal((await f.read(f.payouts,'claimable',[f.owner.address]))[0],9850745n);
  rejects(await f.call(f.controller,'releaseExpired',[tooHigh.r.requestId]));
+});
+
+test('invalid admissions cannot freeze purchases and sole cancellation immediately restores purchase progress',async()=>{
+ const f=await fixture();await f.buy();
+ for(let i=0;i<3;i++){
+  const tiny=await f.request(1n,{enqueue:false});rejects(await f.call(f.controller,'enqueue',[tiny.r,tiny.signature]));
+  const impossible=await f.request(atom,{minimumPayout:10000000n,enqueue:false});rejects(await f.call(f.controller,'enqueue',[impossible.r,impossible.signature]));
+  const nonuniform=await f.request(atom,{deadline:f.time()+61n,enqueue:false});rejects(await f.call(f.controller,'enqueue',[nonuniform.r,nonuniform.signature]));
+  assert.equal((await f.read(f.controller,'queueLength'))[0],0n);await f.buy(1000000n);
+  const valid=await f.request(atom);ok(await f.call(f.controller,'cancel',[valid.r.requestId]));
+  assert.equal((await f.read(f.controller,'activeEpoch'))[0],0n);await f.buy(1000000n);
+ }
 });
 
 test('full redemption assigns the full fee to company and permissionless reconciliation retains price and funded prior claims',async()=>{

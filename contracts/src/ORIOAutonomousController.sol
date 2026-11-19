@@ -17,7 +17,7 @@ import {ORIOAutonomousLocks} from "./ORIOAutonomousLocks.sol";
 /// production gas abstraction remain separate qualification work; no live switch.
 contract ORIOAutonomousController is ReentrancyGuard {
     uint256 public constant USD36 = 1e36;
-    uint256 public constant MAX_REQUESTS = 256;
+    uint256 public constant MAX_REQUESTS = 64;
     bytes32 public constant POLICY_ID = keccak256("orio-final-monetary-2026-11-13-v1");
     bytes32 private constant REQUEST_TYPEHASH = keccak256("Withdrawal(bytes32 requestId,uint256 epochId,address owner,address recipient,uint256 atoms,uint256 minimumPayout,uint256 nonce,uint48 deadline)");
     bytes32 private immutable domain;
@@ -99,8 +99,12 @@ contract ORIOAutonomousController is ReentrancyGuard {
         require(r.requestId != bytes32(0) && !usedRequests[r.requestId] && !usedNonces[r.owner][r.nonce]
             && r.owner != address(0) && r.recipient != address(0) && r.recipient != address(payouts)
             && r.recipient != address(vault) && r.atoms > 0 && r.minimumPayout > 0
-            && r.deadline >= close && r.deadline <= uint256(close) + 300
+            && r.deadline == uint256(close) + 120
             && SignatureChecker.isValidSignatureNow(r.owner,withdrawalHash(r),signature), "Invalid withdrawal authorization");
+        (uint256 usd,) = oracle.read();
+        uint256 grossValue = r.atoms * referencePriceUsd36; uint256 unitValue = usd * unitScale;
+        uint256 grossNative = grossValue / unitValue; uint256 fee = Math.ceilDiv(grossValue,100 * unitValue);
+        require(grossNative > fee && grossNative - fee >= r.minimumPayout, "Nonpaying admission");
         if (activeEpoch.id == 0) activeEpoch = Epoch(id,close,referencePriceUsd36,currency.totalSupply());
         usedRequests[r.requestId] = true; usedNonces[r.owner][r.nonce] = true;
         queue.push(Queued(r,false)); positions[r.requestId] = queue.length;
@@ -111,6 +115,9 @@ contract ORIOAutonomousController is ReentrancyGuard {
         Queued storage q = _queued(requestId);
         require(msg.sender == q.request.owner && block.timestamp < activeEpoch.closesAt, "Cancellation closed");
         _release(q);
+        bool live;
+        for (uint256 i; i < queue.length; i++) if (!queue[i].released) live = true;
+        if (!live) _closeEmpty();
     }
     function releaseExpired(bytes32 requestId) external nonReentrant {
         Queued storage q = _queued(requestId); require(block.timestamp > q.request.deadline, "Request has not expired");
