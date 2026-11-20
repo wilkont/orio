@@ -1,4 +1,10 @@
-## Current continuation - autonomous SQL rehearsal prepared
+## Current continuation - autonomous SQL022 copy rehearsal completed
+
+The owner approved PR43's private rehearsal and USD5. SQL022 committed on the fresh encrypted disposable AWS copy at 2026-11-20T22:58:45.555Z. The exact post-SQL020/021 baseline matched; all 46 existing protocol tables passed before/after record-count/digest checks; the new autonomous tables are empty with zero runtime grants and no financial configuration. An initial copy-secret request timed out before connection. Its evidence was preserved, and a read-only exact-baseline/absent-schema inspection preceded the controlled successful retry.
+
+Both private evidence archives were downloaded/hash-verified with owner/SYSTEM-only access. Cleanup at 23:08:03Z confirmed the temporary copy, snapshot, separate managed secret, bucket, endpoints, groups and interfaces absent; the private maintenance environment and all remote working copies were removed. Original database identity/protections/network are unchanged, all six signing keys Disabled and journal concurrency zero. No original database SQL022 upgrade, signing, blockchain transaction, funding or financial activation occurred. See infrastructure/aws/AUTONOMOUS_SQL_REHEARSAL_REPORT_2026-11-20.md and its sanitized receipt. The copy approval is consumed; do not request the same rehearsal approval again. Original installation and hosted application access require a concrete separately reviewed scope.
+
+## Prior continuation - autonomous SQL rehearsal prepared
 
 SQL022 now has a hash-pinned transactional maintenance installer, a clone-only fresh-context validator, private execution/reporting entry and credential-free build script. It retains the reviewed twelve-resource private rehearsal template, the exact post-SQL020/021 catalog fingerprint and both existing original service sources. Local tests cover source/baseline substitution, atomic rollback, record preservation, no runtime grants, replay refusal and post-commit reporting failure. No hosted resource or SQL has been activated; specific copy-rehearsal approval is required for new access/costs. See docs/operations/AUTONOMOUS_SQL_REHEARSAL_PROPOSAL.md. The founder's protocol-controlled custody decision below is resolved.
 
