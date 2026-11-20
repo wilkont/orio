@@ -1,4 +1,10 @@
-## Current continuation - autonomous redemption source candidate
+## Current continuation - autonomous wallet, gas and ledger integration
+
+The autonomous candidate now emits bounded accounting checkpoints and complete owner/recipient allocation events. A wallet SDK builds customer consent and all conversion/withdrawal/transfer phases. Actual local EntryPoint tests execute those phases with zero account ETH; PostgreSQL integration reserves user gas before protected fixture signing, charges actual EntryPoint debit and refunds excess independently of reserve/claim journals. A separate finalized two-reader importer verifies actual event/token movements, recomputes monetary economics and commits append-only facts, funded claims, rounding, cash and cursor atomically. Migration 022 remains pending, with no hosted SQL or contract deployment. See docs/operations/AUTONOMOUS_INTEGRATION.md for evidence boundaries and remaining release work.
+
+Review found and corrected a skipped-transfer gap: two-source bounded event-range coverage now blocks checkpoint advancement over missing wallet transfers/claims/checkpoints, with verified empty-range catch-up. A read-only empty original-genesis source checker rejects active, funded, donated or non-genesis state. November 20 live single-source Base Sepolia inspection found the actual old source empty and disabled; this is not two-provider admission. Authenticated AWS metadata confirms the ledger healthy/private, journal concurrency zero and all six keys Disabled. No secret retrieval, hosted SQL, key enablement, signing, funding or deployment occurred. Effective reserve-ownership/customer-rights terms remain an unanswered company decision.
+
+## Prior continuation - autonomous redemption source candidate
 
 A separate qualification-only controller removes company operator, valuation signer and governance approval from public customer-authorized redemption. Immutable two-source valuation, canonical bounded epochs, public settlement, funded recipient claims and permissionless expiry replace those controls. Existing monetary contracts/deployments stay unchanged. See docs/operations/AUTONOMOUS_REDEMPTION_QUALIFICATION.md for explicit feed/stablecoin/network risks and remaining wallet, gas, ledger, migration and reserve integration. This is not a live release or a claim that no third party can affect withdrawals.
 

@@ -1,8 +1,10 @@
 import type { ChainReader } from './finalized-transfer.ts';
+import type { AutonomousReader } from './finalized-autonomous.ts';
 
 type Method = Parameters<ChainReader['request']>[0];
 type BundlerMethod = 'eth_chainId' | 'eth_supportedEntryPoints';
 type ReserveMethod='eth_chainId'|'eth_getBlockByNumber'|'eth_getCode'|'eth_call';
+type AutonomousMethod=Parameters<AutonomousReader['request']>[0];
 export interface ReserveReader {
  readonly sourceId:string;
  request(method:ReserveMethod,params:unknown[]):Promise<unknown>;
@@ -47,7 +49,7 @@ class ReadOnlyHttpsRpc {
     this.fetch = fetchImplementation;
   }
 
-  async request(method: Method | BundlerMethod | ReserveMethod, params: unknown[]): Promise<unknown> {
+  async request(method: Method | BundlerMethod | ReserveMethod | AutonomousMethod, params: unknown[]): Promise<unknown> {
     if (!Array.isArray(params)) throw new Error('Invalid read-only RPC parameters');
     const chainId = method === 'eth_chainId' && params.length === 0;
     const receipt = method === 'eth_getTransactionReceipt' && params.length === 1 &&
@@ -66,7 +68,16 @@ class ReadOnlyHttpsRpc {
       Object.keys(params[0]).sort().join(',')==='data,to'&&target((params[0] as Record<string,unknown>).to)&&
       typeof (params[0] as Record<string,unknown>).data==='string'&&
       /^0x[0-9a-f]{8}(?:[0-9a-f]{64}){0,4}(?![\s\S])/.test((params[0] as Record<string,unknown>).data as string)&&pinned(params[1]);
-    if (!chainId && !receipt && !block && !supported && !code && !call) throw new Error('Unsupported read-only chain RPC request');
+    const filter=params[0] as Record<string,unknown>|undefined;
+    const logs=method==='eth_getLogs'&&params.length===1&&filter!==null&&typeof filter==='object'&&!Array.isArray(filter)&&
+      Object.keys(filter).sort().join(',')==='address,fromBlock,toBlock,topics'&&
+      typeof filter.fromBlock==='string'&&/^0x(?:0|[1-9a-f][0-9a-f]*)$/.test(filter.fromBlock)&&
+      typeof filter.toBlock==='string'&&/^0x(?:0|[1-9a-f][0-9a-f]*)$/.test(filter.toBlock)&&
+      BigInt(filter.toBlock)>=BigInt(filter.fromBlock)&&BigInt(filter.toBlock)-BigInt(filter.fromBlock)<2000n&&
+      Array.isArray(filter.address)&&filter.address.length===3&&filter.address.every(target)&&new Set(filter.address).size===3&&
+      Array.isArray(filter.topics)&&filter.topics.length===1&&Array.isArray(filter.topics[0])&&filter.topics[0].length===3&&
+      filter.topics[0].every((t:unknown)=>typeof t==='string'&&/^0x[0-9a-f]{64}$/.test(t));
+    if (!chainId && !receipt && !block && !supported && !code && !call && !logs) throw new Error('Unsupported read-only chain RPC request');
     try {
       const response = await this.fetch(this.endpoint, {
         method: 'POST', headers: this.headers, redirect: 'error',
@@ -102,6 +113,18 @@ class ReadOnlyHttpsRpc {
       throw new Error('Chain RPC request failed');
     }
   }
+}
+
+/** Bounded finalized-history reader. Existing readers retain their narrower allowlists. */
+export class HttpsAutonomousReader implements AutonomousReader {
+ readonly sourceId:string;private readonly transport:ReadOnlyHttpsRpc;
+ constructor(configuration:ChainRpcConfiguration,fetchImplementation:typeof fetch=fetch){
+  this.transport=new ReadOnlyHttpsRpc(configuration,fetchImplementation);this.sourceId=this.transport.sourceId;
+ }
+ async request(method:AutonomousMethod,params:unknown[]):Promise<unknown>{
+  if(!['eth_chainId','eth_getTransactionReceipt','eth_getBlockByNumber','eth_getLogs'].includes(method))throw Error('Unsupported autonomous read request');
+  return this.transport.request(method,params);
+ }
 }
 
 /** Reserve observations accept canonical block-hash-pinned reads only. No latest

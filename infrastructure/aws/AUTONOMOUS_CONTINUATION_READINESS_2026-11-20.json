@@ -1,0 +1,56 @@
+{
+  "status": "READ_ONLY_CONTINUATION_INSPECTION",
+  "inspectionDate": "2026-11-20",
+  "account": "720232346199",
+  "region": "us-east-1",
+  "awsEvidence": {
+    "source": "Authenticated AWS CloudShell metadata commands observed through console UI",
+    "ledgerStack": "UPDATE_COMPLETE",
+    "journalReservedConcurrency": 0,
+    "keys": {
+      "production-governance": "Disabled",
+      "production-settlement": "Disabled",
+      "production-valuation": "Disabled",
+      "production-gas-reservation": "Disabled",
+      "production-gas-operations": "Disabled",
+      "qualification": "Disabled"
+    },
+    "database": {
+      "status": "available",
+      "encrypted": true,
+      "publiclyAccessible": false,
+      "deletionProtection": true,
+      "backupRetentionDays": 14,
+      "iamAuthentication": true
+    }
+  },
+  "chainEvidence": {
+    "status": "SINGLE_SOURCE_EMPTY_STATE_DIAGNOSTIC",
+    "source": "https://sepolia.base.org",
+    "observedAt": "2026-11-20T16:15:33.014Z",
+    "chainId": "84532",
+    "blockNumber": "61342941",
+    "blockHash": "0x23827b58a17cb803cd0626d7c67f51247227bdcab08cf957001105ff1697ece8",
+    "sourceController": "0x7ebF7ca8Ea3058DfCebEd89742BcA82Dcf4dC971",
+    "sourceVault": "0x7a5b5e46DD14cE3bA8240961a092320F4CA32575",
+    "supplyAtoms": "0",
+    "reserveUnits": "0",
+    "companyFeeUnits": "0",
+    "physicalVaultUnits": "0",
+    "roundingUsd54": "0",
+    "stateVersion": "0",
+    "cycle": "0",
+    "phase": "GENESIS",
+    "referencePriceUsd36": "1000000000000000000000000000000000000",
+    "executionEnabled": false,
+    "sourceCodeAndCustodyChecksPassed": true
+  },
+  "limits": [
+    "Point-in-time metadata, not financial activation or a current reserve attestation",
+    "Chain observation uses one public source, not dual-provider qualification",
+    "No private database connection, secret retrieval, schema upgrade, new access, signing or contract deployment",
+    "No target deployment or routing change; legacy governance remains unchanged"
+  ],
+  "productionQualified": false,
+  "financialExecutionEnabled": false
+}
