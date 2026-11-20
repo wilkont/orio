@@ -12,7 +12,8 @@ export function autonomousQualificationSession(value:unknown,now=new Date()){
  const stackCreated=Date.parse(String(c.stackCreatedAt)),cloneCreated=Date.parse(String(instance.InstanceCreateTime));
  if(c.purpose!=='AUTONOMOUS_SCHEMA_REHEARSAL'||!Number.isFinite(now.getTime())||!Number.isFinite(observed)||observed>now.getTime()+30000||
   now.getTime()-observed>900000||!Number.isFinite(created)||created>now.getTime()+30000||now.getTime()-created>7200000||
-  !Number.isFinite(stackCreated)||!Number.isFinite(cloneCreated)||stackCreated<created||cloneCreated<stackCreated||cloneCreated>now.getTime()+30000)throw Error('Unapproved or stale autonomous rehearsal');
+  !Number.isFinite(stackCreated)||!Number.isFinite(cloneCreated)||stackCreated>now.getTime()+30000||now.getTime()-stackCreated>7200000||
+  cloneCreated<created||cloneCreated<stackCreated||cloneCreated>now.getTime()+30000)throw Error('Unapproved or stale autonomous rehearsal');
  const base=qualificationSession(c,now);
  if(original.DBInstanceIdentifier!=='orio-spc-3-ledger-ledgerdatabase-sdrgecp35snc'||original.DBInstanceStatus!=='available'||
   original.StorageEncrypted!==true||original.PubliclyAccessible!==false||original.DeletionProtection!==true||original.BackupRetentionPeriod!==14||

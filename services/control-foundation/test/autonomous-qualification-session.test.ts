@@ -18,6 +18,8 @@ function fixture(){return {
  };}
 test('autonomous rehearsal admits only the fresh private clone while preserving both original service sources',()=>{
  const accepted=autonomousQualificationSession(fixture(),now);assert.equal(accepted.baselineFingerprint,journalQualifiedCatalog);
+ const previewFirst=fixture();previewFirst.stackCreatedAt='2026-11-20T16:59:00Z';
+ assert.equal(autonomousQualificationSession(previewFirst,now).baselineFingerprint,journalQualifiedCatalog);
  assert.match(accepted.target.host,/restore-qualification/);
  const changes:Array<(v:ReturnType<typeof fixture>)=>void>=[
   v=>{v.purpose='VALUATION_JOURNAL_REHEARSAL';},v=>{v.snapshot.SnapshotCreateTime='2026-11-20T10:00:00Z';},
