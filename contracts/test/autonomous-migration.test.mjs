@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createAddressFromString,bytesToHex,hexToBytes} from '@ethereumjs/util';
 import {keccak256} from 'ethers';
 import {monetaryFixture,hash} from './helpers/monetary-fixture.mjs';
-import {verifyEmptyAutonomousMigrationSource} from '../sdk/autonomous-migration.mjs';
+import {verifyEmptyAutonomousMigrationSource,inspectSingleMigrationSource} from '../sdk/autonomous-migration.mjs';
 test('empty migration observer verifies actual legacy code/custody and rejects active or funded source without moving assets',async()=>{
  const f=await monetaryFixture();let pin;
  const policy={chainId:'84532',controller:f.controller.address,currency:f.currency.address,vault:f.vault.address,master:f.master.address,codeHashes:{}};
@@ -21,6 +21,7 @@ test('empty migration observer verifies actual legacy code/custody and rejects a
  assert.equal((await f.govern(f.controller,'configure',[f.sender,f.sender,false,1])).execResult.exceptionError,undefined);
  const result=await verifyEmptyAutonomousMigrationSource(first,second,policy,clock);assert.equal(result.financialExecutionEnabled,false);assert.equal(result.state.supply,'0');assert.equal(pin.requireCanonical,true);
  await assert.rejects(verifyEmptyAutonomousMigrationSource(first,first,policy,clock));
+ const diagnostic=await inspectSingleMigrationSource(first,policy,clock);assert.equal(diagnostic.status,'SINGLE_SOURCE_EMPTY_STATE_DIAGNOSTIC');assert.equal(diagnostic.productionQualified,false);
  const bad=structuredClone(policy);bad.codeHashes.controller=hash('wrong');await assert.rejects(verifyEmptyAutonomousMigrationSource(first,second,bad,clock),/code mismatch/);
  // Even a direct donation makes this simple empty-state replacement inapplicable.
  assert.equal((await f.call(f.master,'transfer',[f.vault.address,1])).execResult.exceptionError,undefined);

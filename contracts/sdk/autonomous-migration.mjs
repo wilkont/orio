@@ -13,9 +13,9 @@ const hash=v=>{if(typeof v!=='string'||!/^0x[0-9a-f]{64}$/.test(v))throw Error('
  * governance change, address replacement, signing or financial authority is returned.
  * Provider independence and code-hash admission are trusted deployment configuration.
  */
-export async function verifyEmptyAutonomousMigrationSource(first,second,input,clock=()=>String(Math.floor(Date.now()/1000))){
+async function observe(first,second,input,clock,diagnostic){
  const p=structuredClone(input),now=clock();
- if(p.chainId!=='84532'||first.sourceId===second.sourceId||!first.sourceId?.trim()||!second.sourceId?.trim()||typeof now!=='string'||!/^(0|[1-9][0-9]*)$/.test(now))throw Error('Invalid empty migration observers');
+ if(p.chainId!=='84532'||!diagnostic&&first.sourceId===second.sourceId||!first.sourceId?.trim()||!second.sourceId?.trim()||typeof now!=='string'||!/^(0|[1-9][0-9]*)$/.test(now))throw Error('Invalid empty migration observers');
  for(const key of ['controller','currency','vault','master']){p[key]=getAddress(p[key]);hash(p.codeHashes?.[key]);}
  if(new Set(['controller','currency','vault','master'].map(k=>p[k])).size!==4)throw Error('Conflicting migration identities');
  const readers=[first,second],heads=await Promise.all(readers.map(async r=>{
@@ -47,6 +47,9 @@ export async function verifyEmptyAutonomousMigrationSource(first,second,input,cl
   const check=await r.request('eth_getBlockByNumber',[tag,false]);if(qty(check.number)!==height||hash(check.hash)!==b.hash)throw Error('Migration anchor changed');return state;
  }));
  if(JSON.stringify(states[0])!==JSON.stringify(states[1]))throw Error('Migration observers disagree');
- return {status:'EMPTY_SOURCE_VERIFIED_NO_MIGRATION_AUTHORITY',chainId:p.chainId,blockNumber:String(height),blockHash:b.hash,
+ return {status:diagnostic?'SINGLE_SOURCE_EMPTY_STATE_DIAGNOSTIC':'EMPTY_SOURCE_VERIFIED_NO_MIGRATION_AUTHORITY',productionQualified:false,chainId:p.chainId,blockNumber:String(height),blockHash:b.hash,
   sourceController:p.controller,sourceVault:p.vault,master:p.master,state:states[0],financialExecutionEnabled:false};
 }
+const clock=()=>String(Math.floor(Date.now()/1000));
+export function verifyEmptyAutonomousMigrationSource(first,second,input,now=clock){return observe(first,second,input,now,false);}
+export function inspectSingleMigrationSource(source,input,now=clock){return observe(source,source,input,now,true);}
