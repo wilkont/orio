@@ -1,5 +1,7 @@
 # Private rehearsal of autonomous payout accounting
 
+Execution update: the owner approved this exact scope and USD5. The rehearsal and cleanup are complete; see the [actual November 20 report](../../infrastructure/aws/AUTONOMOUS_SQL_REHEARSAL_REPORT_2026-11-20.md). The proposal below records the approved plan and does not authorize original-database installation.
+
 November 20, 2026. Prepared for specific owner approval; no AWS resource, secret access or hosted SQL has been activated by this proposal. Founder-confirmed protocol-controlled custody is recorded in ADR 0005 and is not an unanswered technical decision.
 
 ## Exact scope

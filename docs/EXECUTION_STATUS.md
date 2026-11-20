@@ -22,6 +22,12 @@ Migrations 003, 004 and 005 remain LOCAL ONLY. No new AWS migration, deployment,
 ---
 # ORIO-SPC 3.0 execution status
 
+## Current continuation — November 20, autonomous SQL022 copy rehearsal
+
+The owner-approved private AWS rehearsal is complete. SQL022 committed on a fresh encrypted disposable copy; all 46 existing protocol tables were preserved, the new tables are empty and runtime grants remain zero. The first request timed out before database connection; retained evidence and read-only baseline inspection preceded a controlled retry. All temporary cloud resources and remote working copies were removed after private evidence retention. Original database protections/network are unchanged, six signing keys remain disabled and the journal stays paused. See [verified rehearsal report](../infrastructure/aws/AUTONOMOUS_SQL_REHEARSAL_REPORT_2026-11-20.md).
+
+SQL022 remains unapplied to the original database. Autonomous contracts, hosted wallet/gas/importer/recovery integration and production reserve/release qualification remain unfinished; financial operations are disabled. External review remains advisory. Earlier dated entries below are historical.
+
 ## Latest milestone — November 3, 2026
 
 The PostgreSQL control-ledger and signed release-policy foundation are implemented locally in `services/control-foundation`, with a separate package lock and strict TypeScript configuration. Final verification passed 30 module tests (19 real PostgreSQL integration tests and 11 release-signature tests), strict type checking, and the existing five monetary-reference tests. The installed production dependency audit reported zero known vulnerabilities at the time of this check; that is not a security audit.
