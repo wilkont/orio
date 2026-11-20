@@ -19,6 +19,7 @@ jobs:
       - run: bash -n infrastructure/aws/build-valuation-journal-qualification-inputs.sh
       - run: bash -n infrastructure/aws/build-original-journal-inputs.sh
       - run: bash -n infrastructure/aws/build-original-maintenance-inputs.sh
+      - run: bash -n infrastructure/aws/build-autonomous-qualification-inputs.sh
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24.22.1
@@ -34,6 +35,9 @@ jobs:
         working-directory: services/control-foundation
       - run: npm run typecheck
         working-directory: services/control-foundation
+      - run: bash infrastructure/aws/build-autonomous-qualification-inputs.sh "$ORIO_SOURCE_COMMIT"
+        env:
+          ORIO_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
       - run: node scripts/qualify-valuation-worker-package.mjs
         working-directory: contracts
       - run: node scripts/build-metadata-lambda.mjs /tmp/orio-metadata-qualification.zip

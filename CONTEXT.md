@@ -1,4 +1,8 @@
-## Current continuation - founder confirms protocol-controlled reserve
+## Current continuation - autonomous SQL rehearsal prepared
+
+SQL022 now has a hash-pinned transactional maintenance installer, a clone-only fresh-context validator, private execution/reporting entry and credential-free build script. It retains the reviewed twelve-resource private rehearsal template, the exact post-SQL020/021 catalog fingerprint and both existing original service sources. Local tests cover source/baseline substitution, atomic rollback, record preservation, no runtime grants, replay refusal and post-commit reporting failure. No hosted resource or SQL has been activated; specific copy-rehearsal approval is required for new access/costs. See docs/operations/AUTONOMOUS_SQL_REHEARSAL_PROPOSAL.md. The founder's protocol-controlled custody decision below is resolved.
+
+## Prior continuation - founder confirms protocol-controlled reserve
 
 On November 20 the founder clarified that the reserve follows the protocol without a company spending key, while ORIO Inc. receives only its allocated fees. ADR 0005 records the engineering custody/control decision as resolved. Master-directive section 5.3 expressly forbids the conventional zero address; the intended reserve is a real nonzero autonomous vault contract. Do not send backing to the literal zero address or describe technical ownerlessness as a proven legal classification. Company fee entitlement, Gas Treasury reimbursement, reserve backing, funded payout claims and rounding remain separate. Existing deployed controls and unfinished deployment/migration/provider work are unchanged; financial activation remains disabled.
 
