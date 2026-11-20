@@ -54,6 +54,10 @@ contract ORIOAutonomousController is ReentrancyGuard {
     event WithdrawalSettled(bytes32 indexed requestId, uint256 indexed epochId, uint256 burned, uint256 payout, uint256 fee, uint256 company);
     event EpochSettled(uint256 indexed epochId, uint256 snapshotPrice, uint256 masterUsd36, uint256 burned, uint256 remaining, uint256 version);
     event ZeroSupplyReconciled(uint256 indexed cycle, uint256 referencePrice);
+    event AutonomousStart(uint256 indexed previousVersion);
+    event AutonomousCheckpoint(uint256 indexed version, uint8 indexed kind, bytes32 indexed operationId, bytes state);
+    event WithdrawalAllocation(bytes32 indexed requestId, address indexed owner, address indexed recipient,
+        uint256 atoms, uint256 payout, uint256 fee, uint256 company);
     mapping(bytes32 => bool) public usedPurchases;
 
     constructor(IERC20Metadata asset, ORIOPriceRound sourceA, ORIOPriceRound sourceB, address company, uint48 period) {
@@ -80,6 +84,7 @@ contract ORIOAutonomousController is ReentrancyGuard {
     function purchase(bytes32 operationId, uint256 expectedVersion, uint256 gross, uint256 minimumMinted) external nonReentrant {
         require(activeEpoch.id == 0 && phase != Phase.ZERO_SUPPLY_PENDING && expectedVersion == stateVersion
             && operationId != bytes32(0) && !usedPurchases[operationId], "Stale or unavailable purchase");
+        emit AutonomousStart(stateVersion);
         (uint256 usd, bool allowed) = oracle.read(); require(allowed, "Issuance restricted");
         uint256 unitValue = usd * unitScale; _solvent(unitValue);
         uint256 fee = Math.ceilDiv(gross,100); require(gross > fee, "Purchase below minimum");
@@ -91,6 +96,7 @@ contract ORIOAutonomousController is ReentrancyGuard {
         vault.collect(msg.sender,gross,company); currency.mint(msg.sender,minted); phase = Phase.ACTIVE;
         stateVersion++; _solvent(unitValue);
         emit PurchaseSettled(operationId,msg.sender,gross,fee,company,minted);
+        _checkpoint(0,operationId,usd);
     }
     function enqueue(Withdrawal calldata r, bytes calldata signature) external nonReentrant {
         uint256 id = currentEpochId(); uint48 close = origin + uint48(id * admissionSeconds);
@@ -130,6 +136,7 @@ contract ORIOAutonomousController is ReentrancyGuard {
         bool hasLive;
         for (uint256 i; i < queue.length; i++) if (!queue[i].released && queue[i].request.deadline >= block.timestamp) hasLive = true;
         if (!hasLive) { _closeEmpty(); return; }
+        emit AutonomousStart(stateVersion);
         (uint256 usd,) = oracle.read(); uint256 unitValue = usd * unitScale; _solvent(unitValue);
         uint256[] memory amounts = new uint256[](queue.length); uint256[] memory fees = new uint256[](queue.length);
         uint256 burned; uint256 totalPayout;
@@ -147,12 +154,8 @@ contract ORIOAutonomousController is ReentrancyGuard {
             Queued storage q = queue[i];
             if (q.released) continue;
             if (amounts[i] == 0) { _release(q); continue; }
-            Withdrawal memory r = q.request; q.released = true;
-            uint256 company = remaining == 0 ? fees[i] : fees[i] / 5;
+            uint256 company = _burnAllocation(q,e.id,amounts[i],fees[i],remaining,e.price,unitValue);
             companyTotal += company; holderTotal += fees[i] - company;
-            roundingUsd54 += r.atoms * e.price - (amounts[i] + fees[i]) * unitValue;
-            locks.unlock(r.owner,r.atoms); currency.burn(r.owner,r.atoms);
-            emit WithdrawalSettled(r.requestId,e.id,r.atoms,amounts[i],fees[i],company);
         }
         if (burned > 0) {
             if (remaining > 0) _appreciate(holderTotal,unitValue,remaining); else phase = Phase.ZERO_SUPPLY_PENDING;
@@ -163,29 +166,49 @@ contract ORIOAutonomousController is ReentrancyGuard {
         }
         _clear(); stateVersion++; _solvent(unitValue);
         emit EpochSettled(e.id,e.price,usd,burned,remaining,stateVersion);
+        _checkpoint(1,bytes32(e.id),usd);
     }
     function reconcileZeroSupply() external nonReentrant {
         require(phase == Phase.ZERO_SUPPLY_PENDING && activeEpoch.id == 0 && currency.totalSupply() == 0, "Invalid zero checkpoint");
+        emit AutonomousStart(stateVersion);
         (uint256 usd, bool allowed) = oracle.read(); require(allowed, "Reopening restricted"); _solvent(usd * unitScale);
         require(master.balanceOf(address(payouts)) >= payouts.totalOwed(), "Payout obligations unfunded");
         phase = Phase.ZERO_SUPPLY_RECONCILED; cycle++; stateVersion++;
         emit ZeroSupplyReconciled(cycle,referencePriceUsd36);
+        _checkpoint(2,bytes32(cycle),usd);
     }
     function deliverCompanyFees(uint256 units) external nonReentrant {
+        emit AutonomousStart(stateVersion);
         vault.withdrawCompany(address(master),companyRecipient,units);
+        stateVersion++; _checkpoint(4,bytes32(stateVersion),0);
     }
     function _queued(bytes32 id) private view returns (Queued storage q) {
         uint256 position = positions[id]; require(position > 0 && position <= queue.length && queue[position-1].request.requestId == id, "Unknown request");
         return queue[position-1];
+    }
+    function _burnAllocation(Queued storage q, uint256 epoch, uint256 amount, uint256 fee,
+        uint256 remaining, uint256 price, uint256 unitValue) private returns (uint256 company) {
+        Withdrawal memory r = q.request; q.released = true;
+        company = remaining == 0 ? fee : fee / 5;
+        roundingUsd54 += r.atoms * price - (amount + fee) * unitValue;
+        locks.unlock(r.owner,r.atoms); currency.burn(r.owner,r.atoms);
+        emit WithdrawalSettled(r.requestId,epoch,r.atoms,amount,fee,company);
+        emit WithdrawalAllocation(r.requestId,r.owner,r.recipient,r.atoms,amount,fee,company);
     }
     function _release(Queued storage q) private {
         require(!q.released, "Request already released"); q.released = true;
         locks.unlock(q.request.owner,q.request.atoms); emit WithdrawalReleased(q.request.requestId);
     }
     function _closeEmpty() private {
+        emit AutonomousStart(stateVersion);
         for (uint256 i; i < queue.length; i++) if (!queue[i].released) _release(queue[i]);
         uint256 id = activeEpoch.id; uint256 price = activeEpoch.price; _clear(); stateVersion++;
         emit EpochSettled(id,price,0,0,currency.totalSupply(),stateVersion);
+        _checkpoint(3,bytes32(id),0);
+    }
+    function _checkpoint(uint8 kind, bytes32 operationId, uint256 usd) private {
+        emit AutonomousCheckpoint(stateVersion,kind,operationId,abi.encode(currency.totalSupply(),referencePriceUsd36,
+            vault.reserveUnits(),roundingUsd54,vault.companyFees(address(master)),cycle,uint256(phase),usd,payouts.totalOwed()));
     }
     function _clear() private {
         for (uint256 i; i < queue.length; i++) delete positions[queue[i].request.requestId];
