@@ -22,7 +22,7 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
   for(const file of(await readdir(migrations)).filter(f=>/^\d{3}_.*\.sql$/.test(f)).sort())await pool.query((await readFile(new URL(file,migrations),'utf8')).replaceAll('orio_ledger_runtime',runtime));
   await pool.query(await readFile(new URL('../../services/control-foundation/pending-migrations/022_autonomous_settlement.sql',import.meta.url),'utf8'));
   const f=await autonomousFixture(),wallet=autonomousWallet(f.configuration),ledger=new ControlLedger(pool);
-  let current,secondMutation=false,height=0n;const history=[];
+  let current,secondMutation=false,badFinal=false,height=0n;const history=[];
   const source=sourceId=>({sourceId,request:async(method,params)=>{
    if(method==='eth_chainId')return '0x14a34';
    if(method==='eth_getLogs'){const q=params[0];return structuredClone(history.flatMap(r=>r.logs).filter(l=>
@@ -30,7 +30,7 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
    if(method==='eth_getTransactionReceipt'){
     const r=structuredClone(history.find(r=>r.transactionHash===params[0]));if(secondMutation&&sourceId==='second')r.logs.find(l=>l.topics[0]===autonomousTopics.credit).data='0x'+'0'.repeat(63)+'1';return r;
    }
-   const r=params[0]==='finalized'?current:history.find(r=>r.blockNumber===params[0]);return {number:r.blockNumber,hash:r.blockHash};
+   const r=params[0]==='finalized'?current:history.find(r=>r.blockNumber===params[0]);return {number:r.blockNumber,hash:badFinal&&params[0]==='finalized'?hash('wrong-final-anchor'):r.blockHash};
   }});
   const importer=new AutonomousSettlement(pool,source('first'),source('second'),f.configuration);await importer.initialize();await importer.initialize();
   const balance=async label=>(await ledger.balances()).find(a=>a.id==='aut_'+gasDigest([f.configuration.id,`erc20:84532:${f.master.address}`,label]))?.units??'0';
@@ -89,6 +89,7 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
   const company=(await f.read(f.vault,'companyFees',[f.master.address]))[0];await execution(await f.call(f.controller,'deliverCompanyFees',[company],f.outsiderKey));
   assert.equal(await balance('company_cash'),'0');
   const journals=(await pool.query('SELECT count(*) FROM orio_ledger.journals')).rows[0].count;
+  badFinal=true;await assert.rejects(importer.advanceEmptyHistory(String(BigInt(current.blockNumber))),/History block mismatch/);badFinal=false;
   await importer.advanceEmptyHistory(String(BigInt(current.blockNumber)));await importer.advanceEmptyHistory(String(BigInt(current.blockNumber)));
   assert.equal((await pool.query('SELECT count(*) FROM orio_ledger.journals')).rows[0].count,journals);
   assert.equal((await ledger.verify()).ok,true);await assert.rejects(pool.query('DELETE FROM orio_autonomous.facts'),/append-only/i);
