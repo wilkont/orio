@@ -1,4 +1,12 @@
-# ORIO company-operated reserve arrangements - owner decisions required
+# ORIO protocol-controlled reserve and company treasury arrangements
+
+## Founder custody clarification - November 20, 2026
+
+The founder confirms protocol-controlled USDC custody, with ORIO Inc. receiving only its allocated conversion fees in the company fee wallet. The phrase "smart zero address wallet" means an autonomous vault contract without a company spending key, consistent with master-directive section 5.3's explicit prohibition on the conventional zero address. ADR 0005 records this decision. The technical custody/control instruction is resolved; do not repeat it as an unanswered ownership-model question. This does not assert that assets are legally ownerless or establish insolvency protection/customer waivers.
+
+Company-operated protected signing applies to its permitted services and separate Gas Treasury. It is not a discretionary right to spend customer backing. Existing role appointments do not add a reserve withdrawal key. The candidate's recognized company fee account and fixed company recipient enforce the fee boundary; actual production identities, deployment, reserve operations and accurate effective disclosures still require completion.
+
+## Prior preparation record
 
 Status: operating arrangements remain in preparation. ORIO Inc., Delaware, and company-operated protected signing are founder-confirmed. On November 18 the owner designated himself as treasury approver and recovery contact; the named appointment record is retained privately. That designation grants no new AWS access and does not demonstrate a working recovery procedure. Approved monetary and risk parameters remain unchanged. No reserve funding, customer agreement, bank/custody account or financial activation is established by this document. External review is advisory.
 
