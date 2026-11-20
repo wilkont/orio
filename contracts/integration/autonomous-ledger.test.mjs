@@ -4,6 +4,7 @@ import {readFile,readdir} from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
 import pg from '../../services/control-foundation/node_modules/pg/lib/index.js';
 import {bytesToHex} from '@ethereumjs/util';
+import {Wallet} from 'ethers';
 import {autonomousFixture,ok,hash} from '../test/helpers/autonomous-fixture.mjs';
 import {autonomousWallet} from '../sdk/autonomous-wallet.mjs';
 import {AutonomousSettlement} from '../../services/control-foundation/src/autonomous-settlement.ts';
@@ -21,19 +22,22 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
   for(const file of(await readdir(migrations)).filter(f=>/^\d{3}_.*\.sql$/.test(f)).sort())await pool.query((await readFile(new URL(file,migrations),'utf8')).replaceAll('orio_ledger_runtime',runtime));
   await pool.query(await readFile(new URL('../../services/control-foundation/pending-migrations/022_autonomous_settlement.sql',import.meta.url),'utf8'));
   const f=await autonomousFixture(),wallet=autonomousWallet(f.configuration),ledger=new ControlLedger(pool);
-  let current,secondMutation=false,height=0n;
-  const source=sourceId=>({sourceId,request:async method=>{
+  let current,secondMutation=false,height=0n;const history=[];
+  const source=sourceId=>({sourceId,request:async(method,params)=>{
    if(method==='eth_chainId')return '0x14a34';
+   if(method==='eth_getLogs'){const q=params[0];return structuredClone(history.flatMap(r=>r.logs).filter(l=>
+    BigInt(l.blockNumber)>=BigInt(q.fromBlock)&&BigInt(l.blockNumber)<=BigInt(q.toBlock)&&q.address.includes(l.address)&&q.topics[0].includes(l.topics[0])));}
    if(method==='eth_getTransactionReceipt'){
-    const r=structuredClone(current);if(secondMutation&&sourceId==='second')r.logs.find(l=>l.topics[0]===autonomousTopics.credit).data='0x'+'0'.repeat(63)+'1';return r;
+    const r=structuredClone(history.find(r=>r.transactionHash===params[0]));if(secondMutation&&sourceId==='second')r.logs.find(l=>l.topics[0]===autonomousTopics.credit).data='0x'+'0'.repeat(63)+'1';return r;
    }
-   return {number:current.blockNumber,hash:current.blockHash};
+   const r=params[0]==='finalized'?current:history.find(r=>r.blockNumber===params[0]);return {number:r.blockNumber,hash:r.blockHash};
   }});
   const importer=new AutonomousSettlement(pool,source('first'),source('second'),f.configuration);await importer.initialize();await importer.initialize();
   const balance=async label=>(await ledger.balances()).find(a=>a.id==='aut_'+gasDigest([f.configuration.id,`erc20:84532:${f.master.address}`,label]))?.units??'0';
   function receipt(r){
    const blockHash=hash('block-'+ ++height),transactionHash=hash('tx-'+height),blockNumber='0x'+height.toString(16);
    current={status:'0x1',transactionHash,blockHash,blockNumber,logs:r.execResult.logs.map(([address,topics,data],i)=>({address:bytesToHex(address),topics:topics.map(bytesToHex),data:bytesToHex(data),logIndex:'0x'+i.toString(16),transactionHash,blockHash,blockNumber,removed:false}))};
+   history.push(structuredClone(current));
    return {transactionHash,index:String(current.logs.findIndex(l=>l.topics[0]===autonomousTopics.checkpoint))};
   }
   async function execution(r){ok(r);const p=receipt(r);await importer.importExecution(p.transactionHash,p.index);return p;}
@@ -42,6 +46,9 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
   assert.equal(await balance('reserve_cash'),'990000000');assert.equal(await balance('company_cash'),'10000000');
   const again=await importer.importExecution(purchase.transactionHash,purchase.index);assert.ok(again);
   assert.equal((await pool.query('SELECT count(*) FROM orio_autonomous.facts')).rows[0].count,'1');
+  // Intentionally omit a real transfer. The next checkpoint must not overtake it.
+  const destination=new Wallet(bytesToHex(f.outsiderKey)).address.toLowerCase();const moved=await f.call(f.currency,'transfer',[destination,10n**18n]);ok(moved);receipt(moved);
+  const skippedTx=current.transactionHash,skippedIndex=String(BigInt(current.logs.find(l=>l.address===f.currency.address.toLowerCase()&&l.topics[0]===autonomousTopics.transfer).logIndex));
   const origin=(await f.read(f.controller,'origin'))[0];
   async function queue(atoms,nonce){
    const epoch=(await f.read(f.controller,'currentEpochId'))[0],close=origin+epoch*60n;
@@ -52,11 +59,14 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
   await queue(100n*10n**18n,1);
   const result=await f.call(f.controller,'settleEpoch',[],f.outsiderKey);ok(result);const redeemed=receipt(result);
   secondMutation=true;await assert.rejects(importer.importExecution(redeemed.transactionHash,redeemed.index));secondMutation=false;
+  await assert.rejects(importer.importExecution(redeemed.transactionHash,redeemed.index),/Missing preceding autonomous event/);
+  assert.equal((await pool.query('SELECT version::text FROM orio_autonomous.deployments')).rows[0].version,'1');
+  await importer.importTransfer({transactionHash:skippedTx,logIndex:skippedIndex,senderAddress:f.owner.address,recipientAddress:destination,units:String(10n**18n)});
   await pool.query("CREATE FUNCTION public.reject_aut_journal() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'injected autonomous failure'; END $$");
   await pool.query('CREATE TRIGGER reject_aut_journal BEFORE INSERT ON orio_ledger.journals FOR EACH ROW EXECUTE FUNCTION public.reject_aut_journal()');
   await assert.rejects(importer.importExecution(redeemed.transactionHash,redeemed.index),/injected autonomous failure/);
   assert.equal((await pool.query('SELECT version::text FROM orio_autonomous.deployments')).rows[0].version,'1');
-  assert.equal((await pool.query('SELECT count(*) FROM orio_autonomous.facts')).rows[0].count,'1');
+  assert.equal((await pool.query('SELECT count(*) FROM orio_autonomous.facts')).rows[0].count,'2');
   await pool.query('DROP TRIGGER reject_aut_journal ON orio_ledger.journals');
   const outcomes=await Promise.all([importer.importExecution(redeemed.transactionHash,redeemed.index),importer.importExecution(redeemed.transactionHash,redeemed.index)]);assert.equal(outcomes[0],outcomes[1]);
   assert.equal(await balance('claim_cash'),'99000000');assert.equal(await balance('claim_due:'+f.owner.address.toLowerCase()),'99000000');
@@ -68,6 +78,9 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
   // A second consumer cannot book the already consumed stablecoin payout transfer.
   const cash=current.logs.find(l=>l.topics[0]===autonomousTopics.transfer);
   await assert.rejects(pool.query('INSERT INTO orio_settlement.receipt_claims VALUES($1,$2,$3)',[`eip155:84532/tx:${current.transactionHash}/log:${BigInt(cash.logIndex)}`,'conversion','duplicate']),/duplicate key/);
+  const returned=await f.call(f.currency,'transfer',[f.owner.address,10n**18n],f.outsiderKey);ok(returned);
+  receipt(returned);const selfIndex=String(BigInt(current.logs.find(l=>l.address===f.currency.address.toLowerCase()&&l.topics[0]===autonomousTopics.transfer).logIndex));
+  await importer.importTransfer({transactionHash:current.transactionHash,logIndex:selfIndex,senderAddress:destination,recipientAddress:f.owner.address,units:String(10n**18n)});
   await queue((await f.read(f.currency,'totalSupply'))[0],2);await execution(await f.call(f.controller,'settleEpoch',[],f.outsiderKey));
   const reference=(await f.read(f.controller,'referencePriceUsd36'))[0];
   await execution(await f.call(f.controller,'reconcileZeroSupply',[],f.outsiderKey));
@@ -75,6 +88,9 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
   assert.ok(BigInt(await balance('claim_cash'))>0n); // Funded outstanding claims are separate from new-cycle backing.
   const company=(await f.read(f.vault,'companyFees',[f.master.address]))[0];await execution(await f.call(f.controller,'deliverCompanyFees',[company],f.outsiderKey));
   assert.equal(await balance('company_cash'),'0');
+  const journals=(await pool.query('SELECT count(*) FROM orio_ledger.journals')).rows[0].count;
+  await importer.advanceEmptyHistory(String(BigInt(current.blockNumber)));await importer.advanceEmptyHistory(String(BigInt(current.blockNumber)));
+  assert.equal((await pool.query('SELECT count(*) FROM orio_ledger.journals')).rows[0].count,journals);
   assert.equal((await ledger.verify()).ok,true);await assert.rejects(pool.query('DELETE FROM orio_autonomous.facts'),/append-only/i);
  }finally{
   if(pool)await pool.end();if(created)await root.query('DROP DATABASE '+name+' WITH (FORCE)');

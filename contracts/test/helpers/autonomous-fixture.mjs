@@ -15,6 +15,6 @@ export async function autonomousFixture(shared){
  const controller=await deploy('src/ORIOAutonomousController.sol','ORIOAutonomousController',[master.address,first.address,second.address,owner.address,60]);
  const child=async(name,getter)=>({address:(await f.read(controller,getter))[0],api:new Interface(artifacts['src/'+name+'.sol'][name].abi)});
  const currency=await child('ORIOCurrency','currency'),vault=await child('ORIOReserveVault','vault'),claims=await child('ORIOWithdrawalClaims','payouts');
- const configuration={id:'autonomous-qualification',chainId:'84532',controller:controller.address,currency:currency.address,vault:vault.address,master:master.address,claims:claims.address,companyRecipient:owner.address.toLowerCase(),masterDecimals:6};
+ const configuration={id:'autonomous-qualification',chainId:'84532',deploymentBlock:'1',controller:controller.address,currency:currency.address,vault:vault.address,master:master.address,claims:claims.address,companyRecipient:owner.address.toLowerCase(),masterDecimals:6};
  return {...f,master,first,second,controller,currency,vault,claims,configuration,owner};
 }

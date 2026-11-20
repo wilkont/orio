@@ -1,12 +1,12 @@
 import type {Pool} from 'pg';
-import {autonomousConfiguration,verifyAutonomousExecution,verifyAutonomousClaim} from './finalized-autonomous.ts';
-import type {AutonomousDeployment} from './finalized-autonomous.ts';
-import type {ChainReader} from './chain-evidence.ts';
+import {autonomousConfiguration,verifyAutonomousExecution,verifyAutonomousClaim,verifyAutonomousCoverage} from './finalized-autonomous.ts';
+import type {AutonomousDeployment,AutonomousReader} from './finalized-autonomous.ts';
 import {initialMonetaryState,planPurchaseEpoch,planRedemptionEpoch,reconcileZeroSupply} from './monetary-engine.ts';
 import type {MonetaryState,Ratio} from './monetary-engine.ts';
 import {gasDigest} from './gas-policy.ts';
 import type {Posting,Account} from './ledger.ts';
 import {verifyFinalizedTokenTransfer} from './finalized-transfer.ts';
+import {chainHash,chainObject,chainQuantity} from './chain-evidence.ts';
 const same=(a:unknown,b:unknown)=>gasDigest(a)===gasDigest(b);
 function ratio(n:bigint,d:bigint):Ratio{let a=n,b=d;while(b)[a,b]=[b,a%b];return {numerator:String(n/a),denominator:String(d/a)};}
 interface StateRow {configuration:AutonomousDeployment;state:MonetaryState;version:string;pending_units:string;company_units:string;block_number:string;log_index:string}
@@ -16,11 +16,11 @@ interface Position {transactionHash:string;blockNumber:string;logIndex:string}
  * Facts must arrive in chain log order; missing transfers/distributions fail reconciliation.
  */
 export class AutonomousSettlement {
- private readonly c:AutonomousDeployment;private readonly pool:Pool;private readonly first:ChainReader;private readonly second:ChainReader;
- constructor(pool:Pool,first:ChainReader,second:ChainReader,input:AutonomousDeployment){this.pool=pool;this.first=first;this.second=second;this.c=autonomousConfiguration(input);}
+ private readonly c:AutonomousDeployment;private readonly pool:Pool;private readonly first:AutonomousReader;private readonly second:AutonomousReader;
+ constructor(pool:Pool,first:AutonomousReader,second:AutonomousReader,input:AutonomousDeployment){this.pool=pool;this.first=first;this.second=second;this.c=autonomousConfiguration(input);}
  async initialize(){
   const state=initialMonetaryState(`erc20:${this.c.chainId}:${this.c.master}`,'autonomous:fixed-master',this.c.masterDecimals);
-  await this.pool.query('INSERT INTO orio_autonomous.deployments(id,configuration,state) VALUES($1,$2::jsonb,$3::jsonb) ON CONFLICT DO NOTHING',[this.c.id,JSON.stringify(this.c),JSON.stringify(state)]);
+  await this.pool.query('INSERT INTO orio_autonomous.deployments(id,configuration,state,block_number) VALUES($1,$2::jsonb,$3::jsonb,$4) ON CONFLICT DO NOTHING',[this.c.id,JSON.stringify(this.c),JSON.stringify(state),this.c.deploymentBlock]);
   const row=(await this.pool.query<{configuration:AutonomousDeployment}>('SELECT configuration FROM orio_autonomous.deployments WHERE id=$1',[this.c.id])).rows[0];
   if(!same(row?.configuration,this.c))throw Error('Autonomous configuration conflict');
  }
@@ -34,6 +34,7 @@ export class AutonomousSettlement {
    const prior=(await client.query<{proof:unknown;journal_sequence:string|null}>('SELECT proof,journal_sequence::text FROM orio_autonomous.facts WHERE external_ref=$1',[ref])).rows[0];
    if(prior){if(!same(prior.proof,fact))throw Error('Autonomous replay conflict');await client.query('COMMIT');return prior.journal_sequence;}
    if(BigInt(proof.blockNumber)<BigInt(row.block_number)||BigInt(proof.blockNumber)===BigInt(row.block_number)&&BigInt(proof.logIndex)<=BigInt(row.log_index))throw Error('Autonomous history is out of order');
+   await verifyAutonomousCoverage(this.first,this.second,this.c,row,proof,indices);
    const accounts=new Map<string,Account>(),amounts=new Map<string,bigint>();
    const post=(label:string,token:boolean|'USD54_MONETARY_MEMO',normal:'debit'|'credit',side:'debit'|'credit',units:bigint)=>{
     if(units===0n)return;if(units<0n)throw Error('Negative autonomous posting');
@@ -109,5 +110,32 @@ export class AutonomousSettlement {
   return this.apply({...p,transactionHash:request.transactionHash.toLowerCase(),logIndex:request.logIndex},[request.logIndex],p,(row,post)=>{
    const n=BigInt(p.units);post('wallet:'+p.senderAddress,true,'credit','debit',n);post('wallet:'+p.recipientAddress,true,'credit','credit',n);return row;
   });
+ }
+ /** Progress across a quiet finalized interval without inventing or skipping financial facts. */
+ async advanceEmptyHistory(throughBlock:string){
+  if(typeof throughBlock!=='string'||!/^(0|[1-9][0-9]{0,77})$/.test(throughBlock))throw Error('Invalid history catch-up block');
+  const end=BigInt(throughBlock),client=await this.pool.connect(),ref=`eip155:${this.c.chainId}/autonomous:${this.c.id}/empty-through:${throughBlock}`;
+  const lastIndex=((1n<<256n)-1n).toString();
+  try{
+   await client.query('BEGIN');
+   const row=(await client.query<StateRow>('SELECT configuration,state,version::text,pending_units::text,company_units::text,block_number::text,log_index::text FROM orio_autonomous.deployments WHERE id=$1 FOR UPDATE',[this.c.id])).rows[0];
+   if(!row||!same(row.configuration,this.c))throw Error('Unknown or changed autonomous deployment');
+   if((await client.query('SELECT 1 FROM orio_autonomous.facts WHERE external_ref=$1',[ref])).rowCount){await client.query('COMMIT');return;}
+   if(end<BigInt(row.block_number)||end===BigInt(row.block_number)&&row.log_index===lastIndex)throw Error('History catch-up is out of order');
+   const read=async(source:AutonomousReader)=>{
+    if(chainQuantity(await source.request('eth_chainId',[])).toString()!==this.c.chainId)throw Error('History chain mismatch');
+    const final=chainObject(await source.request('eth_getBlockByNumber',['finalized',false]));
+    if(chainQuantity(final.number)<end)throw Error('History interval is not finalized');
+    const block=chainObject(await source.request('eth_getBlockByNumber',['0x'+end.toString(16),false]));
+    if(chainQuantity(block.number)!==end||chainQuantity(final.number)===end&&chainHash(final.hash)!==chainHash(block.hash))throw Error('History block mismatch');return chainHash(block.hash);
+   };
+   const [a,b]=await Promise.all([read(this.first),read(this.second)]);if(a!==b)throw Error('History canonical sources disagree');
+   await verifyAutonomousCoverage(this.first,this.second,this.c,row,{blockNumber:throughBlock,logIndex:lastIndex,transactionHash:'0x'+'0'.repeat(64)},null);
+   const proof={kind:'EMPTY_RANGE',fromBlock:row.block_number,afterLog:row.log_index,throughBlock,blockHash:a};
+   await client.query('INSERT INTO orio_settlement.receipt_claims VALUES($1,$2,$3)',[ref,'monetary','autonomous-empty:'+this.c.id]);
+   await client.query('INSERT INTO orio_autonomous.facts VALUES($1,$2,$3::jsonb,NULL)',[ref,this.c.id,JSON.stringify(proof)]);
+   await client.query('UPDATE orio_autonomous.deployments SET block_number=$2,log_index=$3 WHERE id=$1',[this.c.id,throughBlock,lastIndex]);
+   await client.query('COMMIT');
+  }catch(error){await client.query('ROLLBACK');throw error;}finally{client.release();}
  }
 }

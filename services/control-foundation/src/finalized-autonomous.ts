@@ -2,12 +2,16 @@ import {chainAddress,chainHash,chainObject,chainQuantity,finalizedReceipt,finali
 import type {ChainReader} from './chain-evidence.ts';
 import {gasDigest} from './gas-policy.ts';
 export interface AutonomousDeployment {
- id:string;chainId:'84532'|'31337';controller:string;currency:string;vault:string;master:string;claims:string;companyRecipient:string;masterDecimals:number;
+ id:string;chainId:'84532'|'31337';deploymentBlock:string;controller:string;currency:string;vault:string;master:string;claims:string;companyRecipient:string;masterDecimals:number;
+}
+export interface AutonomousReader extends ChainReader {
+ request(method:'eth_chainId'|'eth_getTransactionReceipt'|'eth_getBlockByNumber'|'eth_getLogs',params:unknown[]):Promise<unknown>;
 }
 export function autonomousConfiguration(input:AutonomousDeployment):AutonomousDeployment {
  const c=structuredClone(input);
  if(!/^[a-z][a-z0-9_-]{0,63}$/.test(c.id)||!['84532','31337'].includes(c.chainId)||!Number.isInteger(c.masterDecimals)||c.masterDecimals<0||c.masterDecimals>18)
   throw Error('Invalid autonomous qualification deployment');
+ if(typeof c.deploymentBlock!=='string'||!/^(0|[1-9][0-9]{0,77})$/.test(c.deploymentBlock))throw Error('Invalid autonomous deployment block');
  const keys=['controller','currency','vault','master','claims'] as const;
  for(const key of keys)c[key]=chainAddress(c[key]);
  c.companyRecipient=chainAddress(c.companyRecipient);
@@ -114,3 +118,40 @@ export async function verifyAutonomousClaim(first:ChainReader,second:ChainReader
  };
  const [a,b]=await Promise.all([read(first),read(second)]);if(gasDigest(a)!==gasDigest(b))throw Error('Claim sources disagree');return a;
 }
+/** Complete bounded event-range agreement under the configured independent RPC trust model.
+ * A later checkpoint cannot overtake an unimported transfer, claim or checkpoint.
+ * Large offline gaps fail closed rather than silently choosing a new starting point.
+ */
+export async function verifyAutonomousCoverage(first:AutonomousReader,second:AutonomousReader,c:AutonomousDeployment,
+ cursor:{block_number:string;log_index:string},target:{blockNumber:string;logIndex:string;transactionHash:string},ownedIndexes:string[]|null){
+ const from=BigInt(cursor.block_number),to=BigInt(target.blockNumber);
+ if(to<from||to-from>10000n)throw Error('Autonomous history requires bounded catch-up before import');
+ const read=async(source:AutonomousReader)=>{
+  const all:Record<string,unknown>[]=[];
+  for(let start=from;start<=to;start+=2000n){
+   const end=start+1999n<to?start+1999n:to;
+   const result=await source.request('eth_getLogs',[{fromBlock:'0x'+start.toString(16),toBlock:'0x'+end.toString(16),
+    address:[c.currency,c.controller,c.claims],topics:[[autonomousTopics.transfer,autonomousTopics.checkpoint,autonomousTopics.claim]]}]);
+   if(!Array.isArray(result)||result.length>10000||all.length+result.length>10000)throw Error('Invalid autonomous history range');
+   for(const item of result){
+    const l=chainObject(item),height=chainQuantity(l.blockNumber),index=chainQuantity(l.logIndex),t=topics(l),address=chainAddress(l.address);
+    if(height<start||height>end||l.removed!==false||![[c.currency,autonomousTopics.transfer],[c.controller,autonomousTopics.checkpoint],[c.claims,autonomousTopics.claim]].some(([a,event])=>address===a&&t[0]===event))throw Error('Unexpected autonomous history log');
+    chainHash(l.blockHash);chainHash(l.transactionHash);
+    if(height===from&&index<=BigInt(cursor.log_index)||height===to&&index>BigInt(target.logIndex))continue;
+    all.push(l);
+   }
+  }
+  return all.map(l=>({blockNumber:chainQuantity(l.blockNumber).toString(),logIndex:chainQuantity(l.logIndex).toString(),
+   blockHash:chainHash(l.blockHash),transactionHash:chainHash(l.transactionHash),address:chainAddress(l.address),topics:topics(l),data:l.data})).sort((a,b)=>
+    BigInt(a.blockNumber)===BigInt(b.blockNumber)?BigInt(a.logIndex)<BigInt(b.logIndex)?-1:1:BigInt(a.blockNumber)<BigInt(b.blockNumber)?-1:1);
+ };
+ requireChainSources(first,second);const [a,b]=await Promise.all([read(first),read(second)]);
+ if(!sameHistory(a,b))throw Error('Autonomous history sources disagree');
+ const seen=new Set<string>(),owned=new Set(ownedIndexes??[]);
+ for(const l of a){
+  const position=l.blockNumber+':'+l.logIndex;if(seen.has(position))throw Error('Duplicate autonomous history position');seen.add(position);
+  if(l.transactionHash!==target.transactionHash||!owned.has(l.logIndex))throw Error('Missing preceding autonomous event; import it first');
+ }
+ if(ownedIndexes!==null&&!a.some(l=>l.transactionHash===target.transactionHash&&l.logIndex===target.logIndex))throw Error('Target missing from autonomous history');
+}
+const sameHistory=(a:unknown,b:unknown)=>gasDigest(a)===gasDigest(b);

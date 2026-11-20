@@ -29,8 +29,13 @@ test('all autonomous wallet phases collect bounded user gas and refund unused es
   for(const file of(await readdir(directory)).filter(f=>/^\d{3}_.*\.sql$/.test(f)).sort())await pool.query((await readFile(new URL(file,directory),'utf8')).replaceAll('orio_ledger_runtime',runtime));
   await pool.query(await readFile(new URL('../../services/control-foundation/pending-migrations/022_autonomous_settlement.sql',import.meta.url),'utf8'));
   const p=await paymasterFixture();p.setTime(Math.floor(Date.now()/1000));const f=await autonomousFixture(p),wallet=autonomousWallet(f.configuration);
-  const ledger=new ControlLedger(pool),controls=new GasControls(pool);let current,height=0n,sequence=0,funded=false,accounts;
-  const source=sourceId=>({sourceId,request:async method=>method==='eth_chainId'?'0x14a34':method==='eth_getTransactionReceipt'?structuredClone(current):{number:current.blockNumber,hash:current.blockHash}});
+  const ledger=new ControlLedger(pool),controls=new GasControls(pool);let current,height=0n,sequence=0,funded=false,accounts;const history=[];
+  const source=sourceId=>({sourceId,request:async(method,params)=>{
+   if(method==='eth_chainId')return '0x14a34';
+   if(method==='eth_getLogs'){const q=params[0];return structuredClone(history.flatMap(r=>r.logs).filter(l=>BigInt(l.blockNumber)>=BigInt(q.fromBlock)&&BigInt(l.blockNumber)<=BigInt(q.toBlock)&&q.address.includes(l.address)&&q.topics[0].includes(l.topics[0])));}
+   if(method==='eth_getTransactionReceipt')return structuredClone(history.find(r=>r.transactionHash===params[0]));
+   const r=params[0]==='finalized'?current:history.find(r=>r.blockNumber===params[0]);return {number:r.blockNumber,hash:r.blockHash};
+  }});
   const importer=new AutonomousSettlement(pool,source('one'),source('two'),f.configuration);await importer.initialize();
   ok(await f.call(f.master,'mintFixture',[p.account.address,1000000000n]));
   const policy={keyArn:fixtureKeyArn,chainId:'84532',revision:'1',signer:p.operator.address,entryPoint:p.entry.address,paymaster:p.paymaster.address};
@@ -66,6 +71,7 @@ test('all autonomous wallet phases collect bounded user gas and refund unused es
    const completed=p.logs(result,p.entry).find(l=>l?.name==='UserOperationEvent');assert.equal(completed.args.success,true);
    const transactionHash=hash('gas-tx-'+ ++height),blockHash=hash('gas-block-'+height),blockNumber='0x'+height.toString(16);
    current={status:'0x1',transactionHash,blockHash,blockNumber,logs:result.execResult.logs.map(([address,topics,data],i)=>({address:bytesToHex(address),topics:topics.map(bytesToHex),data:bytesToHex(data),logIndex:'0x'+i.toString(16),transactionHash,blockHash,blockNumber,removed:false}))};
+   history.push(structuredClone(current));
    const entryLog=current.logs.find(l=>l.address===p.entry.address&&l.topics[0]===p.entry.api.getEvent('UserOperationEvent').topicHash);
    const observed=await verifyFinalizedUserOperation(source('one'),source('two'),{chainId:'84532',entryPointAddress:p.entry.address,accountAddress:p.account.address,paymasterAddress:p.paymaster.address,userOperationHash,nonce:operation.nonce,transactionHash,logIndex:String(BigInt(entryLog.logIndex))});
    const checkpoint=current.logs.find(l=>l.topics[0]===autonomousTopics.checkpoint),claim=current.logs.find(l=>l.topics[0]===autonomousTopics.claim);
