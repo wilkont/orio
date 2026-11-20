@@ -38,7 +38,7 @@ try{
  if(typeof metadataReader.PhysicalResourceId!=='string'||metadataReader.ResourceStatus!=='CREATE_COMPLETE')throw new Error('Persistent reader identity unavailable');
  const journalGroup=object(aws('cloudformation','describe-stack-resource','--stack-name','orio-spc-3-valuation-journal','--logical-resource-id','JournalSecurityGroup').StackResourceDetail);
  if(typeof journalGroup.PhysicalResourceId!=='string'||!['CREATE_COMPLETE','UPDATE_COMPLETE'].includes(String(journalGroup.ResourceStatus)))throw new Error('Persistent journal identity unavailable');
- const context={journalSecurityGroupId:journalGroup.PhysicalResourceId,version:1,purpose:'AUTONOMOUS_SCHEMA_REHEARSAL',originalInstance:original,originalSecurityGroup:originalGroup,metadataReaderSecurityGroupId:metadataReader.PhysicalResourceId,account:'720232346199',region:'us-east-1',stackArn:stack.StackId,templateSha256:qualificationTemplateSha256,
+ const context={stackCreatedAt:stack.CreationTime,journalSecurityGroupId:journalGroup.PhysicalResourceId,version:1,purpose:'AUTONOMOUS_SCHEMA_REHEARSAL',originalInstance:original,originalSecurityGroup:originalGroup,metadataReaderSecurityGroupId:metadataReader.PhysicalResourceId,account:'720232346199',region:'us-east-1',stackArn:stack.StackId,templateSha256:qualificationTemplateSha256,
   observedAt:new Date().toISOString(),instance,snapshot,cloneSecurityGroup:group,maintenanceSecurityGroupId:physical('AuditSecurityGroup')};
  autonomousQualificationSession(context);
  const bytes=JSON.stringify(context,null,2)+'\n';await writeFile(output,bytes,{flag:'wx',mode:0o600});
