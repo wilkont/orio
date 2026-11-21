@@ -1,5 +1,7 @@
 # Original database SQL022 installation
 
+Execution update: the owner approved this exact scope and USD5. Installation and cleanup are complete; see the [actual report](../../infrastructure/aws/AUTONOMOUS_ORIGINAL_UPGRADE_REPORT_2026-11-21.md). The following text records the approved plan and does not authorize broader application/signing access.
+
 Prepared November 21, 2026, following the owner's instruction to continue the original upgrade and production rollout. The successful private-copy rehearsal is recorded in [the actual report](../../infrastructure/aws/AUTONOMOUS_SQL_REHEARSAL_REPORT_2026-11-20.md). Its approval did not include original-database access. This plan adds only SQL022 to the original database; it does not activate financial services.
 
 ## Exact change

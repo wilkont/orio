@@ -22,7 +22,13 @@ Migrations 003, 004 and 005 remain LOCAL ONLY. No new AWS migration, deployment,
 ---
 # ORIO-SPC 3.0 execution status
 
-## Current continuation — November 20, autonomous SQL022 copy rehearsal
+## Current continuation — November 21, original SQL022 installation
+
+SQL022 committed on the original hosted database under specific owner approval. All 46 prior protocol tables were preserved, staged/final schemas matched the successful rehearsal, and the new tables remain empty with zero runtime grants. Automated recovery covered the checkpoint and accepted upgrade before checkpoint removal. Temporary private access/network/storage/session and remote working files were removed after verified private evidence retention. Original database protections and both existing service clients remain; six signing keys are disabled and the journal paused. Four public metadata routes passed HTTPS/CORS checks after cleanup. See [actual original installation report](../infrastructure/aws/AUTONOMOUS_ORIGINAL_UPGRADE_REPORT_2026-11-21.md).
+
+The schema upgrade is complete. Persistent autonomous importer access, contract deployment, live providers, hosted wallet/gas/recovery integration and production reserve/release qualification remain unfinished; financial operations remain disabled. External review remains advisory.
+
+## Prior continuation — November 20, autonomous SQL022 copy rehearsal
 
 The owner-approved private AWS rehearsal is complete. SQL022 committed on a fresh encrypted disposable copy; all 46 existing protocol tables were preserved, the new tables are empty and runtime grants remain zero. The first request timed out before database connection; retained evidence and read-only baseline inspection preceded a controlled retry. All temporary cloud resources and remote working copies were removed after private evidence retention. Original database protections/network are unchanged, six signing keys remain disabled and the journal stays paused. See [verified rehearsal report](../infrastructure/aws/AUTONOMOUS_SQL_REHEARSAL_REPORT_2026-11-20.md).
 
