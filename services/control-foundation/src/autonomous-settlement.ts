@@ -50,8 +50,26 @@ export class AutonomousSettlement {
    for(const index of new Set(indices))await client.query('INSERT INTO orio_settlement.receipt_claims VALUES($1,$2,$3)',[this.ref(proof.transactionHash,index),'monetary','autonomous:'+this.c.id]);
    for(const a of accounts.values())await client.query('SELECT orio_ledger.create_account($1,$2,$3,$4)',[a.id,a.asset,a.normalSide,false]);
    const postings:Posting[]=[...amounts].filter(([,n])=>n!==0n).map(([accountId,n])=>({accountId,side:n>0n?'debit':'credit',units:String(n>0n?n:-n)}));
-   const sequence=postings.length?(await client.query<{sequence:string}>('SELECT sequence::text FROM orio_ledger.post_journal($1,$2,$3,$4::jsonb)',
-    ['autonomous:'+ref,ref,'Finalized autonomous reserve, token and funded-claim accounting',JSON.stringify(postings)])).rows[0]!.sequence:null;
+   // Preserve the existing journal identity for small events and the first
+   // journal of a split event. Each asset is independently balanced.
+   const groups = new Map<string, Posting[]>();
+   if (postings.length > 128) {
+    for (const posting of postings) {
+     const asset = accounts.get(posting.accountId)!.asset;
+     const group = groups.get(asset) ?? [];
+     group.push(posting);
+     groups.set(asset, group);
+    }
+   }
+   const journals = postings.length <= 128 ? [postings] : [...groups.keys()].sort().map(asset => groups.get(asset)!);
+   let sequence: string | null = null;
+   for (const [index, journal] of journals.entries()) {
+    if (!journal.length) continue;
+    const journalRef = index === 0 ? ref : `${ref}/part:${index + 1}`;
+    const result = await client.query<{sequence:string}>('SELECT sequence::text FROM orio_ledger.post_journal($1,$2,$3,$4::jsonb)',
+     ['autonomous:'+journalRef,journalRef,'Finalized autonomous reserve, token and funded-claim accounting',JSON.stringify(journal)]);
+    sequence ??= result.rows[0]!.sequence;
+   }
    for(const [label,units] of [['reserve_cash',next.state.reserveMasterUnits],['company_cash',next.company_units],['claim_cash',next.pending_units]]){
     const id='aut_'+gasDigest([this.c.id,`erc20:${this.c.chainId}:${this.c.master}`,label]);
     const actual=(await client.query<{units:string}>('SELECT units::text FROM orio_ledger.balances WHERE id=$1',[id])).rows[0]?.units??'0';

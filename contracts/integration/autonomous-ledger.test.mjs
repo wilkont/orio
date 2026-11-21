@@ -82,6 +82,38 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
   const returned=await f.call(f.currency,'transfer',[f.owner.address,10n**18n],f.outsiderKey);ok(returned);
   receipt(returned);
   assert.equal((await worker.step()).state,'TRANSFER_IMPORTED');
+  const epoch = (await f.read(f.controller,'currentEpochId'))[0];
+  const close = origin + epoch * 60n;
+  for (let i = 0; i < 64; i++) {
+   const holder = new Wallet('0x'+BigInt(1000+i).toString(16).padStart(64,'0'));
+   const recipient = new Wallet('0x'+BigInt(2000+i).toString(16).padStart(64,'0')).address;
+   const transfer = await f.call(f.currency,'transfer',[holder.address,10n**18n]);
+   ok(transfer); receipt(transfer);
+   assert.equal((await worker.step()).state,'TRANSFER_IMPORTED');
+   const request = {requestId:hash('full-epoch-'+i),epochId:epoch,owner:holder.address,recipient,
+    atoms:10n**18n,minimumPayout:1n,nonce:1n,deadline:close+120n};
+   const digest = (await f.read(f.controller,'withdrawalHash',[request]))[0];
+   ok(await f.call(f.controller,'enqueue',[request,holder.signingKey.sign(digest).serialized],f.outsiderKey));
+  }
+  f.setTime(close);
+  const full = await f.call(f.controller,'settleEpoch',[],f.outsiderKey);
+  ok(full);
+  const split = receipt(full);
+  const ref = `eip155:84532/tx:${split.transactionHash}/log:${split.index}`;
+  await pool.query("CREATE FUNCTION public.reject_split() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.external_ref LIKE '%/part:2' THEN RAISE EXCEPTION 'second journal failed'; END IF; RETURN NEW; END $$");
+  await pool.query('CREATE TRIGGER reject_split BEFORE INSERT ON orio_ledger.journals FOR EACH ROW EXECUTE FUNCTION public.reject_split()');
+  await assert.rejects(worker.step(),/second journal failed/);
+  assert.equal((await pool.query('SELECT 1 FROM orio_ledger.journals WHERE external_ref=$1',[ref])).rowCount,0);
+  assert.equal((await pool.query('SELECT 1 FROM orio_settlement.receipt_claims WHERE external_ref=$1',[ref])).rowCount,0);
+  await pool.query('DROP TRIGGER reject_split ON orio_ledger.journals');
+  assert.equal((await worker.step()).state,'EXECUTION_IMPORTED');
+  const primary = await importer.importExecution(split.transactionHash,split.index);
+  const parts = (await pool.query('SELECT sequence::text, jsonb_array_length(account_snapshot) AS postings FROM orio_ledger.journals WHERE external_ref=$1 OR starts_with(external_ref,$2) ORDER BY sequence',
+   [ref,ref+'/part:'])).rows;
+  assert.equal(parts[0].sequence,primary);
+  assert.ok(parts.length>=2 && parts.every(p=>p.postings<=128));
+  assert.ok(parts.reduce((total,p)=>total+p.postings,0)>128);
+  assert.equal(await balance('claim_cash'),String((await f.read(f.claims,'totalOwed'))[0]));
   await queue((await f.read(f.currency,'totalSupply'))[0],2);await execution(await f.call(f.controller,'settleEpoch',[],f.outsiderKey));
   const reference=(await f.read(f.controller,'referencePriceUsd36'))[0];
   await execution(await f.call(f.controller,'reconcileZeroSupply',[],f.outsiderKey));
