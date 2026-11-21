@@ -24,6 +24,11 @@ export class AutonomousSettlement {
   const row=(await this.pool.query<{configuration:AutonomousDeployment}>('SELECT configuration FROM orio_autonomous.deployments WHERE id=$1',[this.c.id])).rows[0];
   if(!same(row?.configuration,this.c))throw Error('Autonomous configuration conflict');
  }
+ async cursor(){
+  const row=(await this.pool.query<StateRow>('SELECT configuration,block_number::text,log_index::text FROM orio_autonomous.deployments WHERE id=$1',[this.c.id])).rows[0];
+  if(!row||!same(row.configuration,this.c))throw Error('Unknown or changed autonomous deployment');
+  return {blockNumber:row.block_number,logIndex:row.log_index};
+ }
  private ref(tx:string,index:string){return `eip155:${this.c.chainId}/tx:${tx}/log:${index}`;}
  private async apply(proof:Position,indices:string[],fact:unknown,transition:(row:StateRow,post:(label:string,token:boolean|'USD54_MONETARY_MEMO',normal:'debit'|'credit',side:'debit'|'credit',units:bigint)=>void)=>StateRow){
   const client=await this.pool.connect(),ref=this.ref(proof.transactionHash,proof.logIndex);
