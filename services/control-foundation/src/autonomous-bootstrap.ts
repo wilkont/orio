@@ -1,7 +1,7 @@
 import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import type {PoolClient} from 'pg';
-import {auditHostedSchema} from './schema-audit.ts';
+import {auditHostedSchema,auditSchemaInMaintenanceTransaction} from './schema-audit.ts';
 import {UpgradeFailure} from './hosted-upgrade.ts';
 export const autonomousSqlSha256='3fbee34530ec2a0f6e03d052ce4dcfe186f84c4daab7521d4e434488de60eb3e';
 export async function reviewedAutonomousSql(readSource=()=>readFile(new URL('../pending-migrations/022_autonomous_settlement.sql',import.meta.url),'utf8')){
@@ -27,10 +27,11 @@ async function preservedData(client:PoolClient,tables:readonly string[]){
  * Only counts/digests leave PostgreSQL; COMMIT ambiguity never permits blind replay.
  */
 export async function installAutonomousLedger(client:PoolClient,expectedDatabase:string,baselineFingerprint:string,
- record:(event:{phase:string;sha256?:string})=>Promise<void>){
+ record:(event:{phase:string;sha256?:string})=>Promise<void>,expectedResultFingerprint?:string){
  let locked=false,started=false,commitAttempted=false,committed=false;
  try{
   const sql=await reviewedAutonomousSql();
+  if(expectedResultFingerprint!==undefined&&!/^[a-f0-9]{64}$/.test(expectedResultFingerprint))throw Error('Invalid expected catalog');
   if(!/^orio_(?:control|test_[a-z0-9_]+)$/.test(expectedDatabase)||!/^[a-f0-9]{64}$/.test(baselineFingerprint))throw Error('Explicit reviewed autonomous baseline required');
   locked=(await client.query<{locked:boolean}>('SELECT pg_try_advisory_lock(1869771119,1903322476) AS locked')).rows[0]?.locked===true;
   if(!locked)throw Error('Another maintenance operation holds the lock');
@@ -56,6 +57,10 @@ export async function installAutonomousLedger(client:PoolClient,expectedDatabase
    UNION ALL SELECT a.grantee,c.relowner FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
     CROSS JOIN LATERAL aclexplode(coalesce(c.relacl,acldefault('r',c.relowner))) a WHERE n.nspname='orio_autonomous') grants WHERE grantee<>owner`)).rows[0]?.n;
   if(grants!=='0')throw Error('Unexpected autonomous runtime or public grants');
+  if(expectedResultFingerprint!==undefined){
+   const staged=await auditSchemaInMaintenanceTransaction(client,expectedDatabase,['orio_ledger_runtime','orio_protocol_reader','orio_valuation_journal']);
+   if(staged.catalogFingerprint!==expectedResultFingerprint)throw Error('Staged autonomous catalog differs from qualified copy');
+  }
   await record({phase:'CHECKS_PASSED_COMMIT_INTENT'});commitAttempted=true;
   if((await client.query('COMMIT')).command!=='COMMIT')throw Error('Autonomous commit acknowledgement unavailable');
   started=false;committed=true;await record({phase:'COMMITTED'});

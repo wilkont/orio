@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {readFile,readdir} from 'node:fs/promises';
 import {Pool} from 'pg';
-import {auditHostedSchema} from '../src/schema-audit.ts';
+import {auditHostedSchema,auditSchemaInMaintenanceTransaction} from '../src/schema-audit.ts';
 import {installAutonomousLedger,reviewedAutonomousSql} from '../src/autonomous-bootstrap.ts';
 import {UpgradeFailure} from '../src/hosted-upgrade.ts';
 import {ControlLedger} from '../src/ledger.ts';
@@ -21,6 +21,7 @@ test('hash-pinned autonomous schema rehearses atomically, preserves prior record
   await ledger.post({idempotencyKey:'prior_fixture',externalRef:'fixture',description:'Preserved disconnected record',postings:[{accountId:'fixture_cash',side:'debit',units:'12345'},{accountId:'fixture_claim',side:'credit',units:'12345'}]});
   const client=await pool.connect();
   try{
+   await assert.rejects(auditSchemaInMaintenanceTransaction(client,name,['orio_ledger_runtime']),/Active maintenance transaction required/);
    const before=await auditHostedSchema(client,name,['orio_ledger_runtime','orio_protocol_reader','orio_valuation_journal']);
    await assert.rejects(installAutonomousLedger(client,name,'0'.repeat(64),async()=>{}),(e:unknown)=>e instanceof UpgradeFailure&&e.outcome==='NOT_STARTED');
    await assert.rejects(installAutonomousLedger(client,name,before.catalogFingerprint,async e=>{if(e.phase==='APPLIED_UNCOMMITTED')throw Error('Injected report failure');}),
@@ -30,6 +31,9 @@ test('hash-pinned autonomous schema rehearses atomically, preserves prior record
    const unsafe=await auditHostedSchema(client,name,['orio_ledger_runtime','orio_protocol_reader','orio_valuation_journal']);
    await assert.rejects(installAutonomousLedger(client,name,unsafe.catalogFingerprint,async()=>{}),(e:unknown)=>e instanceof UpgradeFailure&&e.outcome==='ROLLED_BACK');
    await client.query('ALTER DEFAULT PRIVILEGES REVOKE SELECT ON TABLES FROM PUBLIC');
+   await assert.rejects(installAutonomousLedger(client,name,before.catalogFingerprint,async()=>{},'0'.repeat(64)),
+    (e:unknown)=>e instanceof UpgradeFailure&&e.outcome==='ROLLED_BACK');
+   assert.equal((await auditHostedSchema(client,name,['orio_ledger_runtime','orio_protocol_reader','orio_valuation_journal'])).catalogFingerprint,before.catalogFingerprint);
    const result=await installAutonomousLedger(client,name,before.catalogFingerprint,async()=>{});
    assert.equal(result.financialExecutionEnabled,false);assert.equal(result.runtimeGrants,0);assert.equal(result.autonomousDeployments,0);
    assert.ok(result.preservedData.some(r=>r.table==='"orio_ledger"."journals"'&&r.rows==='1'));
@@ -42,7 +46,7 @@ test('hash-pinned autonomous schema rehearses atomically, preserves prior record
    // Reset only this disposable fixture to exercise a reporting failure after a real COMMIT.
    await client.query('DROP SCHEMA orio_autonomous CASCADE');
    const reset=await auditHostedSchema(client,name,['orio_ledger_runtime','orio_protocol_reader','orio_valuation_journal']);
-   await assert.rejects(installAutonomousLedger(client,name,reset.catalogFingerprint,async e=>{if(e.phase==='COMMITTED')throw Error('Lost report');}),
+   await assert.rejects(installAutonomousLedger(client,name,reset.catalogFingerprint,async e=>{if(e.phase==='COMMITTED')throw Error('Lost report');},result.resultingCatalogFingerprint),
     (e:unknown)=>e instanceof UpgradeFailure&&e.outcome==='COMMITTED_POSTCHECK_FAILED');
    assert.equal((await client.query('SELECT count(*)::text AS n FROM orio_autonomous.deployments')).rows[0].n,'0');
   }finally{client.release();}

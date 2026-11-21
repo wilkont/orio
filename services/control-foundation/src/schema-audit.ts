@@ -24,6 +24,26 @@ export async function auditHostedSchema(client:PoolClient,expectedDatabase:strin
   const identity=(await client.query<{database:string;role:string;read_only:string;server_version:string}>(
    "SELECT current_database() AS database,current_user AS role,current_setting('transaction_read_only') AS read_only,current_setting('server_version') AS server_version")).rows[0];
   if(!identity||identity.database!==expectedDatabase||identity.read_only!=='on')throw new Error('Wrong database or read-only boundary');
+  return await catalogObservation(client,identity,roleNames);
+ }finally{if(started)await client.query('ROLLBACK');}
+}
+
+
+type AuditIdentity={database:string;role:string;read_only:string;server_version:string};
+/** Trusted maintenance seam. Observes the caller's existing write transaction;
+ * never begins, commits or rolls it back. The caller owns error/rollback handling.
+ * Requires an already assigned transaction ID so an idle/autocommit connection
+ * cannot be mistaken for the installer transaction. No application rows are read.
+ */
+export async function auditSchemaInMaintenanceTransaction(client:PoolClient,expectedDatabase:string,roleNames:readonly string[]){
+ if(!/^orio_(?:control|test_[a-z0-9_]+)$/.test(expectedDatabase)||roleNames.some(r=>!/^orio_[a-z0-9_]+$/.test(r)))throw new Error('Invalid maintenance audit identity');
+ const active=(await client.query<{active:boolean}>('SELECT pg_current_xact_id_if_assigned() IS NOT NULL AS active')).rows[0]?.active;
+ const identity=(await client.query<AuditIdentity>("SELECT current_database() AS database,current_user AS role,current_setting('transaction_read_only') AS read_only,current_setting('server_version') AS server_version")).rows[0];
+ if(!active||!identity||identity.database!==expectedDatabase||identity.read_only!=='off')throw new Error('Active maintenance transaction required');
+ await client.query('SET LOCAL search_path=pg_catalog');
+ return catalogObservation(client,identity,roleNames);
+}
+async function catalogObservation(client:PoolClient,identity:AuditIdentity,roleNames:readonly string[]){
   const catalog:Record<string,unknown[]>={};
   catalog.schemas=(await client.query(`SELECT nspname AS name,pg_get_userbyid(nspowner) AS owner,
    ${aclDigest('nspacl',"'n'",'nspowner')} AS acl_digest
@@ -69,8 +89,7 @@ export async function auditHostedSchema(client:PoolClient,expectedDatabase:strin
    WHERE left(n.nspname,5)='orio_' ORDER BY n.nspname,c.relname,p.polname`)).rows;
   catalog.extensions=(await client.query("SELECT extname AS name,extversion AS version FROM pg_catalog.pg_extension WHERE extname='pgcrypto' ORDER BY extname")).rows;
   const fingerprint=createHash('sha256').update(JSON.stringify(catalog)).digest('hex');
-  return {status:'READ_ONLY_SCHEMA_OBSERVATION',catalogFormatVersion:2,identity,catalogFingerprint:fingerprint,catalog,observedAt:new Date().toISOString(),
+  return {status:identity.read_only==='on'?'READ_ONLY_SCHEMA_OBSERVATION':'MAINTENANCE_TRANSACTION_SCHEMA_OBSERVATION',catalogFormatVersion:2,identity,catalogFingerprint:fingerprint,catalog,observedAt:new Date().toISOString(),
    baselineStatus:'REQUIRES_VERIFIED_BASELINE',installedMigrationVersions:null,financialExecutionEnabled:false,
    limits:['Catalog evidence only; no migration history or restore validation is inferred','Does not authenticate against a privileged database administrator','No application table rows or raw function bodies were read into this report']};
- }finally{if(started)await client.query('ROLLBACK');}
 }
