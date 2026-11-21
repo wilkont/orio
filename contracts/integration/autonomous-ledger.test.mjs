@@ -8,6 +8,7 @@ import {Wallet} from 'ethers';
 import {autonomousFixture,ok,hash} from '../test/helpers/autonomous-fixture.mjs';
 import {autonomousWallet} from '../sdk/autonomous-wallet.mjs';
 import {AutonomousSettlement} from '../../services/control-foundation/src/autonomous-settlement.ts';
+import {AutonomousImportWorker} from '../../services/control-foundation/src/autonomous-import-worker.ts';
 import {ControlLedger} from '../../services/control-foundation/src/ledger.ts';
 import {gasDigest} from '../../services/control-foundation/src/gas-policy.ts';
 import {autonomousTopics} from '../../services/control-foundation/src/finalized-autonomous.ts';
@@ -33,6 +34,7 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
    const r=params[0]==='finalized'?current:history.find(r=>r.blockNumber===params[0]);return {number:r.blockNumber,hash:badFinal&&params[0]==='finalized'?hash('wrong-final-anchor'):r.blockHash};
   }});
   const importer=new AutonomousSettlement(pool,source('first'),source('second'),f.configuration);await importer.initialize();await importer.initialize();
+  const worker=new AutonomousImportWorker(source('first'),source('second'),f.configuration,importer);
   const balance=async label=>(await ledger.balances()).find(a=>a.id==='aut_'+gasDigest([f.configuration.id,`erc20:84532:${f.master.address}`,label]))?.units??'0';
   function receipt(r){
    const blockHash=hash('block-'+ ++height),transactionHash=hash('tx-'+height),blockNumber='0x'+height.toString(16);
@@ -40,7 +42,7 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
    history.push(structuredClone(current));
    return {transactionHash,index:String(current.logs.findIndex(l=>l.topics[0]===autonomousTopics.checkpoint))};
   }
-  async function execution(r){ok(r);const p=receipt(r);await importer.importExecution(p.transactionHash,p.index);return p;}
+  async function execution(r){ok(r);const p=receipt(r);assert.equal((await worker.step()).state,'EXECUTION_IMPORTED');return p;}
   ok(await f.call(f.master,'mintFixture',[f.owner.address,1000000000n]));ok(await f.call(f.master,'approve',[f.vault.address,1000000000n]));
   const purchase=await execution(await f.call(f.controller,'purchase',[hash('genesis'),0,1000000000n,1]));
   assert.equal(await balance('reserve_cash'),'990000000');assert.equal(await balance('company_cash'),'10000000');
@@ -48,7 +50,6 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
   assert.equal((await pool.query('SELECT count(*) FROM orio_autonomous.facts')).rows[0].count,'1');
   // Intentionally omit a real transfer. The next checkpoint must not overtake it.
   const destination=new Wallet(bytesToHex(f.outsiderKey)).address.toLowerCase();const moved=await f.call(f.currency,'transfer',[destination,10n**18n]);ok(moved);receipt(moved);
-  const skippedTx=current.transactionHash,skippedIndex=String(BigInt(current.logs.find(l=>l.address===f.currency.address.toLowerCase()&&l.topics[0]===autonomousTopics.transfer).logIndex));
   const origin=(await f.read(f.controller,'origin'))[0];
   async function queue(atoms,nonce){
    const epoch=(await f.read(f.controller,'currentEpochId'))[0],close=origin+epoch*60n;
@@ -61,10 +62,10 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
   secondMutation=true;await assert.rejects(importer.importExecution(redeemed.transactionHash,redeemed.index));secondMutation=false;
   await assert.rejects(importer.importExecution(redeemed.transactionHash,redeemed.index),/Missing preceding autonomous event/);
   assert.equal((await pool.query('SELECT version::text FROM orio_autonomous.deployments')).rows[0].version,'1');
-  await importer.importTransfer({transactionHash:skippedTx,logIndex:skippedIndex,senderAddress:f.owner.address,recipientAddress:destination,units:String(10n**18n)});
+  assert.equal((await worker.step()).state,'TRANSFER_IMPORTED');
   await pool.query("CREATE FUNCTION public.reject_aut_journal() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'injected autonomous failure'; END $$");
   await pool.query('CREATE TRIGGER reject_aut_journal BEFORE INSERT ON orio_ledger.journals FOR EACH ROW EXECUTE FUNCTION public.reject_aut_journal()');
-  await assert.rejects(importer.importExecution(redeemed.transactionHash,redeemed.index),/injected autonomous failure/);
+  await assert.rejects(worker.step(),/injected autonomous failure/);
   assert.equal((await pool.query('SELECT version::text FROM orio_autonomous.deployments')).rows[0].version,'1');
   assert.equal((await pool.query('SELECT count(*) FROM orio_autonomous.facts')).rows[0].count,'2');
   await pool.query('DROP TRIGGER reject_aut_journal ON orio_ledger.journals');
@@ -73,14 +74,14 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
   assert.equal(await balance('reserve_cash'),String((await f.read(f.vault,'reserveUnits'))[0]));
   const claim=await f.call(f.claims,'claimFor',[f.owner.address],f.outsiderKey);ok(claim);receipt(claim);
   const index=String(current.logs.findIndex(l=>l.topics[0]===autonomousTopics.claim));
-  await importer.importClaim(current.transactionHash,index);await importer.importClaim(current.transactionHash,index);
+  assert.equal((await worker.step()).state,'CLAIM_IMPORTED');await importer.importClaim(current.transactionHash,index);
   assert.equal(await balance('claim_cash'),'0');assert.equal(await balance('claim_due:'+f.owner.address.toLowerCase()),'0');
   // A second consumer cannot book the already consumed stablecoin payout transfer.
   const cash=current.logs.find(l=>l.topics[0]===autonomousTopics.transfer);
   await assert.rejects(pool.query('INSERT INTO orio_settlement.receipt_claims VALUES($1,$2,$3)',[`eip155:84532/tx:${current.transactionHash}/log:${BigInt(cash.logIndex)}`,'conversion','duplicate']),/duplicate key/);
   const returned=await f.call(f.currency,'transfer',[f.owner.address,10n**18n],f.outsiderKey);ok(returned);
-  receipt(returned);const selfIndex=String(BigInt(current.logs.find(l=>l.address===f.currency.address.toLowerCase()&&l.topics[0]===autonomousTopics.transfer).logIndex));
-  await importer.importTransfer({transactionHash:current.transactionHash,logIndex:selfIndex,senderAddress:destination,recipientAddress:f.owner.address,units:String(10n**18n)});
+  receipt(returned);
+  assert.equal((await worker.step()).state,'TRANSFER_IMPORTED');
   await queue((await f.read(f.currency,'totalSupply'))[0],2);await execution(await f.call(f.controller,'settleEpoch',[],f.outsiderKey));
   const reference=(await f.read(f.controller,'referencePriceUsd36'))[0];
   await execution(await f.call(f.controller,'reconcileZeroSupply',[],f.outsiderKey));
@@ -91,6 +92,7 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
   const journals=(await pool.query('SELECT count(*) FROM orio_ledger.journals')).rows[0].count;
   badFinal=true;await assert.rejects(importer.advanceEmptyHistory(String(BigInt(current.blockNumber))),/History block mismatch/);badFinal=false;
   await importer.advanceEmptyHistory(String(BigInt(current.blockNumber)));await importer.advanceEmptyHistory(String(BigInt(current.blockNumber)));
+  assert.equal((await worker.step()).state,'WAITING');
   assert.equal((await pool.query('SELECT count(*) FROM orio_ledger.journals')).rows[0].count,journals);
   assert.equal((await ledger.verify()).ok,true);await assert.rejects(pool.query('DELETE FROM orio_autonomous.facts'),/append-only/i);
  }finally{

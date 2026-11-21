@@ -1,4 +1,8 @@
-## Current continuation - original SQL022 installed and cleanup verified
+## Current continuation - ordered autonomous importer connected locally
+
+The original SQL022 phase below is complete and its receipt is merged in PR46. A separate bounded worker now discovers the next finalized autonomous fact using two configured readers and connects it to the existing atomic importer. It honors durable log order, groups mint/burn with their checkpoint, imports ordinary transfers and payout claims first, and advances only verified empty intervals. Wrong chains, source disagreement, duplicates, anchor drift, orphan mint/burn and accounting errors stop progress. Actual disconnected contract/PostgreSQL integration uses the worker through purchase, transfers, claims, full redemption/reopening and company-fee distribution, with injected journal failure/rollback. Strict typecheck and 281 local checks pass. No runtime permission, secret retrieval, hosted code deployment, signing or financial activation was added. Next hosted work needs a concrete scoped importer permission/service plan and actual admitted deployment/provider configuration; never grant the broad administrator/runtime role to this worker. See docs/operations/AUTONOMOUS_INTEGRATION.md.
+
+## Prior continuation - original SQL022 installed and cleanup verified
 
 The owner explicitly approved the original upgrade, temporary private administrator access and USD5. SQL022 committed on the original database at 2026-11-21T23:17:33.913Z using reviewed source e429778 (PR45). All 46 existing protocol tables were preserved; both staged and post-commit catalogs matched the hosted rehearsal; new tables are empty with zero runtime grants and financial configuration. A first secret-read failure stopped before database connection. Its evidence was preserved, and a read-only exact-baseline/absent-schema inspection preceded the successful controlled retry. Do not rerun SQL001–022 or the earlier journal bootstrap.
 
