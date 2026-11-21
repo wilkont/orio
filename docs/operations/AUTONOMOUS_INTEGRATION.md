@@ -2,6 +2,8 @@
 
 November 20, 2026. Qualification source and disconnected execution evidence; no hosted migration or deployment is performed by this document.
 
+November 21 update: SQL022 has now passed the hosted copy rehearsal and original-database installation with preserved records, owner-only empty tables and verified cleanup. See the [actual installation report](../../infrastructure/aws/AUTONOMOUS_ORIGINAL_UPGRADE_REPORT_2026-11-21.md). The restricted importer service and remaining contract/provider/application qualifications described below are still outstanding.
+
 ## Customer authorization and execution
 
 `contracts/sdk/autonomous-wallet.mjs` builds purchase approvals/calls, EIP-712 withdrawal consent, admission, whole-epoch settlement, fixed-recipient payout claims, cancellation/expiry release and zero-protocol-fee transfers. All amounts/nonces/times use canonical integer strings. Chain, contract, epoch, recipient, amount and minimum payout are bound to customer consent. Builders reject mainnet and do not sign, send or choose credentials. They accept trusted deployment/snapshot inputs; deployment admission and live freshness checks belong to the caller.
@@ -22,7 +24,7 @@ Before advancing, the importer compares complete required-event ranges from both
 
 Funded claims are segregated cash/liabilities, not current reserve backing. Zero-supply reconciliation may reopen with prior funded claims outstanding because their cash has already left backing and remains entirely owed to recipients. Unfunded obligations cannot be passed off as funded claims. Rounding remains in separate USD54 memo accounts. Company distributions debit only recorded company cash. Missing claim deliveries, wallet transfers or company distributions stop reconciliation instead of concealing the difference.
 
-`pending-migrations/022_autonomous_settlement.sql` creates owner-only tables with append-only facts; it grants no runtime or public permissions. Existing SQL and monetary importers remain unchanged. The new migration is tested in isolated temporary PostgreSQL databases and is not applied to hosted customer data. A hosted clone rehearsal, checked original-database change and a restricted importer service remain required.
+`pending-migrations/022_autonomous_settlement.sql` creates owner-only tables with append-only facts; it grants no runtime or public permissions. Existing SQL and monetary importers remain unchanged. The migration is tested in isolated temporary PostgreSQL databases, passed the hosted clone rehearsal and was applied to the original database on November 21. A restricted hosted importer service remains required; schema installation alone grants no application authority.
 
 ## Migration and deployment boundary
 
