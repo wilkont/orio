@@ -1,4 +1,4 @@
-import type {Pool} from 'pg';
+import type {Pool,PoolClient} from 'pg';
 import {autonomousConfiguration,verifyAutonomousExecution,verifyAutonomousClaim,verifyAutonomousCoverage} from './finalized-autonomous.ts';
 import type {AutonomousDeployment,AutonomousReader} from './finalized-autonomous.ts';
 import {initialMonetaryState,planPurchaseEpoch,planRedemptionEpoch,reconcileZeroSupply} from './monetary-engine.ts';
@@ -17,8 +17,13 @@ interface Position {transactionHash:string;blockNumber:string;logIndex:string}
  */
 export class AutonomousSettlement {
  private readonly c:AutonomousDeployment;private readonly pool:Pool;private readonly first:AutonomousReader;private readonly second:AutonomousReader;
- constructor(pool:Pool,first:AutonomousReader,second:AutonomousReader,input:AutonomousDeployment){this.pool=pool;this.first=first;this.second=second;this.c=autonomousConfiguration(input);}
+ private readonly access:'maintenance'|'scoped';
+ constructor(pool:Pool,first:AutonomousReader,second:AutonomousReader,input:AutonomousDeployment,access:'maintenance'|'scoped'='maintenance'){
+  this.pool=pool;this.first=first;this.second=second;this.c=autonomousConfiguration(input);this.access=access;
+  if(access==='scoped'&&this.c.chainId!=='84532')throw Error('Scoped autonomous import requires Base Sepolia');
+ }
  async initialize(){
+  if(this.access==='scoped')throw Error('Scoped importer cannot initialize a deployment');
   const state=initialMonetaryState(`erc20:${this.c.chainId}:${this.c.master}`,'autonomous:fixed-master',this.c.masterDecimals);
   await this.pool.query('INSERT INTO orio_autonomous.deployments(id,configuration,state,block_number) VALUES($1,$2::jsonb,$3::jsonb,$4) ON CONFLICT DO NOTHING',[this.c.id,JSON.stringify(this.c),JSON.stringify(state),this.c.deploymentBlock]);
   const row=(await this.pool.query<{configuration:AutonomousDeployment}>('SELECT configuration FROM orio_autonomous.deployments WHERE id=$1',[this.c.id])).rows[0];
@@ -30,6 +35,14 @@ export class AutonomousSettlement {
   return {blockNumber:row.block_number,logIndex:row.log_index};
  }
  private ref(tx:string,index:string){return `eip155:${this.c.chainId}/tx:${tx}/log:${index}`;}
+ private async claim(client:PoolClient,ref:string,empty=false){
+  if(this.access==='scoped')await client.query('SELECT orio_autonomous.import_claim($1)',[ref]);
+  else await client.query('INSERT INTO orio_settlement.receipt_claims VALUES($1,$2,$3)',[ref,'monetary',(empty?'autonomous-empty:':'autonomous:')+this.c.id]);
+ }
+ private async record(client:PoolClient,ref:string,fact:unknown,sequence:string|null){
+  if(this.access==='scoped')await client.query('SELECT orio_autonomous.import_fact($1,$2::jsonb,$3::bigint)',[ref,JSON.stringify(fact),sequence]);
+  else await client.query('INSERT INTO orio_autonomous.facts VALUES($1,$2,$3::jsonb,$4)',[ref,this.c.id,JSON.stringify(fact),sequence]);
+ }
  private async apply(proof:Position,indices:string[],fact:unknown,transition:(row:StateRow,post:(label:string,token:boolean|'USD54_MONETARY_MEMO',normal:'debit'|'credit',side:'debit'|'credit',units:bigint)=>void)=>StateRow){
   const client=await this.pool.connect(),ref=this.ref(proof.transactionHash,proof.logIndex);
   try{
@@ -40,15 +53,18 @@ export class AutonomousSettlement {
    if(prior){if(!same(prior.proof,fact))throw Error('Autonomous replay conflict');await client.query('COMMIT');return prior.journal_sequence;}
    if(BigInt(proof.blockNumber)<BigInt(row.block_number)||BigInt(proof.blockNumber)===BigInt(row.block_number)&&BigInt(proof.logIndex)<=BigInt(row.log_index))throw Error('Autonomous history is out of order');
    await verifyAutonomousCoverage(this.first,this.second,this.c,row,proof,indices);
-   const accounts=new Map<string,Account>(),amounts=new Map<string,bigint>();
+   const accounts=new Map<string,Account & {label:string}>(),amounts=new Map<string,bigint>();
    const post=(label:string,token:boolean|'USD54_MONETARY_MEMO',normal:'debit'|'credit',side:'debit'|'credit',units:bigint)=>{
     if(units===0n)return;if(units<0n)throw Error('Negative autonomous posting');
     const asset=typeof token==='string'?token:`erc20:${this.c.chainId}:${token?this.c.currency:this.c.master}`,id='aut_'+gasDigest([this.c.id,asset,label]);
-    accounts.set(id,{id,asset,normalSide:normal,allowNegative:false});amounts.set(id,(amounts.get(id)??0n)+(side==='debit'?units:-units));
+    accounts.set(id,{id,asset,normalSide:normal,allowNegative:false,label});amounts.set(id,(amounts.get(id)??0n)+(side==='debit'?units:-units));
    };
    const next=transition(row,post);
-   for(const index of new Set(indices))await client.query('INSERT INTO orio_settlement.receipt_claims VALUES($1,$2,$3)',[this.ref(proof.transactionHash,index),'monetary','autonomous:'+this.c.id]);
-   for(const a of accounts.values())await client.query('SELECT orio_ledger.create_account($1,$2,$3,$4)',[a.id,a.asset,a.normalSide,false]);
+   for(const index of new Set(indices))await this.claim(client,this.ref(proof.transactionHash,index));
+   for(const a of accounts.values()){
+    if(this.access==='scoped')await client.query('SELECT orio_autonomous.import_account($1,$2,$3,$4)',[a.id,a.asset,a.label,a.normalSide]);
+    else await client.query('SELECT orio_ledger.create_account($1,$2,$3,$4)',[a.id,a.asset,a.normalSide,false]);
+   }
    const postings:Posting[]=[...amounts].filter(([,n])=>n!==0n).map(([accountId,n])=>({accountId,side:n>0n?'debit':'credit',units:String(n>0n?n:-n)}));
    // Preserve the existing journal identity for small events and the first
    // journal of a split event. Each asset is independently balanced.
@@ -66,16 +82,19 @@ export class AutonomousSettlement {
    for (const [index, journal] of journals.entries()) {
     if (!journal.length) continue;
     const journalRef = index === 0 ? ref : `${ref}/part:${index + 1}`;
-    const result = await client.query<{sequence:string}>('SELECT sequence::text FROM orio_ledger.post_journal($1,$2,$3,$4::jsonb)',
+    const result = this.access==='scoped'
+     ? await client.query<{sequence:string}>('SELECT orio_autonomous.import_journal($1,$2::jsonb) AS sequence',[journalRef,JSON.stringify(journal)])
+     : await client.query<{sequence:string}>('SELECT sequence::text FROM orio_ledger.post_journal($1,$2,$3,$4::jsonb)',
      ['autonomous:'+journalRef,journalRef,'Finalized autonomous reserve, token and funded-claim accounting',JSON.stringify(journal)]);
     sequence ??= result.rows[0]!.sequence;
    }
    for(const [label,units] of [['reserve_cash',next.state.reserveMasterUnits],['company_cash',next.company_units],['claim_cash',next.pending_units]]){
     const id='aut_'+gasDigest([this.c.id,`erc20:${this.c.chainId}:${this.c.master}`,label]);
-    const actual=(await client.query<{units:string}>('SELECT units::text FROM orio_ledger.balances WHERE id=$1',[id])).rows[0]?.units??'0';
+    const query=this.access==='scoped'?'SELECT orio_autonomous.import_balance($1) AS units':'SELECT units::text FROM orio_ledger.balances WHERE id=$1';
+    const actual=(await client.query<{units:string}>(query,[id])).rows[0]?.units??'0';
     if(actual!==units)throw Error('Unreconciled autonomous cash');
    }
-   await client.query('INSERT INTO orio_autonomous.facts VALUES($1,$2,$3::jsonb,$4)',[ref,this.c.id,JSON.stringify(fact),sequence]);
+   await this.record(client,ref,fact,sequence);
    await client.query('UPDATE orio_autonomous.deployments SET state=$2::jsonb,version=$3,pending_units=$4,company_units=$5,block_number=$6,log_index=$7 WHERE id=$1',
     [this.c.id,JSON.stringify(next.state),next.version,next.pending_units,next.company_units,proof.blockNumber,proof.logIndex]);
    await client.query('COMMIT');return sequence;
@@ -155,8 +174,8 @@ export class AutonomousSettlement {
    const [a,b]=await Promise.all([read(this.first),read(this.second)]);if(a!==b)throw Error('History canonical sources disagree');
    await verifyAutonomousCoverage(this.first,this.second,this.c,row,{blockNumber:throughBlock,logIndex:lastIndex,transactionHash:'0x'+'0'.repeat(64)},null);
    const proof={kind:'EMPTY_RANGE',fromBlock:row.block_number,afterLog:row.log_index,throughBlock,blockHash:a};
-   await client.query('INSERT INTO orio_settlement.receipt_claims VALUES($1,$2,$3)',[ref,'monetary','autonomous-empty:'+this.c.id]);
-   await client.query('INSERT INTO orio_autonomous.facts VALUES($1,$2,$3::jsonb,NULL)',[ref,this.c.id,JSON.stringify(proof)]);
+   await this.claim(client,ref,true);
+   await this.record(client,ref,proof,null);
    await client.query('UPDATE orio_autonomous.deployments SET block_number=$2,log_index=$3 WHERE id=$1',[this.c.id,throughBlock,lastIndex]);
    await client.query('COMMIT');
   }catch(error){await client.query('ROLLBACK');throw error;}finally{client.release();}
