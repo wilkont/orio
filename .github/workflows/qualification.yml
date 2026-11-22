@@ -48,6 +48,8 @@ jobs:
         working-directory: services/control-foundation
       - run: node scripts/build-valuation-journal-lambda.mjs /tmp/orio-valuation-journal-qualification.zip
         working-directory: services/control-foundation
+      - run: node scripts/build-valuation-journal-lambda.mjs /tmp/orio-autonomous-import-qualification.zip --autonomous-import
+        working-directory: services/control-foundation
       - run: >-
           node --input-type=module -e
           "import fs from 'node:fs';import assert from 'node:assert/strict';const built=JSON.parse(fs.readFileSync('/tmp/orio-valuation-journal-qualification.zip.json','utf8'));const plan=JSON.parse(fs.readFileSync('infrastructure/aws/valuation-journal-private-lambda.json','utf8'));assert.equal(built.codeSha256Base64,plan.Resources.JournalVersion.Properties.CodeSha256);"
