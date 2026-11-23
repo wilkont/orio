@@ -19,6 +19,9 @@ try {
   const port=execFileSync('docker',['port',name,'5432'],{encoding:'utf8'}).trim().split(':').at(-1);
   if (!port || !/^\d+$/.test(port)) throw new Error('Invalid isolated database port');
   // Run the exact-role upgrade rehearsal before tests that deliberately mutate shared role privileges.
+  const fresh=spawnSync(process.execPath,['--test','test/autonomous-qualification-bootstrap.test.ts'],{
+    stdio:'inherit',env:{...process.env,ORIO_TEST_DATABASE_URL:`postgresql://postgres:orio-local-test-only@127.0.0.1:${port}/orio_test`}});
+  if(fresh.status!==0)throw new Error('Fresh autonomous qualification bootstrap failed');
   const atomic=spawnSync(process.execPath,['--test','--test-concurrency=1','test/metadata-bootstrap.test.ts','test/valuation-journal-bootstrap.test.ts','test/atomic-hosted-upgrade.test.ts','test/autonomous-bootstrap.test.ts'],{
     stdio:'inherit',env:{...process.env,ORIO_TEST_DATABASE_URL:`postgresql://postgres:orio-local-test-only@127.0.0.1:${port}/orio_test`}});
   if(atomic.status!==0)throw new Error('Atomic upgrade qualification failed');
