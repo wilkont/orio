@@ -7,35 +7,6 @@
       "AllowedPattern": "[a-z0-9]{1,12}"
     }
   },
-  "Rules": {
-    "Target": {
-      "Assertions": [
-        {
-          "Assert": {
-            "Fn::And": [
-              {
-                "Fn::Equals": [
-                  {
-                    "Ref": "AWS::AccountId"
-                  },
-                  "720232346199"
-                ]
-              },
-              {
-                "Fn::Equals": [
-                  {
-                    "Ref": "AWS::Region"
-                  },
-                  "us-east-1"
-                ]
-              }
-            ]
-          },
-          "AssertDescription": "Qualification account and region only"
-        }
-      ]
-    }
-  },
   "Resources": {
     "Network": {
       "Type": "AWS::EC2::VPC",
@@ -43,11 +14,13 @@
         "CidrBlock": "10.78.0.0/24",
         "EnableDnsSupport": true,
         "EnableDnsHostnames": true
-      }
+      },
+      "Condition": "Target"
     },
     "Internet": {
       "Type": "AWS::EC2::InternetGateway",
-      "Properties": {}
+      "Properties": {},
+      "Condition": "Target"
     },
     "GatewayAttachment": {
       "Type": "AWS::EC2::VPCGatewayAttachment",
@@ -58,7 +31,8 @@
         "InternetGatewayId": {
           "Ref": "Internet"
         }
-      }
+      },
+      "Condition": "Target"
     },
     "Public": {
       "Type": "AWS::EC2::Subnet",
@@ -76,7 +50,8 @@
           ]
         },
         "MapPublicIpOnLaunch": false
-      }
+      },
+      "Condition": "Target"
     },
     "Compute": {
       "Type": "AWS::EC2::Subnet",
@@ -94,7 +69,8 @@
           ]
         },
         "MapPublicIpOnLaunch": false
-      }
+      },
+      "Condition": "Target"
     },
     "DataA": {
       "Type": "AWS::EC2::Subnet",
@@ -112,7 +88,8 @@
           ]
         },
         "MapPublicIpOnLaunch": false
-      }
+      },
+      "Condition": "Target"
     },
     "DataB": {
       "Type": "AWS::EC2::Subnet",
@@ -130,7 +107,8 @@
           ]
         },
         "MapPublicIpOnLaunch": false
-      }
+      },
+      "Condition": "Target"
     },
     "PublicRoutes": {
       "Type": "AWS::EC2::RouteTable",
@@ -138,7 +116,8 @@
         "VpcId": {
           "Ref": "Network"
         }
-      }
+      },
+      "Condition": "Target"
     },
     "PublicAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
@@ -149,7 +128,8 @@
         "RouteTableId": {
           "Ref": "PublicRoutes"
         }
-      }
+      },
+      "Condition": "Target"
     },
     "ComputeRoutes": {
       "Type": "AWS::EC2::RouteTable",
@@ -157,7 +137,8 @@
         "VpcId": {
           "Ref": "Network"
         }
-      }
+      },
+      "Condition": "Target"
     },
     "ComputeAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
@@ -168,7 +149,8 @@
         "RouteTableId": {
           "Ref": "ComputeRoutes"
         }
-      }
+      },
+      "Condition": "Target"
     },
     "PublicDefault": {
       "Type": "AWS::EC2::Route",
@@ -181,14 +163,16 @@
           "Ref": "Internet"
         }
       },
-      "DependsOn": "GatewayAttachment"
+      "DependsOn": "GatewayAttachment",
+      "Condition": "Target"
     },
     "NatAddress": {
       "Type": "AWS::EC2::EIP",
       "Properties": {
         "Domain": "vpc"
       },
-      "DependsOn": "GatewayAttachment"
+      "DependsOn": "GatewayAttachment",
+      "Condition": "Target"
     },
     "Nat": {
       "Type": "AWS::EC2::NatGateway",
@@ -203,7 +187,8 @@
           "Ref": "Public"
         }
       },
-      "DependsOn": "PublicDefault"
+      "DependsOn": "PublicDefault",
+      "Condition": "Target"
     },
     "ComputeDefault": {
       "Type": "AWS::EC2::Route",
@@ -215,7 +200,8 @@
         "NatGatewayId": {
           "Ref": "Nat"
         }
-      }
+      },
+      "Condition": "Target"
     },
     "WorkerSecurity": {
       "Type": "AWS::EC2::SecurityGroup",
@@ -238,7 +224,8 @@
             "CidrIp": "10.78.0.64/26"
           }
         ]
-      }
+      },
+      "Condition": "Target"
     },
     "MaintenanceSecurity": {
       "Type": "AWS::EC2::SecurityGroup",
@@ -261,7 +248,8 @@
             "CidrIp": "10.78.0.64/26"
           }
         ]
-      }
+      },
+      "Condition": "Target"
     },
     "DatabaseSecurity": {
       "Type": "AWS::EC2::SecurityGroup",
@@ -288,7 +276,8 @@
             }
           }
         ]
-      }
+      },
+      "Condition": "Target"
     },
     "DatabaseSubnets": {
       "Type": "AWS::RDS::DBSubnetGroup",
@@ -302,7 +291,8 @@
             "Ref": "DataB"
           }
         ]
-      }
+      },
+      "Condition": "Target"
     },
     "DatabaseParameters": {
       "Type": "AWS::RDS::DBParameterGroup",
@@ -312,7 +302,8 @@
         "Parameters": {
           "rds.force_ssl": "1"
         }
-      }
+      },
+      "Condition": "Target"
     },
     "Database": {
       "Type": "AWS::RDS::DBInstance",
@@ -351,34 +342,40 @@
         ]
       },
       "DeletionPolicy": "Delete",
-      "UpdateReplacePolicy": "Delete"
+      "UpdateReplacePolicy": "Delete",
+      "Condition": "Target"
     }
   },
   "Outputs": {
     "Vpc": {
       "Value": {
         "Ref": "Network"
-      }
+      },
+      "Condition": "Target"
     },
     "PrivateComputeSubnet": {
       "Value": {
         "Ref": "Compute"
-      }
+      },
+      "Condition": "Target"
     },
     "MaintenanceGroup": {
       "Value": {
         "Ref": "MaintenanceSecurity"
-      }
+      },
+      "Condition": "Target"
     },
     "WorkerGroup": {
       "Value": {
         "Ref": "WorkerSecurity"
-      }
+      },
+      "Condition": "Target"
     },
     "DatabaseIdentifier": {
       "Value": {
         "Ref": "Database"
-      }
+      },
+      "Condition": "Target"
     },
     "DatabaseResourceId": {
       "Value": {
@@ -386,7 +383,8 @@
           "Database",
           "DbiResourceId"
         ]
-      }
+      },
+      "Condition": "Target"
     },
     "DatabaseHost": {
       "Value": {
@@ -394,7 +392,30 @@
           "Database",
           "Endpoint.Address"
         ]
-      }
+      },
+      "Condition": "Target"
+    }
+  },
+  "Conditions": {
+    "Target": {
+      "Fn::And": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::AccountId"
+            },
+            "720232346199"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::Region"
+            },
+            "us-east-1"
+          ]
+        }
+      ]
     }
   }
 }

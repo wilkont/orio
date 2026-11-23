@@ -1,0 +1,242 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Private paused ORIO Base Sepolia qualification importer",
+  "Parameters": {
+    "RunId": {
+      "Type": "String",
+      "AllowedPattern": "[a-z0-9]{1,12}"
+    },
+    "DatabaseId": {
+      "Type": "String",
+      "AllowedPattern": "db-[A-Z0-9]+"
+    },
+    "DatabaseHost": {
+      "Type": "String",
+      "AllowedPattern": "orio-autonomous-qualification-[a-z0-9-]+\\.[a-z0-9]+\\.us-east-1\\.rds\\.amazonaws\\.com"
+    },
+    "Subnet": {
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "WorkerGroup": {
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+    "CodeBucket": {
+      "Type": "String",
+      "AllowedPattern": "orio-autonomous-qualification-artifacts-720232346199-[a-z0-9]{1,12}"
+    },
+    "CodeKey": {
+      "Type": "String",
+      "AllowedPattern": "autonomous-import/[a-f0-9]{64}\\.zip"
+    },
+    "CodeVersion": {
+      "Type": "String",
+      "MinLength": 1
+    },
+    "Deployment": {
+      "Type": "String",
+      "MinLength": 1,
+      "MaxLength": 1600
+    },
+    "FirstEndpoint": {
+      "Type": "String",
+      "NoEcho": true,
+      "AllowedPattern": "https://[^\\s]+"
+    },
+    "SecondEndpoint": {
+      "Type": "String",
+      "NoEcho": true,
+      "AllowedPattern": "https://[^\\s]+"
+    },
+    "Concurrency": {
+      "Type": "Number",
+      "Default": 0,
+      "AllowedValues": [
+        0,
+        1
+      ]
+    }
+  },
+  "Conditions": {
+    "Target": {
+      "Fn::And": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::AccountId"
+            },
+            "720232346199"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::Region"
+            },
+            "us-east-1"
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "Logs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Condition": "Target",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Sub": "/aws/lambda/orio-autonomous-import-${RunId}"
+        },
+        "RetentionInDays": 7
+      }
+    },
+    "Role": {
+      "Type": "AWS::IAM::Role",
+      "Condition": "Target",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "QualificationOnly",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "rds-db:connect",
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:rds-db:us-east-1:720232346199:dbuser:${DatabaseId}/orio_autonomous_worker"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:logs:us-east-1:720232346199:log-group:/aws/lambda/orio-autonomous-import-${RunId}:log-stream:*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeSubnets",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:AssignPrivateIpAddresses",
+                    "ec2:UnassignPrivateIpAddresses"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Deny",
+                  "Action": [
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeSubnets",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:AssignPrivateIpAddresses",
+                    "ec2:UnassignPrivateIpAddresses"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "ArnEquals": {
+                      "lambda:SourceFunctionArn": {
+                        "Fn::Sub": "arn:aws:lambda:us-east-1:720232346199:function:orio-autonomous-import-${RunId}"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "Worker": {
+      "Type": "AWS::Lambda::Function",
+      "Condition": "Target",
+      "DependsOn": "Logs",
+      "Properties": {
+        "FunctionName": {
+          "Fn::Sub": "orio-autonomous-import-${RunId}"
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "Role",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs24.x",
+        "Handler": "src/autonomous-import-lambda-entry.handler",
+        "Timeout": 90,
+        "MemorySize": 256,
+        "ReservedConcurrentExecutions": {
+          "Ref": "Concurrency"
+        },
+        "Code": {
+          "S3Bucket": {
+            "Ref": "CodeBucket"
+          },
+          "S3Key": {
+            "Ref": "CodeKey"
+          },
+          "S3ObjectVersion": {
+            "Ref": "CodeVersion"
+          }
+        },
+        "VpcConfig": {
+          "SubnetIds": [
+            {
+              "Ref": "Subnet"
+            }
+          ],
+          "SecurityGroupIds": [
+            {
+              "Ref": "WorkerGroup"
+            }
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "ORIO_AUTONOMOUS_MODE": "SCOPED_SEPOLIA_IAM",
+            "ORIO_DATABASE_HOST": {
+              "Ref": "DatabaseHost"
+            },
+            "ORIO_DATABASE_NAME": "orio_control_qualification",
+            "ORIO_DATABASE_USER": "orio_autonomous_worker",
+            "ORIO_AUTONOMOUS_DEPLOYMENT": {
+              "Ref": "Deployment"
+            },
+            "ORIO_AUTONOMOUS_RPC_FIRST": {
+              "Ref": "FirstEndpoint"
+            },
+            "ORIO_AUTONOMOUS_RPC_SECOND": {
+              "Ref": "SecondEndpoint"
+            }
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "Function": {
+      "Condition": "Target",
+      "Value": {
+        "Ref": "Worker"
+      }
+    }
+  }
+}
