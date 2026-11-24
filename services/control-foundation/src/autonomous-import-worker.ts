@@ -24,8 +24,12 @@ const hex=(n:bigint)=>'0x'+n.toString(16);
 export class AutonomousImportWorker {
  private readonly c:AutonomousDeployment;
  private readonly first:AutonomousReader;private readonly second:AutonomousReader;private readonly target:AutonomousImportTarget;
- constructor(first:AutonomousReader,second:AutonomousReader,input:AutonomousDeployment,target:AutonomousImportTarget){
+ private readonly maxBlocksPerStep:bigint;
+ constructor(first:AutonomousReader,second:AutonomousReader,input:AutonomousDeployment,target:AutonomousImportTarget,
+  maxBlocksPerStep=2000n){
+  if(maxBlocksPerStep<1n||maxBlocksPerStep>2000n)throw Error('Invalid autonomous scan window');
   requireChainSources(first,second);this.c=autonomousConfiguration(input);this.first=first;this.second=second;this.target=target;
+  this.maxBlocksPerStep=maxBlocksPerStep;
  }
  async step():Promise<{state:'WAITING'|'EMPTY_ADVANCED'|'EXECUTION_IMPORTED'|'CLAIM_IMPORTED'|'TRANSFER_IMPORTED';throughBlock:string}>{
   const cursor=await this.target.cursor();
@@ -39,7 +43,8 @@ export class AutonomousImportWorker {
   }));
   const final=heads[0]!.number<heads[1]!.number?heads[0]!.number:heads[1]!.number;
   if(final<from||final===from&&after===last)return {state:'WAITING',throughBlock:cursor.blockNumber};
-  const to=final<from+1999n?final:from+1999n;
+  const windowEnd=from+this.maxBlocksPerStep-1n;
+  const to=final<windowEnd?final:windowEnd;
   const read=async(source:AutonomousReader,head:{number:bigint;hash:string})=>{
    const anchor=async()=>{
     const b=chainObject(await source.request('eth_getBlockByNumber',[hex(to),false]));

@@ -62,6 +62,18 @@ test('uses the lower finalized head, bounds catch-up and waits after the complet
  lag.target.cursor=async()=>({blockNumber:'1',logIndex:((1n<<256n)-1n).toString()});
  assert.equal((await lag.worker().step()).state,'WAITING');assert.equal(lag.calls.length,1);
 });
+test('respects the hosted provider log range on both sources',async()=>{
+ const ranges:{fromBlock:string;toBlock:string}[]=[];
+ const f=fixture([],(_source,method,params,value)=>{
+  if(method==='eth_getBlockByNumber'&&params[0]==='finalized')return {number:'0x1388',hash:hash(5000)};
+  if(method==='eth_getLogs')ranges.push(params[0] as typeof ranges[number]);
+  return value;
+ });
+ const worker=new AutonomousImportWorker(f.source('first'),f.source('second'),c,f.target,200n);
+ assert.deepEqual(await worker.step(),{state:'EMPTY_ADVANCED',throughBlock:'200'});
+ assert.deepEqual(ranges.map(({fromBlock,toBlock})=>[fromBlock,toBlock]),[['0x1','0xc8'],['0x1','0xc8']]);
+ assert.throws(()=>new AutonomousImportWorker(f.source('first'),f.source('second'),c,f.target,0n),/Invalid autonomous scan window/);
+});
 test('rechecks canonical anchor after event reads and refuses a changed finalized identity',async()=>{
  let reads=0;
  const changing=fixture([], (s,m,p,v)=>s==='first'&&m==='eth_getBlockByNumber'&&p[0]!=='finalized'&&++reads===2?{number:'0x2',hash:hash(99)}:v);
