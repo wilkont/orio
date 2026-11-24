@@ -78,11 +78,11 @@ function templateBody(args){
  const b=aws('cloudformation','get-template',...args,'--template-stage','Original').TemplateBody;
  return typeof b==='string'?JSON.parse(b):b;
 }
-async function awaitUpdate(){
+async function awaitUpdate(expected){
  for(let i=0;i<55;i++){
   const s=aws('cloudformation','describe-stacks','--stack-name',stack).Stacks[0];
-  if(s.StackStatus==='UPDATE_COMPLETE')return;
-  if(!['UPDATE_IN_PROGRESS','UPDATE_COMPLETE_CLEANUP_IN_PROGRESS'].includes(s.StackStatus))throw Error('Signing stack entered unexpected state');
+  if(s.StackStatus==='UPDATE_COMPLETE'&&canon(templateBody(['--stack-name',stack]))===canon(expected))return;
+  if(!['UPDATE_COMPLETE','UPDATE_IN_PROGRESS','UPDATE_COMPLETE_CLEANUP_IN_PROGRESS'].includes(s.StackStatus))throw Error('Signing stack entered unexpected state');
   await pause(3000);
  }
  throw Error('Signing stack update result unknown');
@@ -123,8 +123,7 @@ if(mode==='--verify-payloads'){
   await writeFile(join(evidence,'deployment-claim.json'),JSON.stringify({changeSet,chain:'84532',startedAt:new Date().toISOString()}),{flag:'wx',mode:0o600});
   started=true;
   aws('cloudformation','execute-change-set','--change-set-name',changeSet,'--client-request-token','orio-autonomous-approved-20261124');
-  await awaitUpdate();
-  if(canon(templateBody(['--stack-name',stack]))!==canon(active))throw Error('Active signing template changed');
+  await awaitUpdate(active);
   temp=await mkdtemp(join(tmpdir(),'orio-qualification-proof-'));
   for(const p of plans){
    if(measured+await preflight(p)>ceiling)throw Error('Remaining batch exceeds approved fee ceiling');
