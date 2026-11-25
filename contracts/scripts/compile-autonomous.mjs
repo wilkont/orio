@@ -3,7 +3,7 @@ import solc from 'solc';
 // Separate compilation preserves all deployed legacy artifacts and manifests.
 export function compileAutonomousContracts(fixtures=false){
  const files=['src/ORIOAutonomousController.sol','src/ORIOAutonomousLocks.sol','src/ORIORuleReserveOracle.sol',
-  'src/ORIOWithdrawalClaims.sol','src/ORIOCurrency.sol','src/ORIOReserveVault.sol'];
+  'src/ORIOWithdrawalClaims.sol','src/ORIOCurrency.sol','src/ORIOReserveVault.sol','src/ORIOBaseSequencerPriceFeed.sol'];
  if(fixtures)files.push('test/AutonomousFixtures.sol');
  const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8').replace(/\r\n?/g,'\n');
  const sources=Object.fromEntries(files.map(file=>[file,{content:read(file)}]));
