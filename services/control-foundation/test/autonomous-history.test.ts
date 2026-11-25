@@ -22,6 +22,14 @@ test('empty catch-up requires an actually empty interval and range limits cannot
  await assert.rejects(verifyAutonomousCoverage(reader('a',[event(2,2,2)]),reader('b',[event(2,2,2)]),c,cursor,target,null),/Missing preceding/);
  await assert.rejects(verifyAutonomousCoverage(reader('a',[]),reader('b',[]),c,cursor,{...target,blockNumber:'10002'},null),/bounded catch-up/);
 });
+test('matching zero wallet transfers require no journal but still participate in history agreement',async()=>{
+ const noop={...event(1,1,1,autonomousTopics.transfer,c.currency),topics:[autonomousTopics.transfer,hash(7),hash(8)],data:hash(0)};
+ await verifyAutonomousCoverage(reader('a',[noop]),reader('b',[noop]),c,cursor,target,null);
+ await assert.rejects(verifyAutonomousCoverage(reader('a',[noop]),reader('b',[]),c,cursor,target,null),/sources disagree/);
+ await assert.rejects(verifyAutonomousCoverage(reader('a',[noop,noop]),reader('b',[noop,noop]),c,cursor,target,null),/Duplicate/);
+ const mint={...noop,topics:[autonomousTopics.transfer,hash(0),hash(8)]};
+ await assert.rejects(verifyAutonomousCoverage(reader('a',[mint]),reader('b',[mint]),c,cursor,target,null),/Missing preceding/);
+});
 test('autonomous HTTPS transport allows bounded event reads while ordinary chain reader and unsafe ranges reject',async()=>{
  let sent=0;
  const fetcher:typeof fetch=async()=>{sent++;return new Response(JSON.stringify({jsonrpc:'2.0',id:1,result:[]}));};

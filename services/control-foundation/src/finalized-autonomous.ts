@@ -28,6 +28,13 @@ export const autonomousTopics={
  transfer:'0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
 };
 const zero='0x'+'0'.repeat(40);
+const zeroWord='0x'+'0'.repeat(64);
+// ERC-20 allows zero-value wallet transfers. Keep their logs in provider
+// agreement and position checks, but never require a monetary posting for them.
+export function isZeroWalletTransfer(currency:string,address:string,eventTopics:string[],data:unknown):boolean {
+ return address===currency&&eventTopics[0]===autonomousTopics.transfer&&eventTopics.length===3&&data===zeroWord&&
+  indexedAddress(eventTopics[1])!==zero&&indexedAddress(eventTopics[2])!==zero;
+}
 const topics=(l:Record<string,unknown>)=>{if(!Array.isArray(l.topics))throw Error('Missing event topics');return l.topics.map(chainHash);};
 function words(data:unknown,n:number):string[]{
  if(typeof data!=='string'||data.length!==2+n*64||!new RegExp('^0x[0-9a-fA-F]{'+n*64+'}$').test(data))throw Error('Invalid autonomous event encoding');
@@ -150,6 +157,7 @@ export async function verifyAutonomousCoverage(first:AutonomousReader,second:Aut
  const seen=new Set<string>(),owned=new Set(ownedIndexes??[]);
  for(const l of a){
   const position=l.blockNumber+':'+l.logIndex;if(seen.has(position))throw Error('Duplicate autonomous history position');seen.add(position);
+  if(isZeroWalletTransfer(c.currency,l.address,l.topics,l.data))continue;
   if(l.transactionHash!==target.transactionHash||!owned.has(l.logIndex))throw Error('Missing preceding autonomous event; import it first');
  }
  if(ownedIndexes!==null&&!a.some(l=>l.transactionHash===target.transactionHash&&l.logIndex===target.logIndex))throw Error('Target missing from autonomous history');

@@ -1,4 +1,4 @@
-import {autonomousConfiguration,autonomousTopics} from './finalized-autonomous.ts';
+import {autonomousConfiguration,autonomousTopics,isZeroWalletTransfer} from './finalized-autonomous.ts';
 import type {AutonomousDeployment,AutonomousReader} from './finalized-autonomous.ts';
 import {chainAddress,chainHash,chainObject,chainQuantity,indexedAddress,requireChainSources} from './chain-evidence.ts';
 import {gasDigest} from './gas-policy.ts';
@@ -75,7 +75,7 @@ export class AutonomousImportWorker {
   };
   const [a,b]=await Promise.all([read(this.first,heads[0]!),read(this.second,heads[1]!)]);
   if(gasDigest(a)!==gasDigest(b))throw Error('Autonomous worker sources disagree');
-  const event=a.events[0];
+  const event=a.events.find(log=>!isZeroWalletTransfer(this.c.currency,log.address,log.topics,log.data));
   if(!event){await this.target.advanceEmptyHistory(String(to));return {state:'EMPTY_ADVANCED',throughBlock:String(to)};}
   const {transactionHash,logIndex}=event;
   if(event.address===this.c.claims){

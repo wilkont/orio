@@ -27,6 +27,17 @@ test('discovers the earliest ordinary transfer before a later checkpoint',async(
  assert.equal((await f.worker().step()).state,'TRANSFER_IMPORTED');
  assert.deepEqual(f.calls,[['transfer',{transactionHash:hash(20),logIndex:'0',senderAddress:address(7),recipientAddress:address(8),units:'100'}]]);
 });
+test('keeps agreed zero wallet transfers out of monetary discovery',async()=>{
+ const noop={...transfer(),data:hash(0)};
+ const after=fixture([noop,checkpoint()]);
+ assert.equal((await after.worker().step()).state,'EXECUTION_IMPORTED');
+ assert.deepEqual(after.calls,[['execution',hash(20),'1']]);
+ const quiet=fixture([noop]);
+ assert.deepEqual(await quiet.worker().step(),{state:'EMPTY_ADVANCED',throughBlock:'2'});
+ const disputed=fixture([noop],(s,m,_p,v)=>s==='second'&&m==='eth_getLogs'?[]:v);
+ await assert.rejects(disputed.worker().step(),/sources disagree/);
+ assert.equal(disputed.calls.length,0);
+});
 test('mint and burn discovery selects their next checkpoint, while orphan burns stop',async()=>{
  for(const [from,to] of [[0,7],[7,0]]){
   const f=fixture([transfer(0,from,to),checkpoint()]);
