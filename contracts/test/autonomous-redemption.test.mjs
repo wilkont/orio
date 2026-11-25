@@ -32,6 +32,25 @@ test('Base price adapter fails closed during a sequencer outage and the full rec
  f.advance(301);
  await assert.rejects(f.read(oracle,'read'));
 });
+test('Pyth round adapter requires the pinned identity, fresh time and configured confidence',async()=>{
+ const f=await createFixture(artifacts,84532,false),feedId=hash('USDC/USD fixture');
+ const pyth=await f.deploy('test/ProductionFeedFixture.sol','PythCoreFixture',[feedId]);
+ const round=await f.deploy('src/ORIOPythCorePriceFeed.sol','ORIOPythCorePriceFeed',[pyth.address,feedId,8,1000]);
+ const publish=f.time();
+ ok(await f.call(pyth,'setPrice',[100000000,100000,-8,publish]));
+ const [id,price,,updated]=await f.read(round,'latestRoundData');
+ assert.deepEqual([id,price,updated],[publish,100000000n,publish]);
+ const checks=[
+  [100000000,100001,-8,publish], [100000000,0,-7,publish],
+  [0,0,-8,publish], [100000000,0,-8,publish+1n], [100000000,0,-8,publish-301n],
+ ];
+ for(const candidate of checks){
+  ok(await f.call(pyth,'setPrice',candidate));
+  await assert.rejects(f.read(round,'latestRoundData'));
+ }
+ const wrong=await f.deploy('src/ORIOPythCorePriceFeed.sol','ORIOPythCorePriceFeed',[pyth.address,hash('wrong feed'),8,1000]);
+ await assert.rejects(f.read(wrong,'latestRoundData'));
+});
 async function fixture(){
  const f=await createFixture(artifacts,84532,false),owner=new Wallet(bytesToHex(f.key)),second=new Wallet(bytesToHex(f.outsiderKey));
  const master=await f.deploy('test/AutonomousFixtures.sol','AutonomousTestAsset',[]);
