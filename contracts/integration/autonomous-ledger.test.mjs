@@ -167,7 +167,11 @@ test('actual autonomous checkpoints, funded claims and later payouts reconcile a
   assert.equal((await pool.query('SELECT count(*) FROM orio_ledger.journals')).rows[0].count,journals);
   assert.equal((await ledger.verify()).ok,true);await assert.rejects(pool.query('DELETE FROM orio_autonomous.facts'),/append-only/i);
  }finally{
-  if(scopedPool)await scopedPool.end();if(pool)await pool.end();if(created)await root.query('DROP DATABASE '+name+' WITH (FORCE)');
+  if(scopedPool)await scopedPool.end();
+  if(pool)await pool.end();
+  // A rejected pool query can still be closing its connection after pool.end().
+  // Let PostgreSQL wait for those sessions to exit instead of terminating them.
+  if(created)await root.query('DROP DATABASE '+name);
   await root.query('DROP ROLE IF EXISTS '+login+','+access);
   await root.query('DROP ROLE IF EXISTS '+runtime);await root.end();
  }
