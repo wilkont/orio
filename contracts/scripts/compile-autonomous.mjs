@@ -4,7 +4,7 @@ import solc from 'solc';
 export function compileAutonomousContracts(fixtures=false){
  const files=['src/ORIOAutonomousController.sol','src/ORIOAutonomousLocks.sol','src/ORIORuleReserveOracle.sol',
   'src/ORIOWithdrawalClaims.sol','src/ORIOCurrency.sol','src/ORIOReserveVault.sol','src/ORIOBaseSequencerPriceFeed.sol',
-  'src/ORIOPythCorePriceFeed.sol'];
+  'src/ORIOPythCorePriceFeed.sol','src/ORIOChainlinkStreamsPriceFeed.sol'];
  if(fixtures)files.push('test/AutonomousFixtures.sol','test/ProductionFeedFixture.sol');
  const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8').replace(/\r\n?/g,'\n');
  const sources=Object.fromEntries(files.map(file=>[file,{content:read(file)}]));

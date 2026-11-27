@@ -8,6 +8,7 @@
   },
   "scripts": {
     "qualification:report": "node scripts/qualification-report.mjs",
+    "qualification:autonomous": "node scripts/qualification-autonomous-report.mjs",
     "build": "node scripts/compile.mjs",
     "test": "node --test test/*.test.mjs",
     "sign:company-gas": "node scripts/sign-company-gas.mjs"
