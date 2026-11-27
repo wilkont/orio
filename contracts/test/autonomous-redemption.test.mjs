@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {Interface,Wallet,TypedDataEncoder,keccak256,toUtf8Bytes} from 'ethers';
+import {AbiCoder,Interface,Wallet,TypedDataEncoder,keccak256,toUtf8Bytes} from 'ethers';
 import {bytesToHex} from '@ethereumjs/util';
 import {compileAutonomousContracts} from '../scripts/compile-autonomous.mjs';
 import {createFixture} from './helpers/vm.mjs';
@@ -9,6 +9,78 @@ const artifacts=compileAutonomousContracts(true),atom=10n**18n,usd=10n**36n;
 const hash=s=>keccak256(toUtf8Bytes(s));
 const ok=r=>assert.equal(r.execResult.exceptionError,undefined,bytesToHex(r.execResult.returnValue));
 const rejects=r=>assert.notEqual(r.execResult.exceptionError,undefined);
+test('Base price adapter fails closed during a sequencer outage and the full recovery window',async()=>{
+ const f=await createFixture(artifacts,84532,false);
+ const deployFeed=()=>f.deploy('test/AutonomousFixtures.sol','AutonomousTestFeed',[]);
+ const price=await deployFeed(),sequencer=await deployFeed(),independent=await deployFeed();
+ const guarded=await f.deploy('src/ORIOBaseSequencerPriceFeed.sol','ORIOBaseSequencerPriceFeed',[price.address,sequencer.address,60]);
+ const oracle=await f.deploy('src/ORIORuleReserveOracle.sol','ORIORuleReserveOracle',[guarded.address,independent.address]);
+ assert.equal((await f.read(guarded,'decimals'))[0],8n);
+ await assert.rejects(f.read(oracle,'read'));
+ ok(await f.call(sequencer,'set',[0,f.time()+1n]));
+ await assert.rejects(f.read(oracle,'read'));
+ ok(await f.call(sequencer,'set',[0,f.time()]));
+ f.advance(60);
+ await assert.rejects(f.read(oracle,'read'));
+ f.advance(1);
+ assert.deepEqual([...(await f.read(oracle,'read'))],[usd,true]);
+ ok(await f.call(sequencer,'set',[1,f.time()]));
+ await assert.rejects(f.read(oracle,'read'));
+ ok(await f.call(sequencer,'set',[0,f.time()]));
+ f.advance(61);
+ assert.deepEqual([...(await f.read(oracle,'read'))],[usd,true]);
+ f.advance(301);
+ await assert.rejects(f.read(oracle,'read'));
+});
+test('Pyth round adapter requires the pinned identity, fresh time and configured confidence',async()=>{
+ const f=await createFixture(artifacts,84532,false),feedId=hash('USDC/USD fixture');
+ const pyth=await f.deploy('test/ProductionFeedFixture.sol','PythCoreFixture',[feedId]);
+ const round=await f.deploy('src/ORIOPythCorePriceFeed.sol','ORIOPythCorePriceFeed',[pyth.address,feedId,8,1000]);
+ const publish=f.time();
+ ok(await f.call(pyth,'setPrice',[100000000,100000,-8,publish]));
+ const [id,price,,updated]=await f.read(round,'latestRoundData');
+ assert.deepEqual([id,price,updated],[publish,100000000n,publish]);
+ const checks=[
+  [100000000,100001,-8,publish], [100000000,0,-7,publish],
+  [0,0,-8,publish], [100000000,0,-8,publish+1n], [100000000,0,-8,publish-301n],
+ ];
+ for(const candidate of checks){
+  ok(await f.call(pyth,'setPrice',candidate));
+  await assert.rejects(f.read(round,'latestRoundData'));
+ }
+ const wrong=await f.deploy('src/ORIOPythCorePriceFeed.sol','ORIOPythCorePriceFeed',[pyth.address,hash('wrong feed'),8,1000]);
+ await assert.rejects(f.read(wrong,'latestRoundData'));
+});
+test('Streams adapter admits only verified, fresh, ordered reports for its configured feed',async()=>{
+ const f=await createFixture(artifacts,84532,false),feedId='0x0003'+'11'.repeat(30);
+ const proxy=await f.deploy('test/ProductionFeedFixture.sol','StreamsVerifierFixture',[]);
+ const adapter=await f.deploy('src/ORIOChainlinkStreamsPriceFeed.sol','ORIOChainlinkStreamsPriceFeed',[proxy.address,feedId,18]);
+ const envelope='0x1234',stamp=f.time(),price=10n**18n;
+ const types=['bytes32','uint32','uint32','uint192','uint192','uint32','int192','int192','int192'];
+ const good=[feedId,stamp-1n,stamp,0,0,stamp+30n,price,price-1n,price+1n];
+ assert.equal((await f.read(adapter,'decimals'))[0],18n);
+ const configure=values=>f.call(proxy,'setReport',[envelope,AbiCoder.defaultAbiCoder().encode(types,values)]);
+ await assert.rejects(f.read(adapter,'latestRoundData'));
+ ok(await configure(good));
+ rejects(await f.call(adapter,'submit',['0x1235'],f.outsiderKey));
+ ok(await f.call(adapter,'submit',[envelope],f.outsiderKey));
+ assert.deepEqual([...(await f.read(adapter,'latestRoundData'))],[stamp,price,stamp,stamp,stamp]);
+ rejects(await f.call(adapter,'submit',[envelope]));
+ f.advance(31);
+ await assert.rejects(f.read(adapter,'latestRoundData'));
+ const fresh=[...good];fresh[1]=stamp+30n;fresh[2]=stamp+31n;fresh[5]=stamp+400n;
+ for(const [position,value] of [[0,'0x1003'+'22'.repeat(30)],[1,stamp+32n],[2,stamp+32n],[5,stamp+31n],[6,0],[7,price+1n],[8,price-1n]]){
+  const invalid=[...fresh];invalid[position]=value;
+  ok(await configure(invalid));
+  rejects(await f.call(adapter,'submit',[envelope]));
+ }
+ ok(await configure(fresh));
+ ok(await f.call(adapter,'submit',[envelope]));
+ f.advance(300);
+ assert.equal((await f.read(adapter,'latestRoundData'))[1],price);
+ f.advance(1);
+ await assert.rejects(f.read(adapter,'latestRoundData'));
+});
 async function fixture(){
  const f=await createFixture(artifacts,84532,false),owner=new Wallet(bytesToHex(f.key)),second=new Wallet(bytesToHex(f.outsiderKey));
  const master=await f.deploy('test/AutonomousFixtures.sol','AutonomousTestAsset',[]);

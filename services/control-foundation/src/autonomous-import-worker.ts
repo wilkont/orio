@@ -1,4 +1,4 @@
-import {autonomousConfiguration,autonomousTopics} from './finalized-autonomous.ts';
+import {autonomousConfiguration,autonomousTopics,isZeroWalletTransfer} from './finalized-autonomous.ts';
 import type {AutonomousDeployment,AutonomousReader} from './finalized-autonomous.ts';
 import {chainAddress,chainHash,chainObject,chainQuantity,indexedAddress,requireChainSources} from './chain-evidence.ts';
 import {gasDigest} from './gas-policy.ts';
@@ -24,8 +24,12 @@ const hex=(n:bigint)=>'0x'+n.toString(16);
 export class AutonomousImportWorker {
  private readonly c:AutonomousDeployment;
  private readonly first:AutonomousReader;private readonly second:AutonomousReader;private readonly target:AutonomousImportTarget;
- constructor(first:AutonomousReader,second:AutonomousReader,input:AutonomousDeployment,target:AutonomousImportTarget){
+ private readonly maxBlocksPerStep:bigint;
+ constructor(first:AutonomousReader,second:AutonomousReader,input:AutonomousDeployment,target:AutonomousImportTarget,
+  maxBlocksPerStep=2000n){
+  if(maxBlocksPerStep<1n||maxBlocksPerStep>2000n)throw Error('Invalid autonomous scan window');
   requireChainSources(first,second);this.c=autonomousConfiguration(input);this.first=first;this.second=second;this.target=target;
+  this.maxBlocksPerStep=maxBlocksPerStep;
  }
  async step():Promise<{state:'WAITING'|'EMPTY_ADVANCED'|'EXECUTION_IMPORTED'|'CLAIM_IMPORTED'|'TRANSFER_IMPORTED';throughBlock:string}>{
   const cursor=await this.target.cursor();
@@ -39,7 +43,8 @@ export class AutonomousImportWorker {
   }));
   const final=heads[0]!.number<heads[1]!.number?heads[0]!.number:heads[1]!.number;
   if(final<from||final===from&&after===last)return {state:'WAITING',throughBlock:cursor.blockNumber};
-  const to=final<from+1999n?final:from+1999n;
+  const windowEnd=from+this.maxBlocksPerStep-1n;
+  const to=final<windowEnd?final:windowEnd;
   const read=async(source:AutonomousReader,head:{number:bigint;hash:string})=>{
    const anchor=async()=>{
     const b=chainObject(await source.request('eth_getBlockByNumber',[hex(to),false]));
@@ -70,7 +75,7 @@ export class AutonomousImportWorker {
   };
   const [a,b]=await Promise.all([read(this.first,heads[0]!),read(this.second,heads[1]!)]);
   if(gasDigest(a)!==gasDigest(b))throw Error('Autonomous worker sources disagree');
-  const event=a.events[0];
+  const event=a.events.find(log=>!isZeroWalletTransfer(this.c.currency,log.address,log.topics,log.data));
   if(!event){await this.target.advanceEmptyHistory(String(to));return {state:'EMPTY_ADVANCED',throughBlock:String(to)};}
   const {transactionHash,logIndex}=event;
   if(event.address===this.c.claims){

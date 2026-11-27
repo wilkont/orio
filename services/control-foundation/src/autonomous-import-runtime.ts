@@ -56,5 +56,6 @@ export function createQualificationAutonomousImporter(env:Readonly<Record<string
   options:'-c search_path=pg_catalog -c statement_timeout=5000 -c lock_timeout=1000 -c idle_in_transaction_session_timeout=40000'});
  pool.on('error',()=>console.error('Qualification importer database connection unavailable'));
  const target=new AutonomousSettlement(pool,first,second,deployment,'scoped');
- return createAutonomousImportHandler(new AutonomousImportWorker(first,second,deployment,target));
+ // The public Base Sepolia RPC rejected larger eth_getLogs ranges during qualification.
+ return createAutonomousImportHandler(new AutonomousImportWorker(first,second,deployment,target,200n));
 }

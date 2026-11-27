@@ -3,8 +3,9 @@ import solc from 'solc';
 // Separate compilation preserves all deployed legacy artifacts and manifests.
 export function compileAutonomousContracts(fixtures=false){
  const files=['src/ORIOAutonomousController.sol','src/ORIOAutonomousLocks.sol','src/ORIORuleReserveOracle.sol',
-  'src/ORIOWithdrawalClaims.sol','src/ORIOCurrency.sol','src/ORIOReserveVault.sol'];
- if(fixtures)files.push('test/AutonomousFixtures.sol');
+  'src/ORIOWithdrawalClaims.sol','src/ORIOCurrency.sol','src/ORIOReserveVault.sol','src/ORIOBaseSequencerPriceFeed.sol',
+  'src/ORIOPythCorePriceFeed.sol','src/ORIOChainlinkStreamsPriceFeed.sol'];
+ if(fixtures)files.push('test/AutonomousFixtures.sol','test/ProductionFeedFixture.sol');
  const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8').replace(/\r\n?/g,'\n');
  const sources=Object.fromEntries(files.map(file=>[file,{content:read(file)}]));
  const result=JSON.parse(solc.compile(JSON.stringify({language:'Solidity',sources,settings:{optimizer:{enabled:true,runs:1},viaIR:true,evmVersion:'cancun',

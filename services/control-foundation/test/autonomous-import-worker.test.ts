@@ -27,6 +27,17 @@ test('discovers the earliest ordinary transfer before a later checkpoint',async(
  assert.equal((await f.worker().step()).state,'TRANSFER_IMPORTED');
  assert.deepEqual(f.calls,[['transfer',{transactionHash:hash(20),logIndex:'0',senderAddress:address(7),recipientAddress:address(8),units:'100'}]]);
 });
+test('keeps agreed zero wallet transfers out of monetary discovery',async()=>{
+ const noop={...transfer(),data:hash(0)};
+ const after=fixture([noop,checkpoint()]);
+ assert.equal((await after.worker().step()).state,'EXECUTION_IMPORTED');
+ assert.deepEqual(after.calls,[['execution',hash(20),'1']]);
+ const quiet=fixture([noop]);
+ assert.deepEqual(await quiet.worker().step(),{state:'EMPTY_ADVANCED',throughBlock:'2'});
+ const disputed=fixture([noop],(s,m,_p,v)=>s==='second'&&m==='eth_getLogs'?[]:v);
+ await assert.rejects(disputed.worker().step(),/sources disagree/);
+ assert.equal(disputed.calls.length,0);
+});
 test('mint and burn discovery selects their next checkpoint, while orphan burns stop',async()=>{
  for(const [from,to] of [[0,7],[7,0]]){
   const f=fixture([transfer(0,from,to),checkpoint()]);
@@ -61,6 +72,18 @@ test('uses the lower finalized head, bounds catch-up and waits after the complet
  assert.equal((await lag.worker().step()).throughBlock,'1');
  lag.target.cursor=async()=>({blockNumber:'1',logIndex:((1n<<256n)-1n).toString()});
  assert.equal((await lag.worker().step()).state,'WAITING');assert.equal(lag.calls.length,1);
+});
+test('respects the hosted provider log range on both sources',async()=>{
+ const ranges:{fromBlock:string;toBlock:string}[]=[];
+ const f=fixture([],(_source,method,params,value)=>{
+  if(method==='eth_getBlockByNumber'&&params[0]==='finalized')return {number:'0x1388',hash:hash(5000)};
+  if(method==='eth_getLogs')ranges.push(params[0] as typeof ranges[number]);
+  return value;
+ });
+ const worker=new AutonomousImportWorker(f.source('first'),f.source('second'),c,f.target,200n);
+ assert.deepEqual(await worker.step(),{state:'EMPTY_ADVANCED',throughBlock:'200'});
+ assert.deepEqual(ranges.map(({fromBlock,toBlock})=>[fromBlock,toBlock]),[['0x1','0xc8'],['0x1','0xc8']]);
+ assert.throws(()=>new AutonomousImportWorker(f.source('first'),f.source('second'),c,f.target,0n),/Invalid autonomous scan window/);
 });
 test('rechecks canonical anchor after event reads and refuses a changed finalized identity',async()=>{
  let reads=0;

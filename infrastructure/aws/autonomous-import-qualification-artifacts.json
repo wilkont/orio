@@ -1,0 +1,59 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Private versioned deployment ZIP storage for isolated Base Sepolia importer qualification",
+  "Parameters": {
+    "RunId": {"Type": "String", "AllowedPattern": "[a-z0-9]{1,12}"}
+  },
+  "Conditions": {
+    "Target": {
+      "Fn::And": [
+        {"Fn::Equals": [{"Ref": "AWS::AccountId"}, "720232346199"]},
+        {"Fn::Equals": [{"Ref": "AWS::Region"}, "us-east-1"]}
+      ]
+    }
+  },
+  "Resources": {
+    "Artifacts": {
+      "Type": "AWS::S3::Bucket",
+      "Condition": "Target",
+      "Properties": {
+        "BucketName": {"Fn::Sub": "orio-autonomous-qualification-artifacts-720232346199-${RunId}"},
+        "OwnershipControls": {"Rules": [{"ObjectOwnership": "BucketOwnerEnforced"}]},
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [{"ServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]
+        },
+        "VersioningConfiguration": {"Status": "Enabled"}
+      }
+    },
+    "TransportPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Condition": "Target",
+      "Properties": {
+        "Bucket": {"Ref": "Artifacts"},
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Sid": "RequireTLS",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:*",
+            "Resource": [
+              {"Fn::GetAtt": ["Artifacts", "Arn"]},
+              {"Fn::Sub": "${Artifacts.Arn}/*"}
+            ],
+            "Condition": {"Bool": {"aws:SecureTransport": "false"}}
+          }]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "CodeBucket": {"Condition": "Target", "Value": {"Ref": "Artifacts"}}
+  }
+}
